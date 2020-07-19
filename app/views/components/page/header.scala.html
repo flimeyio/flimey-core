@@ -1,0 +1,37 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+
+@()
+
+<header class="navbar navbar-top sticky">
+    <section class="navbar-section">
+        <div class="navbar-text">  <a href="#" class="btn btn-link navbar-btn">Overview</a></div>
+        <div class="navbar-text"> <a href="#" class="btn btn-link navbar-btn">Collections</a></div>
+        <div class="navbar-text"> <a href="@routes.AssetController.index()" class="btn btn-link navbar-btn">Assets</a></div>
+    </section>
+    <section class="navbar-center">
+        <img src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
+            &nbsp;&nbsp;flimey
+    </section>
+    <section class="navbar-section">
+        <div class="navbar-text">  <a href="@routes.ModelAssetController.index()" class="btn btn-link navbar-btn">
+            Model</a></div>
+        <div class="navbar-text"><a href="#" class="btn btn-link navbar-btn">Admin</a></div>
+        <div class="navbar-text"><a href="#" class="btn btn-link navbar-btn">Account</a></div>
+    </section>
+</header>

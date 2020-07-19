@@ -1,0 +1,37 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+
+@import model.asset.AssetType
+
+@(selectedType: Option[AssetType], assetTypes: Seq[AssetType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+    @helper.form(action = routes.AssetController.changeAssetType()) {
+        <div class="input-group input-inline fullwidth">
+            @CSRF.formField
+            <select class="form-select" name="value">
+                <option>Choose an option</option>
+                @for(assetType <- assetTypes) {
+                    <option @if(selectedType.isDefined && selectedType.get.id == assetType.id) {
+                        selected="selected"}>
+                    @assetType.value
+                    </option>
+                }
+            </select>
+            <button class="btn btn-primary input-group-btn btn-form-fixed">Select</button>
+        </div>
+    } @import views.html.helper.CSRF

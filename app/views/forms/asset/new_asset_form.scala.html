@@ -1,0 +1,70 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+
+@import formdata.asset.NewAssetForm
+@import model.asset.AssetType
+@import views.html.helper.CSRF
+
+@(assetType: AssetType,
+        propertyKeys: Seq[(String, String)],
+        obligatoryKeys: Map[String, String],
+        newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@key(index: Int) = @{
+    val (key, _) = propertyKeys(index)
+    key
+}
+
+@datatype(index: Int) = @{
+    val (_, datatype) = propertyKeys(index)
+    datatype
+}
+
+@placeholder(index: Int) = @{
+    val k = key(index)
+    val rule = obligatoryKeys.get(k)
+    if(rule.isDefined){
+        "obligatory ("+rule.get+")"
+    }else{
+        ""
+    }
+}
+
+@helper.form(action = routes.AssetController.addNewAsset(assetType.id)) {
+    @CSRF.formField
+    @if(propertyKeys.nonEmpty) {
+        @for(i <- propertyKeys.indices) {
+            <div class="input-group input-inline fullwidth spaced-top-10 no-padding-right">
+                <div class="container fullwidth no-padding-right">
+                    <div class="columns fullwidth">
+                        <div class="column col-4 slightly-padded">
+                            <div class="larger-text">@key(i)</div>
+                        </div>
+                        <div class="column col-2 slightly-padded">
+                            <label class="label label-secondary larger-text">@datatype(i)</label>
+                        </div>
+                        <div class="column col-6 no-padding-right">
+                            <input type="text" name="@{"values[" + i + "]"}" class="form-input fullwidth" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-20">Save</button>
+    }
+}

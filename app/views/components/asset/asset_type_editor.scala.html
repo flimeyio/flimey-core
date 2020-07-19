@@ -1,0 +1,73 @@
+@*
+ * This file is part of the flimey-core software.
+ * Copyright (C) 2020  Karl Kegel
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * *@
+
+@import views.html.forms.asset.edit_asset_type_form
+@import formdata.asset.EditAssetTypeForm
+@import views.html.forms.asset.delete_asset_type_form
+@import views.html.components.utils.message_box_hint
+@import views.html.forms.asset.new_asset_constraint_form
+@import views.html.helper.CSRF
+@import formdata.asset.NewAssetConstraintForm
+@import model.asset.AssetType
+@import model.Constraint
+
+@(assetType: AssetType, assetConstraints: Seq[Constraint],
+        editAssetTypeForm: Form[EditAssetTypeForm.Data],
+        newAssetConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+<div>
+    <div>
+        @edit_asset_type_form(assetType, editAssetTypeForm)
+        @if(assetType.active){
+            @message_box_hint(Option("While editing constraints, it is recommended to disable the Asset Type."))
+        }
+    </div>
+    <div>
+        <div class="spaced-top-10 spaced-bottom-10">
+            @new_asset_constraint_form(assetType.id, newAssetConstraintForm)
+        </div>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>constraint</th>
+                    <th>value 1</th>
+                    <th>value 2</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @for(constraint <- assetConstraints) {
+                <tr>
+                    <td><div class="table-cell">@constraint.c</div></td>
+                    <td><div class="table-cell">@constraint.v1</div></td>
+                    <td><div class="table-cell">@constraint.v2</div></td>
+                    <td>
+                        <form role="form" action='@routes.ModelAssetController.deleteAssetConstraint(assetType.id, constraint.id)' method="post">
+                            @CSRF.formField
+                            <button type="submit" class="btn btn-sm btn-error btn-action s-circle"><i class="icon icon-cross"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div>
+        @delete_asset_type_form(assetType.id)
+    </div>
+</div>

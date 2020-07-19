@@ -1,0 +1,37 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+
+@import formdata.asset.NewAssetConstraintForm
+@import model.asset.AssetConstraintHelper
+
+@(assetTypeId: Long, newConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@helper.form(action = routes.ModelAssetController.addAssetConstraint(assetTypeId)) {
+    <div class="input-group input-inline fullwidth">
+        @CSRF.formField
+        <select class="form-select" name="c">
+            <option>Choose an option</option>
+            @for(ctype <- AssetConstraintHelper.ConstraintType.values){
+                <option @if(newConstraintForm.data("c") == ctype.name){selected="selected"}>@ctype.name</option>
+            }
+        </select>
+        <input type="text" name="v1" id="input-nasf" class="form-input" placeholder="NULL" value="@newConstraintForm.data("v1")"/>
+        <input type="text" name="v2" id="input-nasf" class="form-input" placeholder="NULL" value="@newConstraintForm.data("v2")"/>
+        <button class="btn btn-primary input-group-btn btn-form-fixed">New</button>
+    </div>
+}@import views.html.helper.CSRF

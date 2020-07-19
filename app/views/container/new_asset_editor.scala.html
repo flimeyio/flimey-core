@@ -1,0 +1,39 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+
+@import formdata.asset.NewAssetForm
+@import model.asset.AssetType
+@import views.html.components.utils.{message_box_error, navbar_category_closeable}
+@import views.html.components.utils.message_box_success
+@import views.html.forms.asset.new_asset_form
+
+@(selectedType: AssetType,
+        propertyKeys: Seq[(String, String)],
+        obligatoryKeys: Map[String, String],
+        newAssetForm: Form[NewAssetForm.Data],
+        errmsg: Option[String] = None,
+        succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@app {
+    @message_box_error(errmsg)
+    @message_box_success(succmsg)
+    @navbar_category_closeable(Seq("New Asset Editor", selectedType.value), routes.AssetController.getAssetsOfType(selectedType.id))
+    <div class="spaced-top-20">
+        @new_asset_form(selectedType, propertyKeys, obligatoryKeys, newAssetForm)
+    </div>
+}()()
