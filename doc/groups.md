@@ -1,8 +1,10 @@
-# Groups
+#Groups
+
+##Outline
 
 In flimey, groups are the fundamental structure to manage users, their access and the visibility of objects.
 
-## Definition
+##Definition
 
 * a group contains a number of users (empty groups are possible)
 * there is at least one group - the *public* group
@@ -10,7 +12,7 @@ In flimey, groups are the fundamental structure to manage users, their access an
 * a user can have any number of group memberships greater zero
 * only admin users can create, delete and modify groups and their memberships
 
-## Usage with Assets
+##Usage with Assets
 
 Every asset has a defined visibility which is set by its associated groups. If an asset is created, the user
 can specify, which groups are able to see it and which group is able to edit it. The user can also set the *view* rights for groups he is not member himself.
@@ -19,3 +21,6 @@ can specify, which groups are able to see it and which group is able to edit it.
 * members of the *edit* group, have *view* rights as well as the option to edit, delete and change the visibility of the asset
 * if a group is deleted, all assets of which the group has *edit* rights will per option also be deleted or migrated to the *public* group
 
+##For Developers
+
+//TODO
