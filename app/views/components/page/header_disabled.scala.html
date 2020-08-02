@@ -15,15 +15,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import model.asset.{Asset, AssetType}
-@import model.generic.Property
-@import views.html.container.asset.asset_view_container
 
-@(selectedType: Option[AssetType],
-        assetTypes: Seq[AssetType],
-        assetData: Seq[(Asset, scala.Seq[Property])],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@()
 
-@app {
-    @asset_view_container(selectedType, assetTypes, assetData, None, msg)
-}()()
+<header class="navbar navbar-top sticky">
+    <section class="navbar-section"></section>
+    <section class="navbar-center">
+        <img src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
+            &nbsp;&nbsp;flimey
+    </section>
+    <section class="navbar-section"></section>
+</header>

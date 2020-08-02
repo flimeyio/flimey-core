@@ -15,15 +15,22 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import model.asset.{Asset, AssetType}
-@import model.generic.Property
-@import views.html.container.asset.asset_view_container
 
-@(selectedType: Option[AssetType],
-        assetTypes: Seq[AssetType],
-        assetData: Seq[(Asset, scala.Seq[Property])],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.utils.message_box_error
+@import views.html.components.page.footer
+@import views.html.components.page.header_disabled
 
-@app {
-    @asset_view_container(selectedType, assetTypes, assetData, None, msg)
-}()()
+@(content: Html = Html(""))(msg: Option[String] = None)
+
+@main {
+    @header_disabled()
+    <div id="page-frame">
+        @message_box_error(msg)
+        <div id="page">
+            <div class="container full-height">
+            @content
+            </div>
+        </div>
+    </div>
+    @footer()
+}

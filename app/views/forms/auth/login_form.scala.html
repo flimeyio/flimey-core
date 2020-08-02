@@ -15,15 +15,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import model.asset.{Asset, AssetType}
-@import model.generic.Property
-@import views.html.container.asset.asset_view_container
 
-@(selectedType: Option[AssetType],
-        assetTypes: Seq[AssetType],
-        assetData: Seq[(Asset, scala.Seq[Property])],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.helper.CSRF
 
-@app {
-    @asset_view_container(selectedType, assetTypes, assetData, None, msg)
-}()()
+@()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@helper.form(action = routes.AuthController.login()) {
+    @CSRF.formField
+    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email"/>
+    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password"/>
+    <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-10">Go</button>
+}
