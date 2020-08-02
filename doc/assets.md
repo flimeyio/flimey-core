@@ -35,4 +35,15 @@ Note that the visibility of assets and edit rights are not the same for every us
 
 ##For Developers
 
-//TODO
+###Usecases
+
+ID|Name|Description|Status
+---|---|---|---
+A01|Create AssetType|a modeler can create a new asset type|working
+A02|Edit AssetType|a modeler can edit an asset type (enable/disable, add/delete constraints)|works partly
+A03|Delete AssetType|a modeler can delete an asset type|works partly
+A04|Add Asset|a user can create an asset of an existing type|working
+A05|Edit Asset|a user can edit existing assets (change their property values)|working
+A06|Delete Asset|a user can delete an existing asset (and all attachments)|works partly
+A07|View Assets|a user can view all assets of a given type|works
+A08|Search Assets|a user can search for assets by given queries|open

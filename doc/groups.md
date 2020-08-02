@@ -23,4 +23,5 @@ can specify, which groups are able to see it and which group is able to edit it.
 
 ##For Developers
 
-//TODO
+ID|Name|Description|Status
+---|---|---|---

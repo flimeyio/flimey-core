@@ -56,4 +56,15 @@ During deletion, all associated items of the user may be rearranged to stay cons
 
 ##For Developers
 
-//TODO
+### Usecases
+
+ID|Name|Description|Status
+---|---|---|---
+U01|Log In|users with an active account can log in to access user-specific content|open
+U02|Log Out|logged in users can log out to end their session|open
+S_U03|Admin Account|by start up, the system provides a default admin log in|open
+U04|Change Password|the logged in user can change his password|open
+U05|Create User|an admin can create new user accounts|open
+U06|Set Role|an admin can change user roles|open
+U07|Delete User|an admin can delete a user account|open
+U08|Set User Status|an admin can set a user account to disabled/enabled|open
