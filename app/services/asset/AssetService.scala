@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package services.asset
 
 import com.google.inject.Inject
 import db.asset.{AssetPropertyRepository, AssetRepository, AssetTypeRepository}
 import model.asset.Asset
-import model.{Constraint, Property}
+import model.generic.{Constraint, Property}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

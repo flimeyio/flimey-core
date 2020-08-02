@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package services.asset
 
-import model.Property
 import model.asset.{Asset, AssetType}
+import model.generic.Property
 
 case class AssetComplex(parentAssetType: Option[AssetType], allAssetTypes: Seq[AssetType], children: Seq[(Asset, scala.Seq[Property])])

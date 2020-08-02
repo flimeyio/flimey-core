@@ -18,7 +18,7 @@
 
 package db.asset
 
-import model.Property
+import model.generic.Property
 import slick.jdbc.MySQLProfile.api._
 
 /**

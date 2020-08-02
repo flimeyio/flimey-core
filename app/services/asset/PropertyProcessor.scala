@@ -16,10 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package services.asset
 
 import model.asset.AssetConstraintHelper.{ConstraintType, PropertyType}
-import model.{Constraint, Property}
+import model.generic.{Constraint, Property}
 
 /**
  * Trait which provides functionality for parsing, processing and validation Properties

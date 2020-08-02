@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package services.asset
 
-import model.Constraint
 import model.asset.AssetConstraintHelper
 import model.asset.AssetConstraintHelper.ConstraintType
+import model.generic.Constraint
 import util.{ERR, OK, Status}
 
 /**

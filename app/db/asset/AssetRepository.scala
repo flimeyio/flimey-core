@@ -19,8 +19,8 @@
 package db.asset
 
 import com.google.inject.Inject
-import model.Property
 import model.asset.Asset
+import model.generic.Property
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._

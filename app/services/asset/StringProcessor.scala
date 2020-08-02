@@ -16,15 +16,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package model
+package services.asset
 
 /**
- * The Property data class.
- * A Property can be used as AssetProperty or SubjectProperty.
- *
- * @param id unique identifier
- * @param key of the property
- * @param value of the property
- * @param parentId id of the parent Asset/Subject
+ * Trait which provides some unspecific string processing functionality
  */
-case class Property(id: Long, key: String, value: String, parentId: Long)
+trait StringProcessor {
+
+  /**
+   * Transforms a string value to lower case and removes all tabs and space characters
+   *
+   * @param value raw string
+   * @return refactored string
+   */
+  def toLowerCaseNoSpaces(value: String): String = {
+    value.toLowerCase.replaceAll("(( )*|\t*)".r.regex, "")
+  }
+
+  /**
+   * Checks if a given string contains a numeric value.
+   * For more flexibility, this function does not make a difference between '.' (dot) and ',' (colon).
+   *
+   * @param value to check
+   * @return result
+   */
+  def isNumericString(value: String): Boolean = {
+    value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
+  }
+
+
+}
