@@ -24,7 +24,7 @@ import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import services.{AssetService, ModelAssetService}
+import services.asset.{AssetService, ModelAssetService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -49,18 +49,18 @@ class AssetController @Inject()(cc: ControllerComponents, assetService: AssetSer
    */
   def index(msg: Option[String] = None): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     modelAssetService.getAllAssetTypes map (types => {
-      Ok(views.html.container.asset_overview(None, types, Seq(), msg))
+      Ok(views.html.container.asset.asset_overview(None, types, Seq(), msg))
     }) recoverWith {
       case e =>
         logger.error(e.getMessage, e)
-        Future.successful(Ok(views.html.container.asset_overview(None, Seq(), Seq(), Option(e.getMessage))))
+        Future.successful(Ok(views.html.container.asset.asset_overview(None, Seq(), Seq(), Option(e.getMessage))))
     }
   }
 
   def searchAssets(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     modelAssetService.getAllAssetTypes map (types => {
       //FIXME
-      Ok(views.html.container.asset_overview(None, types, Seq(), None))
+      Ok(views.html.container.asset.asset_overview(None, types, Seq(), None))
     })
   }
 
@@ -107,7 +107,7 @@ class AssetController @Inject()(cc: ControllerComponents, assetService: AssetSer
   Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     assetService.getAssetComplex(assetTypeId) map (assetComplex => {
       //FIXME actually fetch the assets or some part of them (additional url query params)
-      Ok(views.html.container.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, msg))
+      Ok(views.html.container.asset.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, msg))
     }) recoverWith {
       case e =>
         logger.error(e.getMessage, e)
@@ -215,7 +215,7 @@ class AssetController @Inject()(cc: ControllerComponents, assetService: AssetSer
     modelAssetService.getCompleteAssetType(assetTypeId) map (typeData => {
       val (assetType, constraints) = typeData
       if (assetType.isDefined) {
-        Ok(views.html.container.new_asset_editor(assetType.get,
+        Ok(views.html.container.asset.new_asset_editor(assetType.get,
           assetService.getAssetPropertyKeys(constraints),
           assetService.getObligatoryPropertyKeys(constraints),
           form, errmsg, succmsg))
@@ -248,7 +248,7 @@ class AssetController @Inject()(cc: ControllerComponents, assetService: AssetSer
         modelAssetService.getCompleteAssetType(assetComplex.parentAssetType.get.id) map (typeData => {
           val (_, constraints) = typeData
           val editForm = if(form.isDefined) form.get else NewAssetForm.form.fill(NewAssetForm.Data(editedAssetData.get._2.map(_.value)))
-          Ok(views.html.container.asset_overview_with_editor(assetComplex.parentAssetType.get,
+          Ok(views.html.container.asset.asset_overview_with_editor(assetComplex.parentAssetType.get,
             assetComplex.allAssetTypes,
             assetComplex.children,
             assetId,
