@@ -18,6 +18,50 @@
 
 package db.auth
 
-class SessionRepository {
-  //TODO
+import com.google.inject.Inject
+import model.auth.{Access, AuthSession}
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
+
+import scala.concurrent.{ExecutionContext, Future}
+
+class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
+  extends HasDatabaseConfigProvider[JdbcProfile] {
+
+  val sessions = TableQuery[AuthSessionTable]
+  val accesses = TableQuery[AccessTable]
+
+  //add new session
+  def add(session: AuthSession, rights: Seq[Access]): Future[Nothing] = {
+    db.run((for {
+      key <- (sessions returning sessions.map(_.id)) += session
+      _ <- accesses ++= rights.map(p => Access(0, key, p.groupId, p.groupName))
+    } yield ()).transactionally)
+  }
+
+  //get session by session key (just with role...)
+  def getHeader(key: String): Future[Option[AuthSession]] = {
+    db.run(sessions.filter(_.session === key).result.headOption)
+  }
+
+  def getComplete(id: Long): Future[(Option[AuthSession], Seq[Access])] = {
+    db.run((for {
+      (c, s) <- sessions.filter(_.id === id) joinLeft accesses on (_.id === _.sessionId)
+    } yield (c, s)).result).map(res => {
+      if (res.isEmpty) {
+        (None, Seq())
+      } else {
+        res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2.get))).values.head
+      }
+    })
+  }
+
+  def delete(id: Long): Future[Unit] = {
+    db.run((for {
+      _ <- accesses.filter(_.sessionId === id).delete
+      _ <- sessions.filter(_.id === id).delete
+    } yield ()).transactionally)
+  }
+
 }

@@ -19,11 +19,13 @@
 package db.group
 
 import com.google.inject.Inject
+import model.group.{Group, GroupMembership}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * DB interface for GroupMemberships.
@@ -36,7 +38,25 @@ class GroupMembershipRepository @Inject()(protected val dbConfigProvider: Databa
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val groupMemberships = TableQuery[GroupMembershipTable]
+  val groups = TableQuery[GroupTable]
 
-  //TODO
+  //get groups of a user
+  def get(userId: Long): Future[Seq[Group]] = {
+    db.run((for {
+      (c, s) <- groupMemberships.filter(_.userId === userId) joinLeft groups on (_.groupId === _.id)
+    } yield (c, s)).result).map(res => {
+      res.map(_._2).filter(_.isDefined).map(_.get)
+    })
+  }
+
+  //add user to group
+  def add(groupMembership: GroupMembership): Future[Nothing] = {
+    db.run((groupMemberships returning groupMemberships.map(_.id)) += groupMembership)
+  }
+
+  //remove user from group
+  def delete(userId: Long, groupId: Long): Future[Int] = {
+    db.run(groupMemberships.filter(_.userId === userId).filter(_.groupId === groupId).delete)
+  }
 
 }

@@ -19,11 +19,13 @@
 package db.group
 
 import com.google.inject.Inject
+import model.group.Group
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * DB interface for Groups.
@@ -36,7 +38,27 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val groups = TableQuery[GroupTable]
+  val groupMemberships = TableQuery[GroupMembershipTable]
+  val assetViewers = TableQuery[AssetViewerTable]
 
-  //TODO
+  //put new group
+  def add(group: Group): Future[Nothing] = {
+    db.run((groups returning groups.map(_.id)) += group)
+  }
+
+  //get group by id
+  def getById(id: Long): Future[Option[Group]] = {
+    db.run(groups.filter(_.id === id).result.headOption)
+  }
+
+  //delete group
+  def delete(id: Long): Future[Unit] = {
+    db.run((for {
+      _ <- assetViewers.filter(_.groupId === id).delete
+      _ <- groupMemberships.filter(_.groupId === id).delete
+      _ <- groups.filter(_.id === id).delete
+    } yield ()).transactionally)
+  }
+
 
 }

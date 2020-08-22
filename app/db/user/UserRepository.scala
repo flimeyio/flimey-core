@@ -19,11 +19,14 @@
 package db.user
 
 import com.google.inject.Inject
+import db.group.GroupMembershipTable
+import model.user.User
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * DB interface for Users.
@@ -36,7 +39,34 @@ class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val users = TableQuery[UserTable]
+  val groupMemberships = TableQuery[GroupMembershipTable]
 
-  //TODO
+  //put new user
+  def add(user: User): Future[Nothing] = {
+    db.run((users returning users.map(_.id)) += user)
+  }
+
+  //update user data
+  def update(user: User): Future[Int] = {
+    db.run(users.filter(_.id === user.id).update(user))
+  }
+
+  //delete user
+  def delete(id: Long): Future[Unit] = {
+    db.run((for {
+      _ <- groupMemberships.filter(_.userId === id).delete
+      _ <- users.filter(_.id === id).delete
+    } yield ()).transactionally)
+  }
+
+  //get user by id
+  def getById(id: Long): Future[Option[User]] = {
+    db.run(users.filter(_.id === id).result.headOption)
+  }
+
+  //get user by email
+  def getById(email: String): Future[Option[User]] = {
+    db.run(users.filter(_.email === email).result.headOption)
+  }
 
 }
