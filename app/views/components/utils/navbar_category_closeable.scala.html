@@ -18,15 +18,17 @@
 
 @(titles: Seq[String], closeAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<header class="navbar navbar-category">
+<div class="full-width bg-prim-dark">
+    <div class = "container symmetric full-width padded-td-5">
     <section class="navbar-section">
         @for(title <- titles) {
-            <label class="label label-rounded"><div class="slightly-padded larger-text">@title</div></label>
+            <div class="headline-text spaced-lr-5 fc-white">@title</div>
         }
     </section>
-    <section class="navbar-section">
+    <section class="spaced-lr-5">
         <a href="@closeAction">
             <button class="btn btn-primary btn-form-fixed">Close</button>
         </a>
     </section>
-</header>
+        </div>
+</div>

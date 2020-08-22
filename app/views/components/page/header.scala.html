@@ -18,20 +18,20 @@
 
 @()
 
-<header class="navbar navbar-top sticky">
-    <section class="navbar-section">
-        <div class="navbar-text">  <a href="#" class="btn btn-link navbar-btn">Overview</a></div>
-        <div class="navbar-text"> <a href="#" class="btn btn-link navbar-btn">Collections</a></div>
-        <div class="navbar-text"> <a href="@routes.AssetController.index()" class="btn btn-link navbar-btn">Assets</a></div>
+<div class="container symmetric full-width headline-text bg-light sticky-top">
+    <section class="container left-align spaced-10">
+        <div class="padded-lr-5">  <a href="#" class="link-black">Overview</a></div>
+        <div class="padded-lr-5"> <a href="#" class="link-black">Collections</a></div>
+        <div class="padded-lr-5"> <a href="@routes.AssetController.index()" class="link-black">Assets</a></div>
     </section>
-    <section class="navbar-center">
-        <img src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
-            &nbsp;&nbsp;flimey
+    <section class="container center-align">
+        <img class="spaced-auto" src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
+        <div class="spaced-td-10 spaced-lr-5">&nbsp;&nbsp;flimey</div>
     </section>
-    <section class="navbar-section">
-        <div class="navbar-text">  <a href="@routes.ModelAssetController.index()" class="btn btn-link navbar-btn">
+    <section class="container right-align spaced-10">
+        <div class="padded-lr-5">  <a href="@routes.ModelAssetController.index()" class="link-black">
             Model</a></div>
-        <div class="navbar-text"><a href="#" class="btn btn-link navbar-btn">Admin</a></div>
-        <div class="navbar-text"><a href="#" class="btn btn-link navbar-btn">Account</a></div>
+        <div class="padded-lr-5"><a href="#" class="link-black">Admin</a></div>
+        <div class="padded-lr-5"><a href="#" class="link-black">Account</a></div>
     </section>
-</header>
+</div>

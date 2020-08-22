@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -9,35 +9,33 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-
-@import views.html.components.page.header
+@import views.html.components.page.{footer, header}
 @import views.html.components.utils.message_box_error
-@import views.html.components.page.footer
 
 @(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)
 
-    @main {
-        @header()
-        <div id="page-frame">
-            @message_box_error(msg)
-            <div id="page">
-                <div class="container full-height">
-                    <div class="columns full-height">
-                        <div class="column col-7 full-height">
-                            @if(!leftContainer.equals(Html(""))) {
-                                <div class="panel page-panel">@leftContainer</div>
-                            }
-                        </div>
-                        @rightContainer
-                    </div>
+@main {
+    @header()
+    <div class="full-height-m-130 padded-lr-100 spaced-t-65">
+        @message_box_error(msg)
+        <div class="full-width full-height">
+            <div class="container full-height spaced-td-20">
+                <div class="col-6 spaced-lr-10 bordered">
+                @leftContainer
                 </div>
+                @if(!leftContainer.equals(Html(""))) {
+                    <div class="col-4 spaced-lr-10 bordered">
+                    @rightContainer
+                    </div>
+                }
             </div>
         </div>
-        @footer()
-    }
+    </div>
+    @footer()
+}

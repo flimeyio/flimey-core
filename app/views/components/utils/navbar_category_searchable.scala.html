@@ -20,13 +20,15 @@
 
 @(titles: Seq[String], searchAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<header class="navbar navbar-category">
-    <section class="navbar-section">
+<div class="full-width bg-prim-dark">
+<div class="container symmetric full-width padded-td-5">
+    <section class="">
         @for(title <- titles) {
-            <label class="label label-rounded"><div class="slightly-padded larger-text">@title</div></label>
+            <div class="headline-text spaced-lr-5 fc-white">@title</div>
         }
     </section>
-    <section class="navbar-section">
+    <section class="spaced-lr-5">
        @search_form(searchAction)
     </section>
-</header>
+</div>
+</div>
