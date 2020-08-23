@@ -18,20 +18,20 @@
 
 @()
 
-<div class="container symmetric full-width headline-text bg-light sticky-top">
-    <section class="container left-align spaced-10">
-        <div class="padded-lr-5">  <a href="#" class="link-black">Overview</a></div>
-        <div class="padded-lr-5"> <a href="#" class="link-black">Collections</a></div>
-        <div class="padded-lr-5"> <a href="@routes.AssetController.index()" class="link-black">Assets</a></div>
+<div class="navbar-page container symmetric">
+    <section class="container left-align spaced-medium">
+        <div class="padded-lr-small">  <a href="#" class="link-black">Overview</a></div>
+        <div class="padded-lr-small"> <a href="#" class="link-black">Collections</a></div>
+        <div class="padded-lr-small"> <a href="@routes.AssetController.index()" class="link-black">Assets</a></div>
     </section>
     <section class="container center-align">
         <img class="spaced-auto" src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
-        <div class="spaced-td-10 spaced-lr-5">&nbsp;&nbsp;flimey</div>
+        <div class="spaced-td-medium spaced-lr-small">&nbsp;&nbsp;flimey</div>
     </section>
-    <section class="container right-align spaced-10">
-        <div class="padded-lr-5">  <a href="@routes.ModelAssetController.index()" class="link-black">
+    <section class="container right-align spaced-medium">
+        <div class="padded-lr-small">  <a href="@routes.ModelAssetController.index()" class="link-black">
             Model</a></div>
-        <div class="padded-lr-5"><a href="#" class="link-black">Admin</a></div>
-        <div class="padded-lr-5"><a href="#" class="link-black">Account</a></div>
+        <div class="padded-lr-small"><a href="#" class="link-black">Admin</a></div>
+        <div class="padded-lr-small"><a href="#" class="link-black">Account</a></div>
     </section>
 </div>

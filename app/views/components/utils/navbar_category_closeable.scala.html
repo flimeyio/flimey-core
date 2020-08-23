@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -9,26 +9,25 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-
 @(titles: Seq[String], closeAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="full-width bg-prim-dark">
-    <div class = "container symmetric full-width padded-td-5">
-    <section class="navbar-section">
-        @for(title <- titles) {
-            <div class="headline-text spaced-lr-5 fc-white">@title</div>
-        }
-    </section>
-    <section class="spaced-lr-5">
-        <a href="@closeAction">
-            <button class="btn btn-primary btn-form-fixed">Close</button>
-        </a>
-    </section>
-        </div>
+<div class="navbar-local">
+    <div class = "container symmetric full-width padded-td-small">
+        <section>
+            @for(title <- titles) {
+                <div class="spaced-lr-small">@title</div>
+            }
+        </section>
+        <section class="spaced-lr-small">
+            <a href="@closeAction">
+                <button class="">Close</button>
+            </a>
+        </section>
+    </div>
 </div>
