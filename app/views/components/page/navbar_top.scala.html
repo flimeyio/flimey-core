@@ -18,14 +18,11 @@
 
 @()
 
-<div class="footer container symmetric">
-    <div>
-        <div class="container">
-            <img src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
-            <div class="spaced-lr-medium padded-td-small">&nbsp;&nbsp;flimey</div>
-        </div>
-    </div>
-    <div class="spaced-lr-medium padded-td-small">
-        flimey core version 0.1
-    </div>
+<div class="navbar-page container right-align">
+    <section class="container right-align">
+         <a href="@routes.ModelAssetController.index()" class="button-nav btn-large"><div class="spaced-start-small">
+            Model</div></a>
+        <a href="#" class="button-nav btn-large"><div class="spaced-start-small">Admin</div></a>
+        <a href="#" class="button-nav btn-large"><div class="spaced-start-small">Account</div></a>
+    </section>
 </div>

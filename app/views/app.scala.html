@@ -15,27 +15,36 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import views.html.components.page.{footer, navbar}
+@import views.html.components.page.{footer, navbar_top, navbar_left}
 @import views.html.components.utils.message_box_error
 
 @(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)
 
 @main {
-    @navbar()
-    <div class="page">
-        @message_box_error(msg)
+    <div class="page container vertical">
+
+        @navbar_top()
+
         <div class="full-width full-height">
-            <div class="container full-height spaced-td-large">
+        <div class="container full-height full-width stretched">
+
+            @navbar_left()
+
+            <div class="container full-height full-width">
+                @message_box_error(msg)
                 <div class="col-6 box spaced-lr-medium">
                 @leftContainer
                 </div>
-                @if(!leftContainer.equals(Html(""))) {
+                @if(!rightContainer.equals(Html(""))) {
                     <div class="col-4 box spaced-lr-small">
                     @rightContainer
                     </div>
                 }
             </div>
+
+        </div>
+        @footer()
         </div>
     </div>
-    @footer()
+
 }
