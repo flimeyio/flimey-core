@@ -41,30 +41,27 @@
         <div class="spaced-top-10 spaced-bottom-10">
             @new_asset_constraint_form(assetType.id, newAssetConstraintForm)
         </div>
-        <table class="table table-striped table-hover">
-            <thead>
+        <table>
                 <tr>
                     <th>constraint</th>
                     <th>value 1</th>
                     <th>value 2</th>
                     <th></th>
                 </tr>
-            </thead>
-            <tbody>
             @for(constraint <- assetConstraints) {
                 <tr>
-                    <td><div class="table-cell">@constraint.c</div></td>
-                    <td><div class="table-cell">@constraint.v1</div></td>
-                    <td><div class="table-cell">@constraint.v2</div></td>
+                    <td><div>@constraint.c</div></td>
+                    <td><div>@constraint.v1</div></td>
+                    <td><div>@constraint.v2</div></td>
                     <td>
                         <form role="form" action='@routes.ModelAssetController.deleteAssetConstraint(assetType.id, constraint.id)' method="post">
                             @CSRF.formField
-                            <button type="submit" class="btn btn-sm btn-error btn-action s-circle"><i class="icon icon-cross"></i></button>
+                            <button type="submit" class="ico-button-warn"><i class="icon icon-cross"></i></button>
                         </form>
                     </td>
                 </tr>
             }
-            </tbody>
+
         </table>
     </div>
     <div>

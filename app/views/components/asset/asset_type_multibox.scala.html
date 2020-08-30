@@ -32,11 +32,11 @@
             <td><div>@assetType.value</div></td>
             <td><div>@assetType.active.toString</div></td>
             <td>
-                <a href=@routes.ModelAssetController.getAssetTypeEditor(assetType.id)>
-                    <button class="">
-                        <i class="icon-more-horiz"></i>
+                <form action=@routes.ModelAssetController.getAssetTypeEditor(assetType.id)>
+                    <button type="submit" class="ico-button">
+                       <i class="icon icon-more-horiz"></i>
                     </button>
-                </a>
+                </form>
             </td>
         </tr>
     }
