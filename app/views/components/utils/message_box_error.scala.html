@@ -19,8 +19,10 @@
 @(msg: Option[String] = None)
 
 @if(msg.nonEmpty) {
-    <div class="div-message-box label label-error">
-        @msg.get
+    <div class="box-error full-width">
+        <div class="padded-small">
+            @msg.get
+        </div>
     </div>
 } else {
     <div></div>
