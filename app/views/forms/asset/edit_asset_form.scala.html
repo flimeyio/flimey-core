@@ -50,22 +50,24 @@
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
-            <div class="input-group input-inline fullwidth spaced-top-10 no-padding-right">
-                <div class="container fullwidth no-padding-right">
-                    <div class="columns fullwidth">
-                        <div class="column col-4 slightly-padded">
-                            <div class="larger-text">@key(i)</div>
+            <div class="inline-group spaced-small">
+
+                    <div class="container full-width">
+                        <div class="col-4">
+                            @key(i)
                         </div>
-                        <div class="column col-2 slightly-padded">
-                            <label class="label label-secondary larger-text">@datatype(i)</label>
+                        <div class="col-2">
+                            <div class="tag-label">@datatype(i)</div>
                         </div>
-                        <div class="column col-6 no-padding-right">
-                            <input type="text" name="@{"values[" + i + "]"}" class="form-input fullwidth" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
+                        <div class="col-6 padded-lr-medium">
+                            <input type="text" name="@{"values[" + i + "]"}" class="form-input full-width" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
                         </div>
                     </div>
-                </div>
+
             </div>
         }
-        <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-20">Save</button>
+        <div class="container right-align">
+            <button class="btn-submit spaced-small">Save</button>
+        </div>
     }
 }

@@ -26,7 +26,7 @@ import play.api.mvc._
 class ApplicationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with Logging {
 
   def index() = Action { implicit request: Request[AnyContent] =>
-      Ok(views.html.app()()())
+    Redirect(routes.AssetController.index())
   }
 
 }

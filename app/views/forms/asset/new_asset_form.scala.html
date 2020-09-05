@@ -46,25 +46,19 @@
 }
 
 @helper.form(action = routes.AssetController.addNewAsset(assetType.id)) {
+    <div class="pure-form full-width spaced-td-medium">
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
-            <div class="input-group input-inline fullwidth spaced-top-10 no-padding-right">
-                <div class="container fullwidth no-padding-right">
-                    <div class="columns fullwidth">
-                        <div class="column col-4 slightly-padded">
-                            <div class="larger-text">@key(i)</div>
-                        </div>
-                        <div class="column col-2 slightly-padded">
-                            <label class="label label-secondary larger-text">@datatype(i)</label>
-                        </div>
-                        <div class="column col-6 no-padding-right">
-                            <input type="text" name="@{"values[" + i + "]"}" class="form-input fullwidth" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
-                        </div>
-                    </div>
-                </div>
+            <div class="inline-group">
+                            <div class="spaced-lr-small col-3">@key(i)</div>
+                            <div class="spaced-lr-small col-3">@datatype(i)</div>
+                            <input type="text" name="@{"values[" + i + "]"}" class="form-input col-6 spaced-lr-small" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
             </div>
         }
-        <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-20">Save</button>
+        <div class="container full-width right-align">
+            <button class="btn-submit spaced-lr-small spaced-td-small">Save</button>
+        </div>
     }
+    </div>
 }

@@ -30,10 +30,10 @@
         succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @app {
+    @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssetsOfType(selectedType.id))
     @message_box_error(errmsg)
     @message_box_success(succmsg)
-    @navbar_category_closeable(Seq("New Asset Editor", selectedType.value), routes.AssetController.getAssetsOfType(selectedType.id))
-    <div class="spaced-top-20">
+    <div class="">
         @new_asset_form(selectedType, propertyKeys, obligatoryKeys, newAssetForm)
     </div>
 }()()
