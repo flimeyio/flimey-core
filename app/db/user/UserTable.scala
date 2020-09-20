@@ -16,24 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
+package db.user
 
-import model.generic.Property
+import model.user.User
 import slick.jdbc.MySQLProfile.api._
 
 /**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * Slick framework db mapping for User.
+ * See evolutions/default for schema creation
+ *
+ * @param tag fro mysql
  */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
+class UserTable(tag: Tag) extends Table[User](tag, "user") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def username = column[String]("username")
+  def email = column[String]("email", O.Unique)
+  def password = column[String]("password")
+  def role = column[String]("role")
   def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
+  def accepted = column[Boolean]("accepted")
+  def enabled = column[Boolean]("enabled")
 
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
+  override def * = (id, username, email, password, role, key, accepted,enabled) <> (User.tupled, User.unapply)
 
 }

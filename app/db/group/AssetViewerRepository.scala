@@ -16,24 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
+package db.group
 
-import model.generic.Property
-import slick.jdbc.MySQLProfile.api._
+import com.google.inject.Inject
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import slick.jdbc.JdbcProfile
+import slick.lifted.TableQuery
+
+import scala.concurrent.ExecutionContext
 
 /**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * DB interface for AssetViewer relations.
+ * Provided methods are UNSAFE and must only be used by service classes!
+ *
+ * @param dbConfigProvider injected db config
+ * @param executionContext future execution context
  */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
+class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
+  extends HasDatabaseConfigProvider[JdbcProfile] {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
+  val assetViewers = TableQuery[AssetViewerTable]
 
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
+  //TODO
 
 }

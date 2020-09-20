@@ -16,24 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
+package db.auth
 
-import model.generic.Property
+import java.sql.Timestamp
+
+import model.auth.AuthSession
 import slick.jdbc.MySQLProfile.api._
 
-/**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
- */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
+class AuthSessionTable(tag: Tag) extends Table[AuthSession](tag, "session") {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
+  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+  def session = column[String]("session")
+  def role = column[String]("role")
+  def status = column[Boolean]("status")
+  def userId = column[Long]("user_id")
+  def created = column[Timestamp]("created", O.SqlType("datetime not null default CURRENT_TIMESTAMP"))
 
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
+  override def * = (id, session, role, status, userId, created) <> (AuthSession.tupled, AuthSession.unapply)
 
 }

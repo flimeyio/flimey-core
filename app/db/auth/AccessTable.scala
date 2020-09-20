@@ -16,15 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package model
+package db.auth
 
-/**
- * The Constraint data class.
- * A Constraint can be used as AssetConstraint or SubjectConstraint
- * @param id unique primary key (given by db interface)
- * @param c constraint rule key
- * @param v1 first rule argument
- * @param v2 second rule argument
- * @param typeId id of the associated AssetType or SubjectType
- */
-case class Constraint (id: Long, c: String, v1: String, v2: String, typeId: Long)
+import model.auth.Access
+import slick.jdbc.MySQLProfile.api._
+
+class AccessTable (tag: Tag) extends Table[Access](tag, "access") {
+
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def sessionId = column[Long]("session_id")
+  def groupId = column[Long]("group_id")
+  def groupName = column[String]("group_name")
+
+  override def * = (id, sessionId, groupId, groupName) <> (Access.tupled, Access.unapply)
+
+}

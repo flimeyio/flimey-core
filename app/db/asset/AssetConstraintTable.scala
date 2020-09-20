@@ -18,7 +18,7 @@
 
 package db.asset
 
-import model.Constraint
+import model.generic.Constraint
 import slick.jdbc.MySQLProfile.api._
 
 /**

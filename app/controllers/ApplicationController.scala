@@ -19,13 +19,19 @@
 package controllers
 
 import javax.inject._
+import middleware.Authentication
 import play.api.Logging
 import play.api.mvc._
 
 @Singleton
-class ApplicationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with Logging {
+class ApplicationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with Logging with Authentication {
 
   def index() = Action { implicit request: Request[AnyContent] =>
+    //if(hasSession) {
+    //  Ok(views.html.app()()())
+    //} else {
+    //  Redirect(routes.AuthController.getLoginPage())
+    //}
     Redirect(routes.AssetController.index())
   }
 

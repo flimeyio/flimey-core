@@ -16,33 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package model.auth
 
-/**
- * Trait which provides some unspecific string processing functionality
- */
-trait StringProcessor {
+import java.sql.Timestamp
 
-  /**
-   * Transforms a string value to lower case and removes all tabs and space characters
-   *
-   * @param value raw string
-   * @return refactored string
-   */
-  def toLowerCaseNoSpaces(value: String): String = {
-    value.toLowerCase.replaceAll("(( )*|\t*)".r.regex, "")
-  }
-
-  /**
-   * Checks if a given string contains a numeric value.
-   * For more flexibility, this function does not make a difference between '.' (dot) and ',' (colon).
-   *
-   * @param value to check
-   * @return result
-   */
-  def isNumericString(value: String): Boolean = {
-    value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
-  }
-
-
-}
+case class AuthSession(id: Long, session: String, role: String, status: Boolean, userId: Long, created: Timestamp)

@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package services.asset
 
 import com.google.inject.Inject
 import db.asset.{AssetConstraintRepository, AssetTypeRepository}
-import model.Constraint
 import model.asset.AssetType
+import model.generic.Constraint
 import play.api.Logging
 
 import scala.concurrent.ExecutionContext.Implicits.global

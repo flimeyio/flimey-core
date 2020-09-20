@@ -16,24 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
-
-import model.generic.Property
-import slick.jdbc.MySQLProfile.api._
+package model.group
 
 /**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * The GroupMembership data class.
+ * A GroupMembership represents the many to many 'is member' relations between Group and User.
+ *
+ * @param id unique identifier
+ * @param groupId id of the group
+ * @param userId id of the user
  */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
-
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
-
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
-
-}
+case class GroupMembership(id: Long, groupId: Long, userId: Long)

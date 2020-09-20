@@ -16,9 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package services
+package db.group
 
-import model.Property
-import model.asset.{Asset, AssetType}
+import model.group.AssetViewer
+import slick.jdbc.MySQLProfile.api._
 
-case class AssetComplex(parentAssetType: Option[AssetType], allAssetTypes: Seq[AssetType], children: Seq[(Asset, scala.Seq[Property])])
+class AssetViewerTable(tag: Tag) extends Table[AssetViewer](tag, "asset_viewer") {
+
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def assetId = column[Long]("asset_id")
+  def groupId = column[Long]("group_id")
+
+  override def * = (id, assetId, groupId) <> (AssetViewer.tupled, AssetViewer.unapply)
+
+}

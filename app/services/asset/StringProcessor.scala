@@ -16,24 +16,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
-
-import model.generic.Property
-import slick.jdbc.MySQLProfile.api._
+package services.asset
 
 /**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * Trait which provides some unspecific string processing functionality
  */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
+trait StringProcessor {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
+  /**
+   * Transforms a string value to lower case and removes all tabs and space characters
+   *
+   * @param value raw string
+   * @return refactored string
+   */
+  def toLowerCaseNoSpaces(value: String): String = {
+    value.toLowerCase.replaceAll("(( )*|\t*)".r.regex, "")
+  }
 
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
+  /**
+   * Checks if a given string contains a numeric value.
+   * For more flexibility, this function does not make a difference between '.' (dot) and ',' (colon).
+   *
+   * @param value to check
+   * @return result
+   */
+  def isNumericString(value: String): Boolean = {
+    value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
+  }
+
 
 }

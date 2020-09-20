@@ -16,24 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
+package formdata.auth
 
-import model.generic.Property
-import slick.jdbc.MySQLProfile.api._
+import play.api.data.Forms._
+import play.api.data._
 
-/**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
- */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
+object AuthenticateForm {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
+  case class Data(email: String, username: String, password1: String, password2: String)
 
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
+  val form = Form(
+    mapping(
+      "email" -> text,
+      "username" -> text,
+      "password1" -> text,
+      "password2" -> text
+    )(Data.apply)(Data.unapply)
+  )
 
 }

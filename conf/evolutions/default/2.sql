@@ -16,24 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
+-- Ups
 
-import model.generic.Property
-import slick.jdbc.MySQLProfile.api._
+create table `auth_session` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `session` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+    `status` BOOL NOT NULL,
+    `user_id` BIGINT NOT NULL,
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-/**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
- */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
+create table `access` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `session_id` BIGINT NOT NULL,
+    `group_id` BIGINT NOT NULL,
+    `group_name` VARCHAR(255) NOT NULL,
+    FOREIGN KEY(session_id) REFERENCES auth_session(id)
+);
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
+-- Downs
 
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
-
-}
+DROP TABLE `access`;
+DROP TABLE `auth_session`;

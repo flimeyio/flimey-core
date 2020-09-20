@@ -19,7 +19,7 @@
 package db.asset
 
 import com.google.inject.Inject
-import model.Constraint
+import model.generic.Constraint
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._

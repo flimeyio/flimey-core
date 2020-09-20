@@ -16,24 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.asset
-
-import model.generic.Property
-import slick.jdbc.MySQLProfile.api._
+package model.user
 
 /**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * The User data class.
+ *
+ * @param id unique identifier
+ * @param username visible name of the user
+ * @param email unique email address
+ * @param password password (hashed in db)
+ * @param role access role
+ * @param key pending authentication key
+ * @param accepted flag if user has accepted the usage conditions
+ * @param enabled flag if the user is allowed to log in
  */
-class AssetPropertyTable(tag: Tag) extends Table[Property](tag, "asset_property") {
-
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
-
-  override def * =
-    (id, key, value, parentId) <> (Property.tupled, Property.unapply)
-
-}
+case class User (id: Long, username: String, email: String, password: String, role: String,
+                 key: String, accepted: Boolean, enabled: Boolean)

@@ -16,6 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package model
+package model.auth
 
-case class Property(id: Long, key: String, value: String, parentId: Long)
+case class Access(id: Long, sessionId: Long, groupId: Long, groupName: String)

@@ -20,12 +20,12 @@ package controllers
 
 import formdata.asset.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
 import javax.inject.{Inject, Singleton}
-import model.Constraint
 import model.asset.AssetType
+import model.generic.Constraint
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import services.ModelAssetService
+import services.asset.ModelAssetService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -48,11 +48,11 @@ class ModelAssetController @Inject()(cc: ControllerComponents, modelService: Mod
    */
   def index(msg: Option[String] = None): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     modelService.getAllAssetTypes map (types => {
-      Ok(views.html.container.model_overview(types, msg))
+      Ok(views.html.container.asset.model_asset_overview(types, msg))
     }) recoverWith {
       case e => {
         logger.error(e.getMessage, e)
-        Future.successful(Ok(views.html.container.model_overview(Seq(), Option(e.getMessage))))
+        Future.successful(Ok(views.html.container.asset.model_asset_overview(Seq(), Option(e.getMessage))))
       }
     }
   }
@@ -120,7 +120,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, modelService: Mod
           if (c.isDefined && v1.isDefined && v2.isDefined) {
             preparedConstraintForm = NewAssetConstraintForm.form.fill(NewAssetConstraintForm.Data(c.get, v1.get, v2.get))
           }
-          Ok(views.html.container.model_asset_editor(assetTypes, assetType.get, constraints, preparedAssetForm, preparedConstraintForm, msg))
+          Ok(views.html.container.asset.model_asset_editor(assetTypes, assetType.get, constraints, preparedAssetForm, preparedConstraintForm, msg))
         } else {
           Redirect(routes.ModelAssetController.index(Option("Asset Type not found")))
         }
@@ -150,7 +150,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, modelService: Mod
         Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(id, Option("Invalid form data!"))))
       },
       data => {
-        val assetType = AssetType(id, data.value, data.active);
+        val assetType = AssetType(id, data.value, data.active)
         modelService.updateAssetType(assetType) map { _ =>
           Redirect(routes.ModelAssetController.getAssetTypeEditor(id))
         } recoverWith {
