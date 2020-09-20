@@ -1,0 +1,3 @@
+[submodule "public/stylesheets/flimey-css"]
+	path = public/stylesheets/flimey-css
+	url = git@github.com:flimeyio/flimey-css.git

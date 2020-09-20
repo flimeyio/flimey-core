@@ -22,16 +22,18 @@
 @(assetTypeId: Long, newConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.addAssetConstraint(assetTypeId)) {
-    <div class="input-group input-inline fullwidth">
-        @CSRF.formField
-        <select class="form-select" name="c">
-            <option>Choose an option</option>
-            @for(ctype <- AssetConstraintHelper.ConstraintType.values){
-                <option @if(newConstraintForm.data("c") == ctype.name){selected="selected"}>@ctype.name</option>
-            }
-        </select>
-        <input type="text" name="v1" id="input-nasf" class="form-input" placeholder="NULL" value="@newConstraintForm.data("v1")"/>
-        <input type="text" name="v2" id="input-nasf" class="form-input" placeholder="NULL" value="@newConstraintForm.data("v2")"/>
-        <button class="btn btn-primary input-group-btn btn-form-fixed">New</button>
+    <div class="pure-form">
+        <div class="inline-group">
+            @CSRF.formField
+            <select class="form-select weight-1" name="c">
+                <option>Choose an option</option>
+                @for(ctype <- AssetConstraintHelper.ConstraintType.values){
+                    <option @if(newConstraintForm.data("c") == ctype.name){selected="selected"}>@ctype.name</option>
+                }
+            </select>
+            <input type="text" name="v1" id="input-nasf" class="form-input weight-2 spaced-lr-small" placeholder="NULL" value="@newConstraintForm.data("v1")"/>
+            <input type="text" name="v2" id="input-nasf" class="form-input" placeholder="NULL" value="@newConstraintForm.data("v2")"/>
+            <button class="btn-submit spaced-lr-small">New</button>
+        </div>
     </div>
 }@import views.html.helper.CSRF

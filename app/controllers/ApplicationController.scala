@@ -27,11 +27,12 @@ import play.api.mvc._
 class ApplicationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with Logging with Authentication {
 
   def index() = Action { implicit request: Request[AnyContent] =>
-    if(hasSession) {
-      Ok(views.html.app()()())
-    } else {
-      Redirect(routes.AuthController.getLoginPage())
-    }
+    //if(hasSession) {
+    //  Ok(views.html.app()()())
+    //} else {
+    //  Redirect(routes.AuthController.getLoginPage())
+    //}
+    Redirect(routes.AssetController.index())
   }
 
 }

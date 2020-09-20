@@ -24,6 +24,7 @@
 @import views.html.container.asset.asset_view_container
 @import views.html.forms.asset.delete_asset_form
 
+@import views.html.forms.asset.delete_asset_form
 @(      //Data to display the overview:
         selectedType: AssetType,
         assetTypes: Seq[AssetType],
@@ -39,12 +40,10 @@
 @app {
     @asset_view_container(Option(selectedType), assetTypes, assetData, Option(selectedAsset))
 }{
-        <div class="column col-5">
-            <div class="panel">
-                @message_box_error(msg)
-                @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssetsOfType(selectedType.id))
-                @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, newAssetForm)
-                @delete_asset_form(selectedType.id, selectedAsset)
-            </div>
-        </div>
+    <div class="full-width">
+        @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssetsOfType(selectedType.id))
+        @message_box_error(msg)
+        @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, newAssetForm)
+        @delete_asset_form(selectedType.id, selectedAsset)
+    </div>
 }()

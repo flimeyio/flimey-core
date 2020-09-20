@@ -19,18 +19,17 @@
 @(content: Html)
 
 <!DOCTYPE html>
-<html lang="en" style="overflow: hidden; height: 100%">
+<html lang="en">
     <head>
-        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/spectre.min.css")" />
+        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/flimey-css/flimey.css")" />
         <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/spectre-icons.min.css")" />
-        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/flimey.css")" />
 
         <link rel="icon" type="image/png" href="@routes.Assets.versioned("images/icon32.png")" sizes="32x32">
         <link rel="icon" type="image/png" href="@routes.Assets.versioned("images/icon96.png")" sizes="96x96">
 
         <title>flimey core</title>
     </head>
-    <body style="overflow: hidden; height: 100%">
+    <body>
         @content
     </body>
 </html>
