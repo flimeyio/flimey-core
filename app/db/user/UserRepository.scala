@@ -42,7 +42,7 @@ class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   val groupMemberships = TableQuery[GroupMembershipTable]
 
   //put new user
-  def add(user: User): Future[Nothing] = {
+  def add(user: User): Future[Long] = {
     db.run((users returning users.map(_.id)) += user)
   }
 

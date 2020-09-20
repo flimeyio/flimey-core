@@ -33,7 +33,7 @@ class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
   val accesses = TableQuery[AccessTable]
 
   //add new session
-  def add(session: AuthSession, rights: Seq[Access]): Future[Nothing] = {
+  def add(session: AuthSession, rights: Seq[Access]): Future[Unit] = {
     db.run((for {
       key <- (sessions returning sessions.map(_.id)) += session
       _ <- accesses ++= rights.map(p => Access(0, key, p.groupId, p.groupName))

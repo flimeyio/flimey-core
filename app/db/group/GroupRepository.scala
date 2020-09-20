@@ -42,7 +42,7 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   val assetViewers = TableQuery[AssetViewerTable]
 
   //put new group
-  def add(group: Group): Future[Nothing] = {
+  def add(group: Group): Future[Long] = {
     db.run((groups returning groups.map(_.id)) += group)
   }
 

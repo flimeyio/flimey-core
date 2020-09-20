@@ -50,7 +50,7 @@ class GroupMembershipRepository @Inject()(protected val dbConfigProvider: Databa
   }
 
   //add user to group
-  def add(groupMembership: GroupMembership): Future[Nothing] = {
+  def add(groupMembership: GroupMembership): Future[Long] = {
     db.run((groupMemberships returning groupMemberships.map(_.id)) += groupMembership)
   }
 
