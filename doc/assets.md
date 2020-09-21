@@ -33,7 +33,7 @@ In the asset section, the user can search for, filter, create and delete assets 
 Note that the visibility of assets and edit rights are not the same for every user but are dependent of the group. See 
 *groups.md* for more information.  
 
-##For Developers
+## For Developers
 
 ## #Usecases
 
