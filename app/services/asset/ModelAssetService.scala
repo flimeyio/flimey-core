@@ -21,6 +21,7 @@ package services.asset
 import com.google.inject.Inject
 import db.asset.{AssetConstraintRepository, AssetTypeRepository}
 import model.asset.AssetType
+import model.auth.Ticket
 import model.generic.Constraint
 import play.api.Logging
 
@@ -45,7 +46,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param assetType new AssetType
    * @return new db id future
    */
-  def addAssetType(assetType: AssetType): Future[Long] = {
+  def addAssetType(assetType: AssetType)(implicit ticket: Ticket): Future[Long] = {
     try {
       assetTypeRepository.add(assetType)
     } catch {
@@ -60,7 +61,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    *
    * @return sequence of all AssetTypes future (can be empty)
    */
-  def getAllAssetTypes: Future[Seq[AssetType]] = {
+  def getAllAssetTypes(implicit ticket: Ticket): Future[Seq[AssetType]] = {
     try {
       assetTypeRepository.getAll
     } catch {
@@ -75,7 +76,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    *
    * @return AssetType future or None
    */
-  def getAssetType(id: Long): Future[Option[AssetType]] = {
+  def getAssetType(id: Long)(implicit ticket: Ticket): Future[Option[AssetType]] = {
     try {
       assetTypeRepository.get(id)
     } catch {
@@ -83,7 +84,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
     }
   }
 
-  def getCompleteAssetType(id: Long): Future[(Option[AssetType], Seq[Constraint])] = {
+  def getCompleteAssetType(id: Long)(implicit ticket: Ticket): Future[(Option[AssetType], Seq[Constraint])] = {
     try {
       assetTypeRepository.getComplete(id)
     } catch {
@@ -101,7 +102,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    *
    * @return AssetType future or None
    */
-  def getAssetTypeByValue(value: String): Future[Option[AssetType]] = {
+  def getAssetTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[AssetType]] = {
     try {
       getAllAssetTypes flatMap(types => Future.successful(types.find(_.value == value)))
     } catch {
@@ -118,7 +119,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param assetType to update
    * @return result status future
    */
-  def updateAssetType(assetType: AssetType): Future[Int] = {
+  def updateAssetType(assetType: AssetType)(implicit ticket: Ticket): Future[Int] = {
     try {
       if (assetType.active) {
         getConstraintsOfAsset(assetType.id) flatMap (constraints => {
@@ -142,7 +143,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param id of the AssetType
    * @return sequence of (Asset)Constraints
    */
-  def getConstraintsOfAsset(id: Long): Future[Seq[Constraint]] = {
+  def getConstraintsOfAsset(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
     try {
       assetConstraintRepository.getAssociated(id)
     } catch {
@@ -158,7 +159,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param id of the Constraint
    * @return Constraint future or None
    */
-  def getConstraint(id: Long): Future[Option[Constraint]] = {
+  def getConstraint(id: Long)(implicit ticket: Ticket): Future[Option[Constraint]] = {
     try {
       assetConstraintRepository.get(id)
     } catch {
@@ -179,7 +180,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param id of the (Asset)Constraint
    * @return result future
    */
-  def deleteConstraint(id: Long): Future[Int] = {
+  def deleteConstraint(id: Long)(implicit ticket: Ticket): Future[Int] = {
     try {
       getConstraint(id) flatMap (constraint => {
         if (constraint.isEmpty) throw new Exception("No such Constraint found")
@@ -211,7 +212,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param assetConstraint to add
    * @return result future
    */
-  def addConstraint(assetConstraint: Constraint): Future[Long] = {
+  def addConstraint(assetConstraint: Constraint)(implicit ticket: Ticket): Future[Long] = {
     try {
       val processedConstrained = AssetLogic.preprocessConstraint(assetConstraint)
       val constraintStatus = AssetLogic.isValidConstraint(processedConstrained)
@@ -240,7 +241,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param id of the AssetType
    * @return result future
    */
-  def deleteAssetType(id: Long): Future[Unit] = {
+  def deleteAssetType(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       //FIXME validate SubjectTypes
       assetTypeRepository.delete(id)
@@ -258,7 +259,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param id of an AssetType
    * @return Tuple of all AssetTypes, a specific AssetType and its Constraint
    */
-  def getCombinedAssetEntity(id: Long): Future[(Seq[AssetType], Option[AssetType], Seq[Constraint])] = {
+  def getCombinedAssetEntity(id: Long)(implicit ticket: Ticket): Future[(Seq[AssetType], Option[AssetType], Seq[Constraint])] = {
     try {
       (for {
         assetTypes <- getAllAssetTypes
