@@ -17,6 +17,7 @@
 # Routes
 
 GET     /                                                   controllers.ApplicationController.index()
+GET     /overview                                           controllers.ApplicationController.overview()
 
 GET     /login                                              controllers.AuthController.getLoginPage(msg: Option[String] ?= None)
 POST    /login                                              controllers.AuthController.login()
