@@ -19,19 +19,36 @@
 package controllers
 
 import javax.inject._
-import middleware.Authentication
+import middleware.{Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.mvc._
 
+/**
+ * The ApplicationController responsible for the page index and overview endpoints.
+ *
+ * @param cc                 injected ControllerComponents
+ * @param withAuthentication injected AuthenticationAction
+ */
 @Singleton
-class ApplicationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with Logging with Authentication {
+class ApplicationController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter) extends AbstractController(cc) with Logging with Authentication {
 
-  def index() = Action { implicit request: Request[AnyContent] =>
-    //if(hasSession) {
-    //  Ok(views.html.app()()())
-    //} else {
-    //  Redirect(routes.AuthController.getLoginPage())
-    //}
+  /**
+   * Page index Endpoint. Redirects to the login page.
+   *
+   * @return redirection to login action of the AuthController
+   */
+  def index(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Redirect(routes.AuthController.login())
+  }
+
+  /**
+   * Overview Endpoint.
+   * This endpoint provides the overview page of the for the current User most important information.
+   *
+   * @return overview page (not implemented yet, just redirect)
+   */
+  def overview() = withAuthentication { implicit request: Request[AnyContent] =>
+    //TODO implement user based overview
     Redirect(routes.AssetController.index())
   }
 
