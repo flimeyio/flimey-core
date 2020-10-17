@@ -18,13 +18,14 @@
 
 package model.auth
 
+import model.group.Group
+
 /**
- * The Access data class.<br />
- * Represents a runtime oriented mapping of Group based rights associated to an active AuthSession.
+ * The Ticket data class.<br />
+ * A Ticket is a non persistent. It stores data at runtime to provide all authentication based information of
+ * a authenticated User.
  *
- * @param id unique identifier
- * @param sessionId id of the associated AuthSession
- * @param groupId id of the associated Group
- * @param groupName name of the associated Group
+ * @param authSession AuthSession object of the Users current session
+ * @param groups all Groups the User is Member.
  */
-case class Access(id: Long, sessionId: Long, groupId: Long, groupName: String)
+case class Ticket(authSession: AuthSession, groups: Seq[Group])

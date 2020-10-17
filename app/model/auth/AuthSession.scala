@@ -20,4 +20,16 @@ package model.auth
 
 import java.sql.Timestamp
 
+/**
+ * The AuthSession data class.<br />
+ * An AuthSession stores session related data while a User is logged in.
+ * It is always used together with the Access data class.
+ *
+ * @param id unique identifier
+ * @param session session key
+ * @param role role of the User
+ * @param status log in status
+ * @param userId id of the User
+ * @param created creation timestamp (of the underlying entity)
+ */
 case class AuthSession(id: Long, session: String, role: String, status: Boolean, userId: Long, created: Timestamp)
