@@ -17,12 +17,13 @@
 * *@
 
 @import views.html.helper.CSRF
+@import formdata.auth.LoginForm
 
-@()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(loginForm: LoginForm.Data)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.AuthController.login()) {
     @CSRF.formField
-    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email"/>
-    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password"/>
+    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email" value="@loginForm.email"/>
+    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password" value="@loginForm.password"/>
     <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-10">Go</button>
 }
