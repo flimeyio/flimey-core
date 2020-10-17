@@ -82,7 +82,7 @@ create table `group_membership` (
 -- Insert some demo and debug data here
 -- Remove those inserts in production!
 INSERT INTO u_group(id, name) VALUES(1, 'public');
-INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'Adam', 'admin@flimey.io', 'foo', 'admin', '', true, true);
+INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'Admin', 'admin@flimey.io', 'admin', 'admin', '', true, true);
 INSERT INTO group_membership(id, group_id, user_id) VALUES(0, 1, 1);
 
 -- !Downs
