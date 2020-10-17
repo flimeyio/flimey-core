@@ -65,7 +65,7 @@ class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   }
 
   //get user by email
-  def getById(email: String): Future[Option[User]] = {
+  def getByEMail(email: String): Future[Option[User]] = {
     db.run(users.filter(_.email === email).result.headOption)
   }
 

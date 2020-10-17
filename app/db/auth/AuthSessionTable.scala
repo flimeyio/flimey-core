@@ -23,7 +23,7 @@ import java.sql.Timestamp
 import model.auth.AuthSession
 import slick.jdbc.MySQLProfile.api._
 
-class AuthSessionTable(tag: Tag) extends Table[AuthSession](tag, "session") {
+class AuthSessionTable(tag: Tag) extends Table[AuthSession](tag, "auth_session") {
 
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def session = column[String]("session")

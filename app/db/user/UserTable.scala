@@ -34,7 +34,7 @@ class UserTable(tag: Tag) extends Table[User](tag, "user") {
   def email = column[String]("email", O.Unique)
   def password = column[String]("password")
   def role = column[String]("role")
-  def key = column[String]("key")
+  def key = column[String]("auth_key")
   def accepted = column[Boolean]("accepted")
   def enabled = column[Boolean]("enabled")
 
