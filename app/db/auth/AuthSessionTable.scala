@@ -32,6 +32,6 @@ class AuthSessionTable(tag: Tag) extends Table[AuthSession](tag, "auth_session")
   def userId = column[Long]("user_id")
   def created = column[Timestamp]("created", O.SqlType("datetime not null default CURRENT_TIMESTAMP"))
 
-  override def * = (id, session, role, status, userId, created) <> (AuthSession.tupled, AuthSession.unapply)
+  override def * = (id, session, role, status, userId, created) <> (AuthSession.tupledRaw, AuthSession.unapplyToRaw)
 
 }

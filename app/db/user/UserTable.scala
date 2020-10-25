@@ -38,6 +38,6 @@ class UserTable(tag: Tag) extends Table[User](tag, "user") {
   def accepted = column[Boolean]("accepted")
   def enabled = column[Boolean]("enabled")
 
-  override def * = (id, username, email, password, role, key, accepted,enabled) <> (User.tupled, User.unapply)
+  override def * = (id, username, email, password, role, key, accepted,enabled) <> (User.tupledRaw, User.unapplyToRaw)
 
 }
