@@ -50,7 +50,7 @@ create table `asset_property` (
 create table `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(255) NOT NULL UNIQUE,
-    `email` VARCHAR(255) NOT NULL UNIQUE,
+    `email` VARCHAR(255) UNIQUE,
     `password` VARCHAR(255),
     `role` VARCHAR(255) NOT NULL,
     `auth_key` VARCHAR(255),
@@ -82,7 +82,7 @@ create table `group_membership` (
 -- Default inserts on installation
 INSERT INTO u_group(id, name) VALUES(1, 'public');
 -- FIXME "System" user must somehow be authenticated without mail but without breaking other constraints
-INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', 'system@flimey.io', NULL, 'admin', 'admin', false, false);
+INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', NULL, NULL, 'admin', 'admin', false, false);
 
 -- !Downs
 
