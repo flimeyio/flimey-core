@@ -19,12 +19,25 @@
 package services.auth
 
 /**
- * Trait which provides some unspecific session (key string) processing functionality
+ * Trait which provides some unspecific session (key string) processing functionality.
  */
 trait SessionProcessor {
 
+  /**
+   * Create a CompoundKey which identifies Session and User.
+   *
+   * @param sessionKey (random) key of the Session.
+   * @param sessionId primary key of the Session entity.
+   * @return combined keys
+   */
   def createCompoundKey(sessionKey: String, sessionId: Long): String = sessionKey + ":" + sessionId.toString
 
+  /**
+   * Split the CompoundKey back to its parts.
+   *
+   * @param compoundKey combined session keys
+   * @return (random session key, session primary key)
+   */
   def resolveCompoundKey(compoundKey: String): (String, Long) = {
     val parts = compoundKey.split(":".r.regex)
     (parts(0), parts(1).toLong)

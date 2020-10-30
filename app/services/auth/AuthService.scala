@@ -18,14 +18,11 @@
 
 package services.auth
 
-import java.util.UUID.randomUUID
-
 import com.google.inject.Inject
 import db.auth.SessionRepository
 import db.group.GroupMembershipRepository
 import db.user.UserRepository
-import model.auth.{Access, AuthSession, Ticket}
-import model.group.Group
+import model.auth.Ticket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -57,20 +54,16 @@ class AuthService @Inject()(userRepository: UserRepository,
    */
   def createSession(email: String, password: String): Future[String] = {
     try {
-      //FIXME password is not encrypted yet, so check is only based on plaintext
       userRepository.getByEMail(email) flatMap (userRes => {
-        if (userRes.isEmpty || userRes.get.password != password) throw new Exception("Wrong E-Mail or Password")
+        if (userRes.isEmpty) throw new Exception("Wrong E-Mail")
         val user = userRes.get
+        if(!AuthLogic.checkPassword(user.password.get, password)) throw new Exception("Wrong Password")
         groupMembershipRepository.get(user.id) flatMap (groups => {
-          val sessionKey = randomUUID().toString
-          //access id and session id (also foreign key) can be set to 0, the repository will replace them with actual values
-          //the same goes for the timestamp, which is set by sql to NOW
-          val session = AuthSession(0, sessionKey, user.role, status = true, user.id, null)
-          val accesses = groups.map(group => Access(0, 0, group.id, group.name))
+          val (session, accesses) = AuthLogic.createSession(user, groups)
           sessionRepository.add(session, accesses) map (sessionId => {
             //the returned sessionKey (uuid) is combined with the session id to be able to extract both on request from
             //the client. Because the session token is encrypted anyways, this introduces no security issues.
-            AuthLogic.createCompoundKey(sessionKey, sessionId)
+            AuthLogic.createCompoundKey(session.session, sessionId)
           })
         })
       })
@@ -91,14 +84,12 @@ class AuthService @Inject()(userRepository: UserRepository,
    */
   def getTicket(sessionCompoundKey: String): Future[Ticket] = {
     try {
-      val decomposedCompoundKey = AuthLogic.resolveCompoundKey(sessionCompoundKey)
-      val sessionKey = decomposedCompoundKey._1
-      val sessionId = decomposedCompoundKey._2
+      val (sessionKey, sessionId) = AuthLogic.resolveCompoundKey(sessionCompoundKey)
       sessionRepository.getComplete(sessionId) map (authInfo => {
         if (authInfo.isEmpty) throw new Exception("No valid Login")
-        val authSession = authInfo.get._1
-        val groups = authInfo.get._2.map(access => Group(access.groupId, access.groupName))
+        val (authSession, accesses) = authInfo.get
         if (authSession.session != sessionKey) throw new Exception("Invalid Session")
+        val groups = AuthLogic.generateGroupsFromAccessRights(accesses)
         Ticket(authSession, groups)
       })
     } catch {
@@ -115,7 +106,10 @@ class AuthService @Inject()(userRepository: UserRepository,
    * request will fail (wanted behaviour).
    * <br />
    * This is a safe implementation and can be used by controller classes.
-   * @param ticket
+   * <br />
+   * Fails without WORKER rights.
+   *
+   * @param ticket implicit authentication data
    * @return
    */
   def deleteSession()(implicit ticket: Ticket): Future[Unit] = {

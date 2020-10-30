@@ -18,10 +18,45 @@
 
 package services.auth
 
+import java.util.UUID.randomUUID
+
+import model.auth.{Access, AuthSession}
+import model.group.Group
+import model.user.User
+import util.PasswordProcessor
+
 /**
  * The AuthLogic object provides static functionality to process, verify and validate
  * sessions and authentication related data.
  */
-object AuthLogic extends SessionProcessor {
+object AuthLogic extends SessionProcessor with PasswordProcessor {
+
+  /**
+   * Generate Session data from User data.<br />
+   * Creates a random session key.
+   *
+   * @param user to create the session for
+   * @param groups access rights of the User
+   * @return session data
+   */
+  def createSession(user: User, groups: Seq[Group]): (AuthSession, Seq[Access]) = {
+    //create random key (uuid is random enough)
+    val sessionKey = randomUUID().toString
+    //access id and session id (also foreign key) can be set to 0, the repository will replace them with actual values
+    //the same goes for the timestamp, which is set by sql to NOW
+    val session = AuthSession(0, sessionKey, user.role, status = true, user.id, null)
+    val accesses = groups.map(group => Access(0, 0, group.id, group.name))
+    (session, accesses)
+  }
+
+  /**
+   * Map Access data to Group data.
+   *
+   * @param accesses Accesses of a User
+   * @return Groups the User is member of
+   */
+  def generateGroupsFromAccessRights(accesses: Seq[Access]): Seq[Group] = {
+    accesses.map(access => Group(access.groupId, access.groupName))
+  }
 
 }
