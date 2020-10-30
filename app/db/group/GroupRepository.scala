@@ -41,17 +41,36 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   val groupMemberships = TableQuery[GroupMembershipTable]
   val assetViewers = TableQuery[AssetViewerTable]
 
-  //put new group
+  /**
+   * Add a new Group.
+   * The id must be set to 0 to enable auto increment.
+   *
+   * @param group new Group entity
+   * @return new id
+   */
   def add(group: Group): Future[Long] = {
     db.run((groups returning groups.map(_.id)) += group)
   }
 
-  //get group by id
-  def getById(id: Long): Future[Option[Group]] = {
-    db.run(groups.filter(_.id === id).result.headOption)
-  }
+  /**
+   * Get all groups.
+   * There should be relatively few groups, so this should not introduce a
+   * performance issue.
+   * <br />
+   * Maybe worth a FIXME
+   *
+   * @return all Groups
+   */
+  def getAll: Future[Seq[Group]] = db.run(groups.result)
 
-  //delete group
+  /**
+   * Delete an existing Group.
+   * This operation deletes also all associated GroupMemberships
+   * and all associated AssetViewers.
+   *
+   * @param id of the Group to be deleted
+   * @return Unit
+   */
   def delete(id: Long): Future[Unit] = {
     db.run((for {
       _ <- assetViewers.filter(_.groupId === id).delete

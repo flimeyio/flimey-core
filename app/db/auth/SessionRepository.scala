@@ -26,13 +26,28 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * DB interface for Sessions and temporary Access right management.
+ * Provided methods are UNSAFE and must only be used by service classes!
+ *
+ * @param dbConfigProvider injected db config
+ * @param executionContext future execution context
+ */
 class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val sessions = TableQuery[AuthSessionTable]
   val accesses = TableQuery[AccessTable]
 
-  //add new session
+  /**
+   * Add an AuthSession with Accesses to the db.
+   * The AuthSession and all Accesses must have id set to 0 to enable auto increment.
+   * During insert, the newly created id of the AuthSession will be mapped to all Access entities.
+   *
+   * @param session AuthSession of a User
+   * @param rights access rights associated to the session
+   * @return new session id future
+   */
   def add(session: AuthSession, rights: Seq[Access]): Future[Long] = {
     db.run((for {
       sessionId <- (sessions returning sessions.map(_.id)) += session
@@ -40,11 +55,12 @@ class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
     } yield sessionId).transactionally)
   }
 
-  //get session by session key (just with role...)
-  def getHeader(key: String): Future[Option[AuthSession]] = {
-    db.run(sessions.filter(_.session === key).result.headOption)
-  }
-
+  /**
+   * Get an AuthSession with all associated Access objects.
+   *
+   * @param id of the AuthSession
+   * @return AuthSession with rights or None
+   */
   def getComplete(id: Long): Future[Option[(AuthSession, Seq[Access])]] = {
     db.run((for {
       (c, s) <- sessions.filter(_.id === id) joinLeft accesses on (_.id === _.sessionId)
@@ -58,6 +74,13 @@ class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
     })
   }
 
+  /**
+   * Delete an AuthSession.
+   * This operation also deletes all associated Access entities.
+   *
+   * @param id of the AuthSession
+   * @return Unit
+   */
   def delete(id: Long): Future[Unit] = {
     db.run((for {
       _ <- accesses.filter(_.sessionId === id).delete

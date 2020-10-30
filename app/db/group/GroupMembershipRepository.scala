@@ -40,7 +40,12 @@ class GroupMembershipRepository @Inject()(protected val dbConfigProvider: Databa
   val groupMemberships = TableQuery[GroupMembershipTable]
   val groups = TableQuery[GroupTable]
 
-  //get groups of a user
+  /**
+   * Get all Groups a User is member of.
+   *
+   * @param userId id of the User
+   * @return all groups the User is member of.
+   */
   def get(userId: Long): Future[Seq[Group]] = {
     db.run((for {
       (c, s) <- groupMemberships.filter(_.userId === userId) joinLeft groups on (_.groupId === _.id)
@@ -49,12 +54,26 @@ class GroupMembershipRepository @Inject()(protected val dbConfigProvider: Databa
     })
   }
 
-  //add user to group
+  /**
+   * Add a new GroupMembership.
+   * I.e. add a User as member to an existing Group.
+   * The id must be set to 0 to enable auto increment.
+   *
+   * @param groupMembership new GroupMembership object
+   * @return id of new GroupMembership entity
+   */
   def add(groupMembership: GroupMembership): Future[Long] = {
     db.run((groupMemberships returning groupMemberships.map(_.id)) += groupMembership)
   }
 
-  //remove user from group
+  /**
+   * Delete a GroupMembership.
+   * I.e. remove a User from a Group
+   *
+   * @param userId id of the User to remove
+   * @param groupId id of the Group where to remove the User from
+   * @return status future
+   */
   def delete(userId: Long, groupId: Long): Future[Int] = {
     db.run(groupMemberships.filter(_.userId === userId).filter(_.groupId === groupId).delete)
   }
