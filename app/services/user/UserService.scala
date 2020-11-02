@@ -74,9 +74,9 @@ class UserService @Inject()(userRepository: UserRepository) {
    */
   def authenticateUser(key: String, email: String, password: String, agree: Boolean): Future[Int] = {
     try {
-      if (!agree) throw new Error("You must agree to the Terms & Conditions to create an account!")
+      if (!agree) throw new Exception("You must agree to the Terms & Conditions to create an account!")
       userRepository.getByKey(key) flatMap (userOption => {
-        if (userOption.isEmpty) throw new Error("Invalid key!")
+        if (userOption.isEmpty) throw new Exception("Invalid key!")
         val credentialStatus = UserLogic.isValidAuthenticationData(email, password)
         if (!credentialStatus.valid) credentialStatus.throwError
         val userUpdate = UserLogic.updateCredentialsOnAuthentication(userOption.get, email, password)

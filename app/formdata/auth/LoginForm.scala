@@ -20,6 +20,7 @@ package formdata.auth
 
 import play.api.data.Forms._
 import play.api.data._
+import play.api.data.validation.Constraints.emailAddress
 
 object LoginForm {
 
@@ -27,7 +28,7 @@ object LoginForm {
 
   val form = Form(
     mapping(
-      "email" -> text,
+      "email" -> email.verifying(emailAddress),
       "password" -> text
     )(Data.apply)(Data.unapply)
   )

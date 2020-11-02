@@ -20,16 +20,14 @@ package formdata.asset
 
 import play.api.data.Forms._
 import play.api.data._
-import play.api.data.validation.Constraints._
 
 object NewUserForm {
 
-  case class Data(userName: String, email: String, role: String)
+  case class Data(userName: String, role: String)
 
-  val form = Form(
+  val form: Form[Data] = Form(
     mapping(
-      "value" -> nonEmptyText,
-      "email" -> email.verifying(emailAddress),
+      "userName" -> nonEmptyText,
       "role" -> nonEmptyText
     )(Data.apply)(Data.unapply)
   )

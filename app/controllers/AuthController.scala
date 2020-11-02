@@ -19,12 +19,13 @@
 package controllers
 
 import com.google.inject.{Inject, Singleton}
-import formdata.auth.LoginForm
+import formdata.auth.{AuthenticateForm, LoginForm}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.auth.AuthService
+import services.user.UserService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -37,7 +38,10 @@ import scala.concurrent.Future
  * @param authService        injected AuthenticationService
  */
 @Singleton
-class AuthController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter, authService: AuthService) extends
+class AuthController @Inject()(cc: ControllerComponents,
+                               withAuthentication: AuthenticationFilter,
+                               authService: AuthService,
+                               userService: UserService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -45,14 +49,16 @@ class AuthController @Inject()(cc: ControllerComponents, withAuthentication: Aut
    * If the client has already a session set, the request is redirected to the ApplicationControllers overview endpoint.
    * (Even if the session is invalid, there will be another redirect to the login if required)
    *
-   * @param msg optional error message
    * @return login html page or overview redirect
    */
-  def getLoginPage(msg: Option[String] = None): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+  def getLoginPage: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     if (getSessionKey(request).isDefined) {
       Redirect(routes.ApplicationController.overview())
     } else {
-      Ok(views.html.container.auth.login_container(LoginForm.Data("", ""), msg))
+      //this error is flashed by the AuthenticationFilter if an unauthenticated request was detected
+      val error = request.flash.get("error")
+
+      Ok(views.html.container.auth.login_container(LoginForm.form.fill(LoginForm.Data("", "")), error))
     }
   }
 
@@ -66,7 +72,7 @@ class AuthController @Inject()(cc: ControllerComponents, withAuthentication: Aut
   def login: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     LoginForm.form.bindFromRequest fold(
       errorForm => {
-        Future.successful(Ok(views.html.container.auth.login_container(errorForm.get, Option(errorForm.errors.toString()))))
+        Future.successful(Ok(views.html.container.auth.login_container(errorForm, None)))
       },
       data => {
         authService.createSession(data.email, data.password) flatMap (sessionKey => {
@@ -74,28 +80,57 @@ class AuthController @Inject()(cc: ControllerComponents, withAuthentication: Aut
         }) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
-            Future.successful(Ok(views.html.container.auth.login_container(data, Option(e.getMessage))))
+            Future.successful(Ok(views.html.container.auth.login_container(LoginForm.form.fill(data), Option(e.getMessage))))
         }
       })
   }
 
-  //TODO
-  def getAuthenticatePage(msg: Option[String] = None): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.container.auth.authenticate_container(msg))
+  /**
+   * Endpoint to get the authentication page with authentication form.<br />
+   * If the User is already logged in, the request is redirected to the overview page.
+   *
+   * @return authentication container with empty form
+   */
+  def getAuthenticatePage: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    if (getSessionKey(request).isDefined) {
+      Redirect(routes.ApplicationController.overview())
+    } else {
+      //This error is not flashed yet, but may be flashed by the login logic, if the user is not authenticated but tries to log in
+      val error = request.flash.get("error")
+
+      Ok(views.html.container.auth.authenticate_container(AuthenticateForm.form.fill(AuthenticateForm.Data("", "", "", agree = false)), error))
+    }
   }
 
-  //TODO
-  def authenticate: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    Redirect(routes.AuthController.getLoginPage())
+  /**
+   * Endpoint to authenticate an invited (unauthenticated) User.<br />
+   * The User must provide the correct authentication key as well as a new email and password.
+   * If this operation finishes successfully, the User is able to log in.
+   *
+   * @return authentication page with form errors or redirect to login page
+   */
+  def authenticate: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    AuthenticateForm.form.bindFromRequest fold(
+      errorForm => {
+        Future.successful(Ok(views.html.container.auth.authenticate_container(errorForm, None)))
+      },
+      data => {
+        userService.authenticateUser(data.key, data.email, data.password, data.agree) map (_ => {
+          Redirect(routes.AuthController.login())
+        }) recoverWith {
+          case e =>
+            logger.error(e.getMessage, e)
+            Future.successful(Ok(views.html.container.auth.authenticate_container(AuthenticateForm.form.fill(data), Option(e.getMessage))))
+        }
+      })
   }
 
   /**
    * Endpoint to log out.<br />
-   * This will remove the currently active session from the client device and destroys the associated database
-   * representation.<br />
+   * This will remove the currently active session from the client device and destroys the associated database representation.<br />
    * Afterwards the User will be redirected to the login page.
    *
-   * @return redirect to login without remove_session header set
+   * @return redirect to login with remove_session header set
    */
   def logout: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -104,8 +139,7 @@ class AuthController @Inject()(cc: ControllerComponents, withAuthentication: Aut
       } recoverWith {
         case e =>
           logger.error(e.getMessage, e)
-          //FIXME display page where logout is visible... or overview with flash error message
-          Future.successful(Redirect(routes.ApplicationController.overview(/*Option(e.getMessage)*/)))
+          Future.successful(Redirect(routes.ApplicationController.overview()).flashing("error" -> e.getMessage))
       }
     }
   }

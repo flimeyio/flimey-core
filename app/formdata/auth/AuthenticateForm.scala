@@ -20,17 +20,18 @@ package formdata.auth
 
 import play.api.data.Forms._
 import play.api.data._
+import play.api.data.validation.Constraints._
 
 object AuthenticateForm {
 
-  case class Data(email: String, username: String, password1: String, password2: String)
+  case class Data(email: String, key: String, password: String, agree: Boolean)
 
-  val form = Form(
+  val form: Form[Data] = Form(
     mapping(
-      "email" -> text,
-      "username" -> text,
-      "password1" -> text,
-      "password2" -> text
+      "email" -> email.verifying(emailAddress),
+      "key" -> text,
+      "password" -> text,
+      "agree" -> boolean
     )(Data.apply)(Data.unapply)
   )
 
