@@ -19,11 +19,11 @@
 GET     /                                                   controllers.ApplicationController.index()
 GET     /overview                                           controllers.ApplicationController.overview()
 
-GET     /login                                              controllers.AuthController.getLoginPage(msg: Option[String] ?= None)
+GET     /login                                              controllers.AuthController.getLoginPage()
 POST    /login                                              controllers.AuthController.login()
 POST    /login/delete                                       controllers.AuthController.logout()
 
-GET     /auth                                               controllers.AuthController.getAuthenticatePage(msg: Option[String] ?= None)
+GET     /auth                                               controllers.AuthController.getAuthenticatePage()
 POST    /auth                                               controllers.AuthController.authenticate()
 
 GET     /model                                              controllers.ModelAssetController.index(msg: Option[String] ?= None)

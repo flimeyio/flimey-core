@@ -81,8 +81,7 @@ create table `group_membership` (
 
 -- Default inserts on installation
 INSERT INTO u_group(id, name) VALUES(1, 'public');
--- FIXME "System" user must somehow be authenticated without mail but without breaking other constraints
-INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', NULL, NULL, 'admin', 'admin', false, false);
+INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', NULL, NULL, 'ADMIN', 'admin', false, false);
 
 -- !Downs
 
