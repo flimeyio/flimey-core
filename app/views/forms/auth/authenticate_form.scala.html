@@ -17,14 +17,26 @@
 * *@
 
 @import views.html.helper.CSRF
-
-@()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import formdata.auth.AuthenticateForm
+@import views.html.components.utils.message_box_error
+@(authForm: Form[AuthenticateForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.AuthController.authenticate) {
     @CSRF.formField
-    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email"/>
-    <input type="text" name="username" id="input-nasf" class="form-input spaced-top-10" placeholder="username"/>
-    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password"/>
-    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password"/>
+
+    <div>@message_box_error(msg)</div>
+
+    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email" value="@authForm.data("email")"/>
+    <input type="text" name="key" id="input-nasf" class="form-input spaced-top-10" placeholder="key" value="@authForm.data("key")"/>
+    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password" value="@authForm.data("password")"/>
+    <div class="switch-group spaced-lr-small">
+        <label class="switch">
+            <input type="checkbox" name="agree" @if(authForm.data.contains("agree") && authForm.data("agree").toBoolean){checked="true"} value="true"/>
+            <span class="slider round"></span>
+        </label>
+        <div class="switch-label">
+            I agree to the Terms and Conditions
+        </div>
+    </div>
     <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-10">Go</button>
 }
