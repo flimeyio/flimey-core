@@ -26,7 +26,7 @@ POST    /login/delete                                       controllers.AuthCont
 GET     /auth                                               controllers.AuthController.getAuthenticatePage()
 POST    /auth                                               controllers.AuthController.authenticate()
 
-GET     /model                                              controllers.ModelAssetController.index(msg: Option[String] ?= None)
+GET     /model                                              controllers.ModelAssetController.index()
 
 # new asset type
 POST    /model/asset                                        controllers.ModelAssetController.addAssetType
@@ -38,7 +38,7 @@ POST    /model/asset/delete/:id                             controllers.ModelAss
 POST    /model/asset/search                                 controllers.ModelAssetController.searchAssetType
 
 # get asset type editor
-GET     /model/asset/editor/:id                             controllers.ModelAssetController.getAssetTypeEditor(id: Long, msg: Option[String] ?= None, c: Option[String] ?= None, v1: Option[String] ?= None, v2: Option[String] ?= None)
+GET     /model/asset/editor/:id                             controllers.ModelAssetController.getAssetTypeEditor(id: Long)
 # submit asset type edit form
 POST    /model/asset/editor/asset/:id                       controllers.ModelAssetController.postAssetType(id: Long)
 
@@ -48,18 +48,18 @@ POST    /model/asset/editor/:id/constraint                  controllers.ModelAss
 POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelAssetController.deleteAssetConstraint(id: Long, cid: Long)
 
 # get the asset overview page
-GET     /asset                                              controllers.AssetController.index(msg: Option[String] ?= None)
+GET     /asset                                              controllers.AssetController.index()
 POST    /asset/type                                         controllers.AssetController.changeAssetType
 
-GET     /asset/:assetTypeId                                 controllers.AssetController.getAssetsOfType(assetTypeId: Long, msg: Option[String] ?= None)
+GET     /asset/:assetTypeId                                 controllers.AssetController.getAssetsOfType(assetTypeId: Long)
 
-GET     /asset/:assetTypeId/new                             controllers.AssetController.getNewAssetEditor(assetTypeId: Long, msg: Option[String] ?= None)
-POST    /asset/:assetTypeId/new                             controllers.AssetController.addNewAsset(assetTypeId: Long, msg: Option[String] ?= None)
+GET     /asset/:assetTypeId/new                             controllers.AssetController.getNewAssetEditor(assetTypeId: Long)
+POST    /asset/:assetTypeId/new                             controllers.AssetController.addNewAsset(assetTypeId: Long)
 
-GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.getAssetEditor(assetTypeId: Long, assetId: Long, msg: Option[String] ?= None)
-POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long, msg: Option[String] ?= None)
+GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.getAssetEditor(assetTypeId: Long, assetId: Long)
+POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
 
-POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long, msg: Option[String] ?= None)
+POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
 
 # FIXME
 POST    /asset/search                                       controllers.AssetController.searchAssets

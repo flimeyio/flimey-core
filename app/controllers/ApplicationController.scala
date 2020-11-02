@@ -37,7 +37,7 @@ class ApplicationController @Inject()(cc: ControllerComponents, withAuthenticati
    *
    * @return redirection to login action of the AuthController
    */
-  def index(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+  def index: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Redirect(routes.AuthController.login())
   }
 
@@ -47,9 +47,9 @@ class ApplicationController @Inject()(cc: ControllerComponents, withAuthenticati
    *
    * @return overview page (not implemented yet, just redirect)
    */
-  def overview() = withAuthentication { implicit request: Request[AnyContent] =>
+  def overview: Action[AnyContent] = withAuthentication { implicit request: Request[AnyContent] =>
     //TODO implement user based overview
-    Redirect(routes.AssetController.index())
+    Redirect(routes.AssetController.index()).flashing("error" -> "Overview page not implemented yet...")
   }
 
 }

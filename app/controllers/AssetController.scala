@@ -48,14 +48,14 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * Endpoint to show the asset overview page.<br />
    * No AssetType is initially selected.
    *
-   * @param msg optional error message
    * @return asset overview page
    */
-  def index(msg: Option[String] = None): Action[AnyContent] =
+  def index: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         modelAssetService.getAllAssetTypes map (types => {
-          Ok(views.html.container.asset.asset_overview(None, types, Seq(), msg))
+          val error = request.flash.get("error")
+          Ok(views.html.container.asset.asset_overview(None, types, Seq(), error))
         }) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
@@ -64,7 +64,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
       }
     }
 
-  def searchAssets(): Action[AnyContent] =
+  def searchAssets: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         modelAssetService.getAllAssetTypes map (types => {
@@ -81,26 +81,26 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    *
    * @return asset overview page
    */
-  def changeAssetType(): Action[AnyContent] =
+  def changeAssetType: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         SelectAssetTypeForm.form.bindFromRequest fold(
           errorForm => {
-            Future.successful(Redirect(routes.AssetController.index(Option("No such Asset Type found"))))
+            Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type found"))
           },
           data => {
             val assetTypeValue = data.value
             modelAssetService.getAssetTypeByValue(assetTypeValue) flatMap (assetType => {
               if (assetType.isEmpty) Future.failed(new Exception("No such AssetType found"))
               if (assetType.isDefined) {
-                Future.successful(Redirect(routes.AssetController.getAssetsOfType(assetType.get.id, None)))
+                Future.successful(Redirect(routes.AssetController.getAssetsOfType(assetType.get.id)))
               } else {
                 Future.failed(new Exception("No Asset Type selected"))
               }
             }) recoverWith {
               case e =>
                 logger.error(e.getMessage, e)
-                Future.successful(Redirect(routes.AssetController.index(Option(e.getMessage))))
+                Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
             }
           })
       }
@@ -113,19 +113,19 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * Not implemented yet: accept search parameter<br />
    *
    * @param assetTypeId id of the shown AssetType
-   * @param msg         optional error message
    * @return asset overview with (currently) all Assets of the selected type
    */
-  def getAssetsOfType(assetTypeId: Long, msg: Option[String] = None):
+  def getAssetsOfType(assetTypeId: Long):
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       assetService.getAssetComplex(assetTypeId) map (assetComplex => {
         //FIXME actually fetch the assets or some part of them (additional url query params)
-        Ok(views.html.container.asset.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, msg))
+        val error = request.flash.get("error")
+        Ok(views.html.container.asset.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, error))
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.AssetController.index(Option(e.getMessage))))
+          Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
       }
     }
   }
@@ -135,14 +135,14 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * The Editor will only accept Assets of the previously selected (currently active) AssetType.
    *
    * @param assetTypeId id of the AssetType
-   * @param msg         optional error message
    * @return new asset editor
    */
-  def getNewAssetEditor(assetTypeId: Long, msg: Option[String] = None): Action[AnyContent] =
+  def getNewAssetEditor(assetTypeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         val newAssetForm = NewAssetForm.form.fill(NewAssetForm.Data(Seq()))
-        newAssetEditorFactory(assetTypeId, newAssetForm, msg)
+        val error = request.flash.get("error")
+        newAssetEditorFactory(assetTypeId, newAssetForm, error)
       }
     }
 
@@ -152,10 +152,9 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * The incoming form data seq must be in the same order as the previously sent property keys.
    *
    * @param assetTypeId id of the AssetType
-   * @param msg         optional error message
    * @return new asset editor (clean or with errors)
    */
-  def addNewAsset(assetTypeId: Long, msg: Option[String] = None): Action[AnyContent] =
+  def addNewAsset(assetTypeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         NewAssetForm.form.bindFromRequest fold(
@@ -180,13 +179,13 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    *
    * @param assetTypeId id of the AssetType
    * @param assetId     id of the Asset to edit
-   * @param msg         optional error message
    * @return editor view result future
    */
-  def getAssetEditor(assetTypeId: Long, assetId: Long, msg: Option[String] = None): Action[AnyContent] =
+  def getAssetEditor(assetTypeId: Long, assetId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        assetEditorFactory(assetTypeId, assetId, None, msg)
+        val error = request.flash.get("error")
+        assetEditorFactory(assetTypeId, assetId, None, error)
       }
     }
 
@@ -234,7 +233,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
           ) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
-            Future.successful(Redirect(routes.AssetController.getAssetEditor(assetTypeId, assetId, Option(e.getMessage))))
+            Future.successful(Redirect(routes.AssetController.getAssetEditor(assetTypeId, assetId)).flashing("error" -> e.getMessage))
         }
       }
     }
@@ -259,12 +258,12 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
           assetService.getObligatoryPropertyKeys(constraints),
           form, errmsg, succmsg))
       } else {
-        Redirect(routes.AssetController.index(Option("No such Asset Type found or editable")))
+        Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type found or editable")
       }
     }) recoverWith {
       case e =>
         logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.index(Option(e.getMessage))))
+        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
     }
   }
 
@@ -296,12 +295,12 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
             editForm, msg))
         })
       } else {
-        Future.successful(Redirect(routes.AssetController.index(Option("No such Asset Type"))))
+        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type"))
       }
     }) recoverWith {
       case e =>
         logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.getAssetsOfType(assetTypeId, Option(e.getMessage))))
+        Future.successful(Redirect(routes.AssetController.getAssetsOfType(assetTypeId)).flashing("error" -> e.getMessage))
     }
   }
 
