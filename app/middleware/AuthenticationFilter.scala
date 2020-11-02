@@ -41,7 +41,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthenticationFilter @Inject()(authService: AuthService, val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
   extends ActionBuilder[AuthenticatedRequest, AnyContent] with Authentication with Logging {
 
-  override def invokeBlock[A](request: Request[A], block: ((AuthenticatedRequest[A]) => Future[Result])): Future[Result] = {
+  override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     val sessionKey = getSessionKey[A](request)
     if (sessionKey.isDefined) {
       authService.getTicket(sessionKey.get) flatMap (ticket => {
@@ -49,14 +49,12 @@ class AuthenticationFilter @Inject()(authService: AuthService, val parser: BodyP
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.AuthController.getLoginPage(Option(e.getMessage))))
+          Future.successful(Redirect(routes.AuthController.getLoginPage()).flashing("error" -> e.getMessage))
       }
     } else {
-      gotoLogin
+      Future.successful(Redirect(routes.AuthController.getLoginPage()).flashing("error" -> "Forbidden - You need to Log In to access this resource!"))
     }
   }
-
-  def gotoLogin: Future[Result] = Future.successful(Redirect(routes.AuthController.getLoginPage(Option("Forbidden - You need to Log In to access this resource!"))))
 
 }
 
