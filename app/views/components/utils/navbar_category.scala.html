@@ -16,22 +16,14 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 
-@import views.html.components.utils.message_box_error
-@import views.html.components.page.footer
-@import views.html.components.page.header_disabled
+@(titles: Seq[String])
 
-@import model.auth.Ticket
-@(content: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
-
-@main {
-    @header_disabled()
-    <div id="page-frame">
-        @message_box_error(msg)
-        <div id="page">
-            <div class="container full-height">
-            @content
-            </div>
-        </div>
-    </div>
-    @footer()
-}
+<div class="navbar-local">
+<div class="container symmetric full-width padded-td-small">
+    <section class="">
+        @for(title <- titles) {
+            <div class="spaced-lr-small">@title</div>
+        }
+    </section>
+</div>
+</div>

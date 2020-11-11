@@ -20,12 +20,12 @@
 @import views.html.components.asset.asset_view
 @import views.html.components.utils.{message_box_error, navbar_category_searchable}
 @import views.html.forms.asset.select_asset_type_form
-
+@import model.auth.Ticket
 @(selectedType: Option[AssetType],
         assetTypes: Seq[AssetType],
         assetData: Seq[(Asset, scala.Seq[Property])],
         selectedAsset: Option[Long],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @isSelected(id: Long) = @{
     selectedAsset.isDefined && selectedAsset.get == id

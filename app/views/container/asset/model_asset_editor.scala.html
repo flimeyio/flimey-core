@@ -25,13 +25,13 @@
 @import model.asset.AssetType
 @import model.generic.Constraint
 @import views.html.components.asset.asset_type_editor
-
+@import model.auth.Ticket
 @(assetTypes: Seq[AssetType],
         assetType: AssetType,
         assetConstraints: Seq[Constraint],
         editAssetTypeForm: Form[EditAssetTypeForm.Data],
         newAssetConstraintForm: Form[NewAssetConstraintForm.Data],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @navbar_category_searchable(Seq("Asset Types"), routes.ModelAssetController.searchAssetType)

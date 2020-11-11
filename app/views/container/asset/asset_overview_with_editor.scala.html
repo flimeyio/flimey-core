@@ -25,6 +25,7 @@
 @import views.html.forms.asset.delete_asset_form
 
 @import views.html.forms.asset.delete_asset_form
+@import model.auth.Ticket
 @(      //Data to display the overview:
         selectedType: AssetType,
         assetTypes: Seq[AssetType],
@@ -35,7 +36,7 @@
         obligatoryKeys: Map[String, String],
         newAssetForm: Form[NewAssetForm.Data],
         //Generic appendix:
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @asset_view_container(Option(selectedType), assetTypes, assetData, Option(selectedAsset))

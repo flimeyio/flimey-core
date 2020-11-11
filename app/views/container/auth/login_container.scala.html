@@ -20,9 +20,10 @@
 @import views.html.components.utils.message_box_error
 @import formdata.auth.LoginForm
 
-@(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider, flash: Flash)
+@import views.html.components.page.footer
+@(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@app_single {
+@main {
     <div class="container fullwidth">
         <div class="column col-4 col-mx-auto">
             <div class="panel">
@@ -35,4 +36,7 @@
             </div>
         </div>
     </div>
-}()
+    </div>
+    @footer()
+    </div>
+}

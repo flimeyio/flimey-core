@@ -21,13 +21,13 @@
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
 @import views.html.components.utils.message_box_success
 @import views.html.forms.asset.new_asset_form
-
+@import model.auth.Ticket
 @(selectedType: AssetType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         newAssetForm: Form[NewAssetForm.Data],
         errmsg: Option[String] = None,
-        succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssetsOfType(selectedType.id))

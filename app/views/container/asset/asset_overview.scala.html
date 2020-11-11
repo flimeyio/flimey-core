@@ -18,11 +18,11 @@
 @import model.asset.{Asset, AssetType}
 @import model.generic.Property
 @import views.html.container.asset.asset_view_container
-
+@import model.auth.Ticket
 @(selectedType: Option[AssetType],
         assetTypes: Seq[AssetType],
         assetData: Seq[(Asset, scala.Seq[Property])],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @asset_view_container(selectedType, assetTypes, assetData, None, msg)
