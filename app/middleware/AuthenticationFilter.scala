@@ -32,6 +32,9 @@ import scala.concurrent.{ExecutionContext, Future}
  * This action extracts the request session and attaches the associated AuthSession to the request.
  * If no authentication is provided, the action will abort and forward to the default LogIn Controller method.
  * <br />
+ * The usage of the AuthenticationFilter i.e. invoke Block requires the block to be async.
+ * So it must always be used like: authenticationFilter.async {block...}
+ * <br />
  * If the authentication is successful, the action body is executed and receives the authentication Ticket for further actions.
  *
  * @param authService injected AuthService to manage authentication and Ticket generation
