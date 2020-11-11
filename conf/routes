@@ -16,53 +16,62 @@
 
 # Routes
 
+# serve all files from the public folder
+GET     /assets/*file                                       controllers.Assets.versioned(path="/public", file: Asset)
+
+
 GET     /                                                   controllers.ApplicationController.index()
 GET     /overview                                           controllers.ApplicationController.overview()
 
 GET     /login                                              controllers.AuthController.getLoginPage()
 POST    /login                                              controllers.AuthController.login()
-POST    /login/delete                                       controllers.AuthController.logout()
+POST    /login/delete                                       controllers.AuthController.logout(global: Option[Boolean] ?= None)
 
 GET     /auth                                               controllers.AuthController.getAuthenticatePage()
 POST    /auth                                               controllers.AuthController.authenticate()
 
+GET     /account                                            controllers.AccountController.index()
+
 GET     /model                                              controllers.ModelAssetController.index()
 
-# new asset type
 POST    /model/asset                                        controllers.ModelAssetController.addAssetType
-# delete asset type
 POST    /model/asset/delete/:id                             controllers.ModelAssetController.deleteAssetType(id: Long)
 
 # search for and open asset type editor
 # FIXME
 POST    /model/asset/search                                 controllers.ModelAssetController.searchAssetType
 
-# get asset type editor
 GET     /model/asset/editor/:id                             controllers.ModelAssetController.getAssetTypeEditor(id: Long)
-# submit asset type edit form
 POST    /model/asset/editor/asset/:id                       controllers.ModelAssetController.postAssetType(id: Long)
-
-# new asset constraint
 POST    /model/asset/editor/:id/constraint                  controllers.ModelAssetController.addAssetConstraint(id: Long)
-# delete asset constraint
 POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelAssetController.deleteAssetConstraint(id: Long, cid: Long)
 
-# get the asset overview page
 GET     /asset                                              controllers.AssetController.index()
 POST    /asset/type                                         controllers.AssetController.changeAssetType
 
-GET     /asset/:assetTypeId                                 controllers.AssetController.getAssetsOfType(assetTypeId: Long)
+# FIXME
+POST    /asset/search                                       controllers.AssetController.searchAssets
 
+GET     /asset/:assetTypeId                                 controllers.AssetController.getAssetsOfType(assetTypeId: Long)
 GET     /asset/:assetTypeId/new                             controllers.AssetController.getNewAssetEditor(assetTypeId: Long)
 POST    /asset/:assetTypeId/new                             controllers.AssetController.addNewAsset(assetTypeId: Long)
 
 GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.getAssetEditor(assetTypeId: Long, assetId: Long)
 POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
-
 POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
 
-# FIXME
-POST    /asset/search                                       controllers.AssetController.searchAssets
 
-# serve all files from the public folder
-GET     /assets/*file                                       controllers.Assets.versioned(path="/public", file: Asset)
+GET     /management                                         controllers.ManagementController.index()
+
+GET     /management/invitations                             controllers.ManagementController.getInvitedUsers()
+GET     /management/invitations/new                         controllers.ManagementController.getInvitationForm()
+POST    /management/invitations/new                         controllers.ManagementController.postNewInvitation()
+POST    /management/invitations/:userId/delete              controllers.ManagementController.deleteInvitation(userId: Long)
+
+GET     /management/groups                                  controllers.ManagementController.getGroups()
+#GET     /management/groups/new                              controllers.ManagementController.ge
+#POST    /management/groups/new
+#POST    /management/groups/:groupId/delete
+
+
+
