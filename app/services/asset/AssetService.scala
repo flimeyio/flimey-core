@@ -21,6 +21,7 @@ package services.asset
 import com.google.inject.Inject
 import db.asset.{AssetPropertyRepository, AssetRepository, AssetTypeRepository}
 import model.asset.Asset
+import model.auth.Ticket
 import model.generic.{Constraint, Property}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -48,7 +49,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param propertyData of the new Asset (must complete the AssetType model)
    * @return db result future
    */
-  def addAsset(typeId: Long, propertyData: Seq[String]): Future[Unit] = {
+  def addAsset(typeId: Long, propertyData: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       assetTypeRepository.getComplete(typeId) flatMap (typeData => {
         val (head, constraints) = typeData
@@ -74,7 +75,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param typeId id of the AssetType
    * @return sequence of all AssetTypes future (can be empty)
    */
-  def getAllAssetsOfType(typeId: Long): Future[Seq[(Asset, Seq[Property])]] = {
+  def getAllAssetsOfType(typeId: Long)(implicit ticket: Ticket): Future[Seq[(Asset, Seq[Property])]] = {
     try {
       assetRepository.getAll(typeId) map (data =>
         data.filter(elem => {
@@ -96,7 +97,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param typeId id of the selected AssetType
    * @return 3-Tuple (the selected AssetType, all AssetTypes, all Assets of the selected Type)
    */
-  def getAssetComplex(typeId: Long): Future[AssetComplex] = {
+  def getAssetComplex(typeId: Long)(implicit ticket: Ticket): Future[AssetComplex] = {
     modelAssetService.getAllAssetTypes flatMap (types => {
       val selectedAssetType = types.find(_.id == typeId)
       if (selectedAssetType.isDefined) {
@@ -118,7 +119,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param propertyUpdateData of the Asset (complete, but can contain updates)
    * @return result status future
    */
-  def updateAssetProperties(assetId: Long, propertyUpdateData: Seq[String]): Future[Seq[Int]] = {
+  def updateAssetProperties(assetId: Long, propertyUpdateData: Seq[String])(implicit ticket: Ticket): Future[Seq[Int]] = {
     try {
       assetRepository.get(assetId) flatMap (assetData => {
         val (asset, properties) = assetData
@@ -152,7 +153,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param id of the Asset
    * @return result future
    */
-  def deleteAsset(id: Long): Future[Unit] = {
+  def deleteAsset(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       //FIXME validate Subjects
       assetRepository.delete(id)
@@ -169,7 +170,8 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param constraints model of an AssetType
    * @return tuple2 seq (property key, data type)
    */
-  def getAssetPropertyKeys(constraints: Seq[Constraint]): Seq[(String, String)] = AssetLogic.getAssetPropertyKeys(constraints)
+  def getAssetPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] =
+    AssetLogic.getAssetPropertyKeys(constraints)
 
   /**
    * Forwards to same method of AssetLogic<br />
@@ -178,6 +180,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param constraints model of an AssetType
    * @return map of (property key -> default value)
    */
-  def getObligatoryPropertyKeys(constraints: Seq[Constraint]): Map[String, String] = AssetLogic.getObligatoryPropertyKeys(constraints)
+  def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] =
+    AssetLogic.getObligatoryPropertyKeys(constraints)
 
 }

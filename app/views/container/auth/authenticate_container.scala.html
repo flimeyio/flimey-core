@@ -16,23 +16,25 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 
-@import views.html.components.utils.message_box_error
+@import formdata.auth.AuthenticateForm
 @import views.html.forms.auth.authenticate_form
+@import views.html.components.page.footer
+@(authForm: Form[AuthenticateForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@(msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-
-@app_single {
+@main {
     <div class="container fullwidth">
         <div class="column col-4 col-mx-auto">
             <div class="panel">
-                @message_box_error(msg)
                 <div class="panel-header">
                     <div class="panel-title larger-text">Authenticate</div> or <a href="@routes.AuthController.getLoginPage()">Log In</a>
                 </div>
                 <div class="panel-body">
-                @authenticate_form()
+                @authenticate_form(authForm, msg)
                 </div>
             </div>
         </div>
     </div>
-}()
+    </div>
+    @footer()
+    </div>
+}

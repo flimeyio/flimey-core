@@ -41,17 +41,34 @@ class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   val users = TableQuery[UserTable]
   val groupMemberships = TableQuery[GroupMembershipTable]
 
-  //put new user
+  /**
+   * Add a new User to the db.
+   * The id must be set to 0 to enable auto increment.
+   *
+   * @param user new User entity
+   * @return new id future
+   */
   def add(user: User): Future[Long] = {
     db.run((users returning users.map(_.id)) += user)
   }
 
-  //update user data
+  /**
+   * Update an existing User.
+   *
+   * @param user User entity to update
+   * @return result future
+   */
   def update(user: User): Future[Int] = {
     db.run(users.filter(_.id === user.id).update(user))
   }
 
-  //delete user
+  /**
+   * Delete an existing User.
+   * This operation also deletes all GroupMemberships of the User.
+   *
+   * @param id of the User to be deleted
+   * @return Unit
+   */
   def delete(id: Long): Future[Unit] = {
     db.run((for {
       _ <- groupMemberships.filter(_.userId === id).delete
@@ -59,14 +76,46 @@ class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     } yield ()).transactionally)
   }
 
-  //get user by id
+  /**
+   * Get a User by its primary key (id)
+   *
+   * @param id of the User to fetch
+   * @return the found User or None
+   */
   def getById(id: Long): Future[Option[User]] = {
     db.run(users.filter(_.id === id).result.headOption)
   }
 
-  //get user by email
-  def getById(email: String): Future[Option[User]] = {
+  /**
+   * Get a User by its email.
+   * EMail is a unique field, so always exactly one or no User is found.
+   *
+   * @param email of the User to to fetch
+   * @return the found User or None
+   */
+  def getByEMail(email: String): Future[Option[User]] = {
     db.run(users.filter(_.email === email).result.headOption)
+  }
+
+  /**
+   * Get a User by its authentication key.
+   * The auth key is a unique field, so always exactly one or no User is found.
+   *
+   * @param key authentication key of the unauthenticated User to fetch
+   * @return the found User or None
+   */
+  def getByKey(key: String): Future[Option[User]] = {
+    db.run(users.filter(_.key === key).result.headOption)
+  }
+
+  /**
+   * Get all Users which are not authenticated.
+   * I.e. get all Users where an auth key is defined.
+   *
+   * @return Users with defined authentication key
+   */
+  def getAllWithPendingAuthentication: Future[Seq[User]] = {
+    db.run(users.filter(_.key.isDefined).result)
   }
 
 }

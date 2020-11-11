@@ -26,41 +26,79 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * DB interface for Sessions and temporary Access right management.
+ * Provided methods are UNSAFE and must only be used by service classes!
+ *
+ * @param dbConfigProvider injected db config
+ * @param executionContext future execution context
+ */
 class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val sessions = TableQuery[AuthSessionTable]
   val accesses = TableQuery[AccessTable]
 
-  //add new session
-  def add(session: AuthSession, rights: Seq[Access]): Future[Unit] = {
+  /**
+   * Add an AuthSession with Accesses to the db.
+   * The AuthSession and all Accesses must have id set to 0 to enable auto increment.
+   * During insert, the newly created id of the AuthSession will be mapped to all Access entities.
+   *
+   * @param session AuthSession of a User
+   * @param rights  access rights associated to the session
+   * @return new session id future
+   */
+  def add(session: AuthSession, rights: Seq[Access]): Future[Long] = {
     db.run((for {
-      key <- (sessions returning sessions.map(_.id)) += session
-      _ <- accesses ++= rights.map(p => Access(0, key, p.groupId, p.groupName))
-    } yield ()).transactionally)
+      sessionId <- (sessions returning sessions.map(_.id)) += session
+      _ <- accesses ++= rights.map(p => Access(0, sessionId, p.groupId, p.groupName))
+    } yield sessionId).transactionally)
   }
 
-  //get session by session key (just with role...)
-  def getHeader(key: String): Future[Option[AuthSession]] = {
-    db.run(sessions.filter(_.session === key).result.headOption)
-  }
-
-  def getComplete(id: Long): Future[(Option[AuthSession], Seq[Access])] = {
+  /**
+   * Get an AuthSession with all associated Access objects.
+   *
+   * @param id of the AuthSession
+   * @return AuthSession with rights or None
+   */
+  def getComplete(id: Long): Future[Option[(AuthSession, Seq[Access])]] = {
     db.run((for {
       (c, s) <- sessions.filter(_.id === id) joinLeft accesses on (_.id === _.sessionId)
     } yield (c, s)).result).map(res => {
       if (res.isEmpty) {
-        (None, Seq())
+        None
       } else {
-        res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2.get))).values.head
+        //btw headOption is valid here, because the result map can only have one entry, because the db query filters by prim key
+        res.groupBy(_._1).mapValues(values => values.map(_._2).filter(_.isDefined).map(_.get)).headOption
       }
     })
   }
 
+  /**
+   * Delete an AuthSession.
+   * This operation also deletes all associated Access entities.
+   *
+   * @param id of the AuthSession
+   * @return Unit
+   */
   def delete(id: Long): Future[Unit] = {
     db.run((for {
       _ <- accesses.filter(_.sessionId === id).delete
       _ <- sessions.filter(_.id === id).delete
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete all AuthSession of a specified User.
+   * This operation also deletes all associated Access entities.
+   *
+   * @param userId id of the User
+   * @return Unit
+   */
+  def deleteAll(userId: Long): Future[Unit] = {
+    db.run((for {
+      _ <- accesses.filter(_.sessionId in sessions.filter(_.userId === userId).map(_.id)).delete
+      _ <- sessions.filter(_.userId === userId).delete
     } yield ()).transactionally)
   }
 

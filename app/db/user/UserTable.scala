@@ -30,14 +30,14 @@ import slick.jdbc.MySQLProfile.api._
 class UserTable(tag: Tag) extends Table[User](tag, "user") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def username = column[String]("username")
-  def email = column[String]("email", O.Unique)
-  def password = column[String]("password")
+  def username = column[String]("username", O.Unique)
+  def email = column[Option[String]]("email", O.Unique)
+  def password = column[Option[String]]("password")
   def role = column[String]("role")
-  def key = column[String]("key")
+  def key = column[Option[String]]("auth_key")
   def accepted = column[Boolean]("accepted")
   def enabled = column[Boolean]("enabled")
 
-  override def * = (id, username, email, password, role, key, accepted,enabled) <> (User.tupled, User.unapply)
+  override def * = (id, username, email, password, role, key, accepted,enabled) <> (User.tupledRaw, User.unapplyToRaw)
 
 }

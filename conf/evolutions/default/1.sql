@@ -50,8 +50,8 @@ create table `asset_property` (
 create table `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(255) NOT NULL UNIQUE,
-    `email` VARCHAR(255) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(255) UNIQUE,
+    `password` VARCHAR(255),
     `role` VARCHAR(255) NOT NULL,
     `auth_key` VARCHAR(255),
     `accepted` BOOL NOT NULL,
@@ -79,11 +79,9 @@ create table `group_membership` (
     FOREIGN KEY(user_id) REFERENCES user(id)
 );
 
--- Insert some demo and debug data here
--- Remove those inserts in production!
+-- Default inserts on installation
 INSERT INTO u_group(id, name) VALUES(1, 'public');
-INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'Adam', 'admin@flimey.io', 'foo', 'admin', '', true, true);
-INSERT INTO group_membership(id, group_id, user_id) VALUES(0, 1, 1);
+INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', NULL, NULL, 'SYSTEM', 'root', false, false);
 
 -- !Downs
 

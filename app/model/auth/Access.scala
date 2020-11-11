@@ -18,4 +18,13 @@
 
 package model.auth
 
+/**
+ * The Access data class.<br />
+ * Represents a runtime oriented mapping of Group based rights associated to an active AuthSession.
+ *
+ * @param id unique identifier
+ * @param sessionId id of the associated AuthSession
+ * @param groupId id of the associated Group
+ * @param groupName name of the associated Group
+ */
 case class Access(id: Long, sessionId: Long, groupId: Long, groupName: String)

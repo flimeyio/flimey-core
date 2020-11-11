@@ -18,29 +18,59 @@
 
 package middleware
 
-import model.group.Group
-import model.user.User
-import play.api.mvc.{AnyContent, Request, Result}
+import model.auth.Ticket
+import play.api.mvc._
 
 import scala.concurrent.Future
 
+/**
+ * Authentication trait to provide unspecific functionality for authentication management in Controllers and
+ * other middleware classes.
+ */
 trait Authentication {
 
-  def withAuthentication (result: Result, user: User, groups: Seq[Group]): Future[Result] = {
-    //TODO generate key and add db session entry
-    Future.successful(result.withSession("key" -> "foobar"))
+  /**
+   * Add the session key to the response headers.
+   * This method performs no service or repository actions.
+   *
+   * @param result
+   * @param key
+   * @return
+   */
+  def grantAuthentication (result: Result, key: String): Future[Result] = {
+    Future.successful(result.withSession("key" -> key))
   }
 
-  def withoutAuthentication (result: Result): Future[Result] = {
-    //TODO clear db session entry
+  /**
+   * Extracts the session key from the request headers.<br />
+   * Note: the extracted session key should always be the "CompoundSessionKey"
+   *
+   * @param request http request
+   * @tparam T request type (can be let as AnyType here)
+   * @return CompoundSessionKey of the request or None
+   */
+  def getSessionKey[T] (request: Request[T]): Option[String] = request.session.get("key")
+
+  /**
+   * Remove the session key from the response headers.
+   * This method performs no service or repository actions.
+   *
+   * @param result
+   * @return
+   */
+  def removeAuthentication (result: Result): Future[Result] = {
     Future.successful(result.withNewSession)
   }
 
-  def hasSession (implicit request: Request[AnyContent]): Boolean = {
-    request.session.get("key").isDefined
+  /**
+   * Extracts the ticket object from the current AuthenticatedRequest
+   *
+   * @param ticketBlock a result function which needs a Ticket object
+   * @param request the implicit AuthenticatedRequest (contains the ticket)
+   * @tparam A request type
+   * @return ticketBlock with applied ticket parameter
+   */
+  def withTicket[A] (ticketBlock: Ticket => Future[Result])(implicit request: AuthenticatedRequest[A]): Future[Result] = {
+    ticketBlock(request.ticket)
   }
-
-//  def getAuthentication (implicit request: Request[AnyContent]): Future[] = {
-//    //TODO ... add also implicit fallback which is the defined on top of every controller
-//  }
 }

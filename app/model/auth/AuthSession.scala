@@ -20,4 +20,31 @@ package model.auth
 
 import java.sql.Timestamp
 
-case class AuthSession(id: Long, session: String, role: String, status: Boolean, userId: Long, created: Timestamp)
+import model.user.Role
+import model.user.Role.Role
+
+/**
+ * The AuthSession data class.<br />
+ * An AuthSession stores session related data while a User is logged in.
+ * It is always used together with the Access data class.
+ *
+ * @param id unique identifier
+ * @param session session key
+ * @param role role of the User
+ * @param status log in status
+ * @param userId id of the User
+ * @param created creation timestamp (of the underlying entity)
+ */
+case class AuthSession(id: Long, session: String, role: Role, status: Boolean, userId: Long, created: Timestamp)
+
+object AuthSession {
+
+  def applyRaw (id: Long, session: String, role: String, status: Boolean, userId: Long, created: Timestamp): AuthSession =
+    AuthSession(id, session, Role.withName(role), status, userId, created)
+
+  def unapplyToRaw(arg: AuthSession): Option[(Long, String, String, Boolean, Long, Timestamp)] =
+    Option((arg.id, arg.session, arg.role.toString, arg.status, arg.userId, arg.created))
+
+  val tupledRaw: ((Long, String, String, Boolean, Long, Timestamp)) => AuthSession = (this.applyRaw _).tupled
+
+}

@@ -21,9 +21,9 @@
 @import views.html.components.asset.asset_type_multibox
 @import views.html.components.utils.navbar_category_searchable
 @import model.asset.AssetType
-
+@import model.auth.Ticket
 @(assetTypes: Seq[AssetType],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @navbar_category_searchable(Seq("Asset Types"), routes.ModelAssetController.searchAssetType)

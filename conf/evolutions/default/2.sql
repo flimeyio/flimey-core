@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
--- Ups
+-- !Ups
 
 create table `auth_session` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -24,7 +24,7 @@ create table `auth_session` (
     `role` VARCHAR(255) NOT NULL,
     `status` BOOL NOT NULL,
     `user_id` BIGINT NOT NULL,
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 create table `access` (
@@ -35,7 +35,7 @@ create table `access` (
     FOREIGN KEY(session_id) REFERENCES auth_session(id)
 );
 
--- Downs
+-- !Downs
 
 DROP TABLE `access`;
 DROP TABLE `auth_session`;

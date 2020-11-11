@@ -17,12 +17,27 @@
 * *@
 
 @import views.html.helper.CSRF
+@import formdata.auth.LoginForm
 
-@()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.utils.message_box_error
+@(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.AuthController.login()) {
     @CSRF.formField
-    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email"/>
-    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password"/>
+
+    <!--Demo form error rendering (only syntactical errors)-->
+    <!--Maybe the error should somehow be attached to the box or make it red?-->
+    <div>
+    @if(loginForm.error("email").isDefined){
+        <div>@message_box_error(Option("Invalid email"))</div>
+    }
+    </div>
+
+    <!--Errors that are thrown by the server logic-->
+    <div>@message_box_error(msg)</div>
+
+
+    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email" value="@loginForm.data("email")"/>
+    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password" value="@loginForm.data("password")"/>
     <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-10">Go</button>
 }

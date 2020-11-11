@@ -18,6 +18,8 @@
 
 package model.user
 
+import model.user.Role.Role
+
 /**
  * The User data class.
  *
@@ -30,5 +32,19 @@ package model.user
  * @param accepted flag if user has accepted the usage conditions
  * @param enabled flag if the user is allowed to log in
  */
-case class User (id: Long, username: String, email: String, password: String, role: String,
-                 key: String, accepted: Boolean, enabled: Boolean)
+case class User (id: Long, username: String, email: Option[String], password: Option[String], role: Role,
+                 key: Option[String], accepted: Boolean, enabled: Boolean)
+
+object User {
+
+  def applyRaw (id: Long, username: String, email: Option[String], password: Option[String], role: String,
+                key: Option[String], accepted: Boolean, enabled: Boolean): User = {
+    User(id, username, email, password, Role.withName(role), key, accepted, enabled)
+  }
+
+  def unapplyToRaw(arg: User): Option[(Long, String, Option[String], Option[String], String, Option[String], Boolean, Boolean)] =
+    Option((arg.id, arg.username, arg.email, arg.password, arg.role.toString, arg.key, arg.accepted, arg.enabled))
+
+  val tupledRaw: ((Long, String, Option[String], Option[String], String, Option[String], Boolean, Boolean)) => User = (this.applyRaw _).tupled
+
+}

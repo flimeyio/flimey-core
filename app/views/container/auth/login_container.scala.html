@@ -18,21 +18,25 @@
 
 @import views.html.forms.auth.login_form
 @import views.html.components.utils.message_box_error
+@import formdata.auth.LoginForm
 
-@(msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.page.footer
+@(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@app_single {
+@main {
     <div class="container fullwidth">
         <div class="column col-4 col-mx-auto">
             <div class="panel">
-                @message_box_error(msg)
                 <div class="panel-header">
                     <div class="panel-title larger-text">Log In</div> or <a href="@routes.AuthController.getAuthenticatePage()">Authenticate</a>
                 </div>
                 <div class="panel-body">
-                @login_form()
+                @login_form(loginForm, msg)
                 </div>
             </div>
         </div>
     </div>
-}()
+    </div>
+    @footer()
+    </div>
+}
