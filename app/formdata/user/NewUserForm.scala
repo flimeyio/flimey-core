@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package formdata.asset
+package formdata.user
 
 import play.api.data.Forms._
 import play.api.data._

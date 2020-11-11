@@ -58,6 +58,13 @@ class UserService @Inject()(userRepository: UserRepository) {
     }
   }
 
+  def deleteUser(userId: Long)(implicit ticket: Ticket): Future[Unit] = {
+    //only admin users or the User itself can delete an account.
+    if(!(Role.isAtLeastAdmin(ticket.authSession.role) || ticket.authSession.userId == userId)) throw new Exception("No Rights")
+    //TODO
+    Future.successful()
+  }
+
   /**
    * Authenticate a invited User.<br />
    * Fills the missing fields of a previously invited User and enables the login.
@@ -80,6 +87,7 @@ class UserService @Inject()(userRepository: UserRepository) {
         val credentialStatus = UserLogic.isValidAuthenticationData(email, password)
         if (!credentialStatus.valid) credentialStatus.throwError
         val userUpdate = UserLogic.updateCredentialsOnAuthentication(userOption.get, email, password)
+        //FIXME: add User to the public group
         userRepository.update(userUpdate)
       })
     } catch {

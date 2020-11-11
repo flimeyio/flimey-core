@@ -100,7 +100,8 @@ class AuthService @Inject()(userRepository: UserRepository,
   /**
    * Delete an AuthSession entry in the auth database.<br />
    * Afterwards the User will not be able to access protected content and must renew his log in.
-   * However, only the session of the requesting device is removed. All other sessions (other devices) remain logged in.
+   * By default, only the session of the requesting device is removed. All other sessions (other devices) remain logged in.
+   * However if the global flag is set, all sessions of this user will be removed.
    * <br />
    * After this call, the calling controller should notify the client and unset his request session. Otherwise, the following
    * request will fail (wanted behaviour).
@@ -112,9 +113,13 @@ class AuthService @Inject()(userRepository: UserRepository,
    * @param ticket implicit authentication data
    * @return
    */
-  def deleteSession()(implicit ticket: Ticket): Future[Unit] = {
+  def deleteSession(all: Option[Boolean])(implicit ticket: Ticket): Future[Unit] = {
     try {
-      sessionRepository.delete(ticket.authSession.id)
+      if(all.isDefined && all.get){
+        sessionRepository.deleteAll(ticket.authSession.userId)
+      }else {
+        sessionRepository.delete(ticket.authSession.id)
+      }
     } catch {
       case e: Throwable => Future.failed(e)
     }
