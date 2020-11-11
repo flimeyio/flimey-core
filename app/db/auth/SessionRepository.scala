@@ -45,7 +45,7 @@ class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
    * During insert, the newly created id of the AuthSession will be mapped to all Access entities.
    *
    * @param session AuthSession of a User
-   * @param rights access rights associated to the session
+   * @param rights  access rights associated to the session
    * @return new session id future
    */
   def add(session: AuthSession, rights: Seq[Access]): Future[Long] = {
@@ -85,6 +85,20 @@ class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
     db.run((for {
       _ <- accesses.filter(_.sessionId === id).delete
       _ <- sessions.filter(_.id === id).delete
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete all AuthSession of a specified User.
+   * This operation also deletes all associated Access entities.
+   *
+   * @param userId id of the User
+   * @return Unit
+   */
+  def deleteAll(userId: Long): Future[Unit] = {
+    db.run((for {
+      _ <- accesses.filter(_.sessionId in sessions.filter(_.userId === userId).map(_.id)).delete
+      _ <- sessions.filter(_.userId === userId).delete
     } yield ()).transactionally)
   }
 
