@@ -128,13 +128,14 @@ class AuthController @Inject()(cc: ControllerComponents,
   /**
    * Endpoint to log out.<br />
    * This will remove the currently active session from the client device and destroys the associated database representation.<br />
+   * If the global flag is set, the logout will remove ALL sessions of the User, i.e. perform a log out on all devices.
    * Afterwards the User will be redirected to the login page.
    *
    * @return redirect to login with remove_session header set
    */
-  def logout: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+  def logout(all: Option[Boolean]): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      authService.deleteSession() flatMap { _ =>
+      authService.deleteSession(all) flatMap { _ =>
         removeAuthentication(Redirect(routes.AuthController.login()))
       } recoverWith {
         case e =>
