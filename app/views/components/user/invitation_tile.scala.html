@@ -1,0 +1,36 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import model.user.User
+@import views.html.helper.CSRF
+
+@(invitedUser: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+<div>
+    <table>
+        <tr><td>Username</td><td>@invitedUser.username</td></tr>
+        <!-- FIXME: the value of the key must somehow be hidden by default (like a password) and...
+             FIXME: ...only be shown, if the user clicks some "show" button or eye-icon -->
+        <tr><td>Key</td><td>@invitedUser.key.get</td></tr>
+        <tr><td>
+            <form role="form" action='@routes.ManagementController.deleteInvitation(invitedUser.id)' method="post">
+                @CSRF.formField
+                <button type="submit" class="ico-button-warn"><i class="icon icon-cross"></i></button>
+            </form>
+        </td></tr>
+    </table>
+</div>
