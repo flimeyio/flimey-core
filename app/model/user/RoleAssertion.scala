@@ -18,26 +18,24 @@
 
 package model.user
 
-object Role extends Enumeration {
+import model.auth.Ticket
 
-  type Role = Value
+trait RoleAssertion {
 
-  val WORKER, MODELER, ADMIN, SYSTEM = Value
-
-  def isAtLeastAdmin(role: Role): Boolean = {
-    role == ADMIN || role == SYSTEM
+  def assertWorker(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastWorker(ticket.authSession.role)) throw new Exception("No Rights!")
   }
 
-  def isAtLeastModeler(role: Role): Boolean = {
-    role == MODELER || role == SYSTEM
+  def assertModeler(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastModeler(ticket.authSession.role)) throw new Exception("No Rights!")
   }
 
-  def isAtLeastWorker(role: Role): Boolean = {
-    role == MODELER || role == SYSTEM || role == ADMIN || role == WORKER
+  def assertAdmin(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastAdmin(ticket.authSession.role)) throw new Exception("No Rights!")
   }
 
-  def isAtLeastSystem(role: Role): Boolean = {
-    role == SYSTEM
+  def assertSystem(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastSystem(ticket.authSession.role)) throw new Exception("No Rights!")
   }
 
 }

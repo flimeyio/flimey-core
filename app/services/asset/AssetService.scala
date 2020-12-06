@@ -23,6 +23,7 @@ import db.asset.{AssetPropertyRepository, AssetRepository, AssetTypeRepository}
 import model.asset.Asset
 import model.auth.Ticket
 import model.generic.{Constraint, Property}
+import model.user.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -38,7 +39,7 @@ import scala.concurrent.Future
 class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
                              assetRepository: AssetRepository,
                              assetPropertyRepository: AssetPropertyRepository,
-                             modelAssetService: ModelAssetService) {
+                             modelAssetService: ModelAssetService) extends RoleAssertion {
 
   /**
    * Add a new Asset.
@@ -51,6 +52,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    */
   def addAsset(typeId: Long, propertyData: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
+      assertWorker
       assetTypeRepository.getComplete(typeId) flatMap (typeData => {
         val (head, constraints) = typeData
         if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not active")
@@ -77,6 +79,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    */
   def getAllAssetsOfType(typeId: Long)(implicit ticket: Ticket): Future[Seq[(Asset, Seq[Property])]] = {
     try {
+      assertWorker
       assetRepository.getAll(typeId) map (data =>
         data.filter(elem => {
           elem._2.head.isDefined
@@ -98,16 +101,21 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @return 3-Tuple (the selected AssetType, all AssetTypes, all Assets of the selected Type)
    */
   def getAssetComplex(typeId: Long)(implicit ticket: Ticket): Future[AssetComplex] = {
-    modelAssetService.getAllAssetTypes flatMap (types => {
-      val selectedAssetType = types.find(_.id == typeId)
-      if (selectedAssetType.isDefined) {
-        getAllAssetsOfType(typeId) map (assetData => {
-          AssetComplex(selectedAssetType, types, assetData)
-        })
-      }else{
-        Future.failed(new Exception("No such Asset Type found"))
-      }
-    })
+    try {
+      assertWorker
+      modelAssetService.getAllAssetTypes flatMap (types => {
+        val selectedAssetType = types.find(_.id == typeId)
+        if (selectedAssetType.isDefined) {
+          getAllAssetsOfType(typeId) map (assetData => {
+            AssetComplex(selectedAssetType, types, assetData)
+          })
+        } else {
+          throw new Exception("No such Asset Type found")
+        }
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
   }
 
   /**
@@ -121,6 +129,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    */
   def updateAssetProperties(assetId: Long, propertyUpdateData: Seq[String])(implicit ticket: Ticket): Future[Seq[Int]] = {
     try {
+      assertWorker
       assetRepository.get(assetId) flatMap (assetData => {
         val (asset, properties) = assetData
         if (asset.isEmpty) throw new Exception("No such Asset to update")
@@ -155,6 +164,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    */
   def deleteAsset(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
+      assertWorker
       //FIXME validate Subjects
       assetRepository.delete(id)
     } catch {
@@ -170,8 +180,10 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param constraints model of an AssetType
    * @return tuple2 seq (property key, data type)
    */
-  def getAssetPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] =
+  def getAssetPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] = {
+    assertWorker
     AssetLogic.getAssetPropertyKeys(constraints)
+  }
 
   /**
    * Forwards to same method of AssetLogic<br />
@@ -180,7 +192,9 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param constraints model of an AssetType
    * @return map of (property key -> default value)
    */
-  def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] =
+  def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] = {
+    assertWorker
     AssetLogic.getObligatoryPropertyKeys(constraints)
+  }
 
 }

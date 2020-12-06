@@ -25,22 +25,43 @@ import model.user.Role
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import services.group.GroupService
 import services.user.UserService
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
+/**
+ * ManagementController responsible for all administrative actions like user and group management.
+ *
+ * @param cc injected ControllerComponents
+ * @param withAuthentication injected AuthenticationFilter
+ * @param userService injected UserService
+ * @param groupService injected GroupService
+ */
 @Singleton
 class ManagementController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                     userService: UserService) extends
+                                     userService: UserService, groupService: GroupService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
-
+  /**
+   * Helper method to redirect if no sufficient rights are found. <br />
+   * This redirects to the Application overview (where another redirection happens in case of missing session).
+   * <br />
+   * Other endpoints of the ManagementController call this method in case of invalid rights.
+   *
+   * @return overview redirect
+   */
   def redirectWithNoRights: Future[Result] = Future.successful(
     Redirect(routes.ApplicationController.overview()).flashing("error" -> "No rights to access the admin area"))
 
 
+  /**
+   * Endpoint tho provide the administration landing page.<br />
+   * This call requires ADMIN rights.
+   *
+   * @return administration overview html
+   */
   def index: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       //In this plain get controller, the rights must be checked here, because no service call is executed
@@ -53,6 +74,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   * Endpoint to get display all Users with open authentication.<br />
+   * The returned data can be used to access the authentication keys and to delete invitations.
+   *
+   * @return invitation management html
+   */
   def getInvitedUsers: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       userService.getAllInvitedUsers() map (invitedUsers => {
@@ -66,6 +93,10 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   * 
+   * @return
+   */
   def getInvitationForm: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       //In this plain get controller, the rights must be checked here, because no service call is executed
@@ -79,6 +110,10 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @return
+   */
   def postNewInvitation: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       NewUserForm.form.bindFromRequest fold(
@@ -97,6 +132,11 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @param userId
+   * @return
+   */
   def deleteInvitation(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       userService.deleteUser(userId) map (_ => {
@@ -109,6 +149,10 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @return
+   */
   //FIXME
   def getGroups: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -121,6 +165,10 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @return
+   */
   //FIXME
   def postNewGroup: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -132,6 +180,11 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @param groupId
+   * @return
+   */
   //FIXME
   def deleteGroup(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -143,6 +196,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @param email
+   * @param groupId
+   * @return
+   */
   //FIXME
   def addUserToGroup(email: Long, groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -154,6 +213,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @param email
+   * @param groupId
+   * @return
+   */
   //FIXME
   def deleteUserFromGroup(email: Long, groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -165,6 +230,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  /**
+   *
+   * @param email
+   * @param role
+   * @return
+   */
   //FIXME
   def postUserRole(email: Long, role: String): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>

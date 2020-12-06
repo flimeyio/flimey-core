@@ -21,7 +21,7 @@ package services.user
 import com.google.inject.Inject
 import db.user.UserRepository
 import model.auth.Ticket
-import model.user.{Role, User}
+import model.user.{RoleAssertion, User}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -32,7 +32,7 @@ import scala.concurrent.Future
  *
  * @param userRepository injected db interface for User entities.
  */
-class UserService @Inject()(userRepository: UserRepository) {
+class UserService @Inject()(userRepository: UserRepository) extends RoleAssertion {
 
   /**
    * Create a new User (invitation).<br />
@@ -43,12 +43,13 @@ class UserService @Inject()(userRepository: UserRepository) {
    *
    * @param userName unique visible name of the User
    * @param role represents rights see [[model.user.Role]] management doc for more information
+   * @param ticket implicit authentication ticket
    * @return id of the newly created User
    */
   def createUser(userName: String, role: String)(implicit ticket: Ticket): Future[Long] = {
     try {
       //only admin users can create new accounts/send invitations
-      if(!Role.isAtLeastAdmin(ticket.authSession.role)) throw new Exception("No Rights")
+      assertAdmin
       val dataStatus = UserLogic.isValidInvitationData(userName, role)
       if (!dataStatus.valid) dataStatus.throwError
       val user = UserLogic.createInvitedUser(userName, role)
@@ -58,9 +59,24 @@ class UserService @Inject()(userRepository: UserRepository) {
     }
   }
 
+  /**
+   * Delete an User.<br />
+   * This operation works for authenticated AND unauthenticated Users.
+   * The User is removed from all Groups.
+   * <br />
+   * A User can only be deleted by himself or an admin User.
+   * <br />
+   * This is a safe implementation and can be used by controller classes.
+   *
+   * @param userId of the User to delete
+   * @param ticket implicit authentication ticket
+   * @return
+   */
   def deleteUser(userId: Long)(implicit ticket: Ticket): Future[Unit] = {
     //only admin users or the User itself can delete an account.
-    if(!(Role.isAtLeastAdmin(ticket.authSession.role) || ticket.authSession.userId == userId)) throw new Exception("No Rights")
+    if(ticket.authSession.userId != userId){
+     assertAdmin
+    }
     //TODO
     Future.successful()
   }
@@ -101,30 +117,31 @@ class UserService @Inject()(userRepository: UserRepository) {
    * <br />
    * Fails without ADMIN rights.
    *
-   * @param ticket
+   * @param ticket implicit authentication ticket
    * @return
    */
   def getAllInvitedUsers()(implicit ticket: Ticket): Future[Seq[User]] = {
     try {
-      if(!Role.isAtLeastAdmin(ticket.authSession.role)) throw new Exception("No Rights")
+      assertAdmin
       userRepository.getAllWithPendingAuthentication
     } catch {
       case e: Throwable => Future.failed(e)
     }
   }
 
-  //def deleteInvitation() //TODO
+  //TODO
+  // def isUserByMail(String email): Boolean = {}
 
   //TODO
-  //def isUserByMail(String email): Boolean = {}
+  // def isUserByUserName(String userName): Boolean = {}
 
   //TODO
-  //def isUserByUserName(String userName): Boolean = {}
+  // def updateUserData()
 
-  // def updateUserData() //TODO
+  //TODO
+  // def updateUserRole()
 
-  // def updateUserRole() //TODO
-
-  // def deleteUser() //TODO
+  //TODO
+  // def deleteUser()
 
 }

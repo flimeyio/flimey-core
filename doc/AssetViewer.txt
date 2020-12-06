@@ -1,0 +1,9 @@
+AssetViewer:
+
+- Asset must have at least 1 group as editor
+- Asset must have at least 1 editor group where the creator is member of
+
+- Asset can have more groups as editor or viewer
+
+- AssetRelations are included recursively
+
