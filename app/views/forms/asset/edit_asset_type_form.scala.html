@@ -23,20 +23,18 @@
 @(assetType: AssetType, editAssetTypeForm: Form[EditAssetTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.postAssetType(assetType.id)) {
-    <div class="pure-form">
-    <div class="inline-group">
+    <div class="">
         @CSRF.formField
-        <input type="text" name="value" class="form-input weight-1" placeholder="unique name" value="@editAssetTypeForm.data.get("value")"/>
-        <div class="switch-group spaced-lr-small">
-            <label class="switch">
+        <input type="text" name="value" class="" placeholder="unique name" value="@editAssetTypeForm.data.get("value")"/>
+        <div class="">
+            <label class="">
                 <input type="checkbox" class="" name="active" @if(editAssetTypeForm("active").value.contains("true")){checked="true"}  value="true"/>
-                <span class="slider round"></span>
+                <span class=""></span>
             </label>
-            <div class="switch-label">
+            <div class="">
                 active
             </div>
         </div>
-            <button class="btn-submit spaced-lr-small">Update</button>
-    </div>
+            <button class="">Update</button>
     </div>
 }

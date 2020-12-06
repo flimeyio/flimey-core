@@ -34,15 +34,15 @@
 @navbar_category_searchable(Seq("Assets"), routes.AssetController.searchAssets)
 @message_box_error(msg)
 @select_asset_type_form(selectedType, assetTypes)
-<div class="spaced-top-10">
+<div class="">
 @for(dataElement <- assetData) {
     @asset_view(selectedType.get.id, dataElement._1.id, isSelected(dataElement._1.id), dataElement._2)
 }
 </div>
 @if(selectedType.isDefined) {
-    <div class="container right-align">
+    <div class="">
         <a href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">
-            <button class="btn-submit spaced-small">New</button>
+            <button class="">New</button>
         </a>
     </div>
 }

@@ -15,31 +15,24 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
+@import model.auth.Ticket
 @import views.html.components.page.{footer, navbar_left}
 @import views.html.components.utils.message_box_error
-
-@import model.auth.Ticket
 @(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
 @main {
-    <div class="page container vertical">
-        <div class="full-width full-height">
-        <div class="container full-height full-width stretched">
-            @navbar_left()
-            <div class="container full-height full-width">
-                @message_box_error(msg)
-                <div class="col-5 box spaced-lr-medium">
-                @leftContainer
-                </div>
-                @if(!rightContainer.equals(Html(""))) {
-                    <div class="col-5 box spaced-lr-small">
-                    @rightContainer
-                    </div>
-                }
+    @navbar_left()
+    <div>
+        @message_box_error(msg)
+        <div>
+        @leftContainer
+        </div>
+        @if(!rightContainer.equals(Html(""))) {
+            <div>
+            @rightContainer
             </div>
-        </div>
-        @footer()
-        </div>
+        }
     </div>
+    @footer()
 
 }

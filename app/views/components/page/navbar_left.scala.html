@@ -20,19 +20,19 @@
 @import model.user.Role
 @()(implicit ticket: Ticket)
 
-<div class="container vertical navbar-topdown" >
-    <a href="#" class="button-nav full-width"><div class="spaced-start-small">Overview</div></a>
-    <a href="#" class="button-nav full-width"><div class="spaced-start-small">Collections</div></a>
-    <a href="@routes.AssetController.index()" class="button-nav full-width"><div class="spaced-start-small">Assets</div></a>
+<div class="" >
+    <a href="#" class=""><div class="">Overview</div></a>
+    <a href="#" class=""><div class="">Collections</div></a>
+    <a href="@routes.AssetController.index()" class=""><div class="">Assets</div></a>
 
     @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-        <a href="@routes.ModelAssetController.index()" class="button-nav full-width"><div class="spaced-start-small">Model</div></a>
+        <a href="@routes.ModelAssetController.index()" class=""><div class="">Model</div></a>
     }
 
     @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
-        <a href="@routes.ManagementController.index()" class="button-nav full-width"><div class="spaced-start-small">Admin</div></a>
+        <a href="@routes.ManagementController.index()" class=""><div class="">Admin</div></a>
     }
 
-    <a href="@routes.AccountController.index()" class="button-nav full-width"><div class="spaced-start-small">Account</div></a>
+    <a href="@routes.AccountController.index()" class=""><div class="">Account</div></a>
 </div>
 

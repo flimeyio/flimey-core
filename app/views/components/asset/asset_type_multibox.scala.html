@@ -19,7 +19,7 @@
 
 @(assetTypes: Seq[AssetType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<table class="striped full-width">
+<table class="">
     <tr>
         <th>ID</th>
         <th>Name</th>
@@ -32,10 +32,9 @@
             <td><div>@assetType.value</div></td>
             <td><div>@assetType.active.toString</div></td>
             <td>
+                <!-- FIXME no form needed here, this can just be a link! -->
                 <form action=@routes.ModelAssetController.getAssetTypeEditor(assetType.id)>
-                    <button type="submit" class="ico-button">
-                       <i class="icon icon-more-horiz"></i>
-                    </button>
+                    <button type="submit" class="">+</button>
                 </form>
             </td>
         </tr>

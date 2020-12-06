@@ -23,15 +23,15 @@
         selected: Boolean,
         properties: Seq[Property])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="box container spaced-small padded-small">
-    <div class="full-width">
+<div class="">
+    <div class="">
         @if(properties.nonEmpty) {
             @for(i <- properties.indices) {
-                <div class="container full-width">
-                    <div class="column col-4">
+                <div class="">
+                    <div class="">
                     @properties(i).key
                     </div>
-                    <div class="column col-8">
+                    <div class="">
                     @properties(i).value
                     </div>
                 </div>
@@ -40,11 +40,9 @@
     </div>
     <div class="">
         <a href="@routes.AssetController.getAssetEditor(typeId, assetId)">
-            <button class="ico-button">
-                <i class="icon icon-more-horiz"></i>
+            <button class="">
+                <i class=""></i>
             </button>
         </a>
     </div>
-
-
 </div>

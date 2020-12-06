@@ -41,7 +41,7 @@
 @app {
     @asset_view_container(Option(selectedType), assetTypes, assetData, Option(selectedAsset))
 }{
-    <div class="full-width">
+    <div class="">
         @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssetsOfType(selectedType.id))
         @message_box_error(msg)
         @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, newAssetForm)
