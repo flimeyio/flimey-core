@@ -19,10 +19,8 @@
 @(msg: Option[String] = None)
 
 @if(msg.nonEmpty) {
-    <div class="box-success full-width">
-        <div class="padded-small">
-            @msg.get
-        </div>
+    <div class="">
+        @msg.get
     </div>
 } else {
     <div></div>

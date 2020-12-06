@@ -20,9 +20,9 @@
 
 @(typeId: Long, assetId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="container right-align">
+<div class="">
 <form role="form" action='@routes.AssetController.deleteAsset(typeId, assetId)' method="post">
     @CSRF.formField
-    <button type="submit" class="btn-submit-dangerous spaced-small">Delete</button>
+    <button type="submit" class="">Delete</button>
 </form>
 </div>

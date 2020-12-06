@@ -38,10 +38,10 @@
         }
     </div>
     <div>
-        <div class="spaced-top-10 spaced-bottom-10">
+        <div class="">
             @new_asset_constraint_form(assetType.id, newAssetConstraintForm)
         </div>
-        <table class="striped">
+        <table class="">
                 <tr>
                     <th>constraint</th>
                     <th>value 1</th>
@@ -56,12 +56,11 @@
                     <td>
                         <form role="form" action='@routes.ModelAssetController.deleteAssetConstraint(assetType.id, constraint.id)' method="post">
                             @CSRF.formField
-                            <button type="submit" class="ico-button-warn"><i class="icon icon-cross"></i></button>
+                            <button type="submit" class="">X</button>
                         </form>
                     </td>
                 </tr>
             }
-
         </table>
     </div>
     <div>

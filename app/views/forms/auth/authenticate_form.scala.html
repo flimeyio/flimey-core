@@ -29,14 +29,14 @@
     <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email" value="@authForm.data("email")"/>
     <input type="text" name="key" id="input-nasf" class="form-input spaced-top-10" placeholder="key" value="@authForm.data("key")"/>
     <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password" value="@authForm.data("password")"/>
-    <div class="switch-group spaced-lr-small">
-        <label class="switch">
+    <div class="">
+        <label class="">
             <input type="checkbox" name="agree" @if(authForm.data.contains("agree") && authForm.data("agree").toBoolean){checked="true"} value="true"/>
-            <span class="slider round"></span>
+            <span class=""></span>
         </label>
-        <div class="switch-label">
+        <div class="">
             I agree to the Terms and Conditions
         </div>
     </div>
-    <button class="btn btn-primary input-group-btn btn-form-fixed spaced-top-10">Go</button>
+    <button class="">Go</button>
 }

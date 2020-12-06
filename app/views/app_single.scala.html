@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -9,28 +9,23 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-
-@import views.html.components.utils.message_box_error
-@import views.html.components.page.footer
-@import views.html.components.page.header_disabled
-
 @import model.auth.Ticket
+@import views.html.components.page.{footer, header_disabled}
+@import views.html.components.utils.message_box_error
 @(content: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
 @main {
     @header_disabled()
-    <div id="page-frame">
+    <div>
         @message_box_error(msg)
-        <div id="page">
-            <div class="container full-height">
-            @content
-            </div>
+        <div>
+        @content
         </div>
     </div>
     @footer()

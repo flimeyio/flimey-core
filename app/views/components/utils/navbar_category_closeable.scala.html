@@ -17,16 +17,16 @@
 * *@
 @(titles: Seq[String], closeAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="navbar-local">
-    <div class = "container symmetric full-width padded-td-small">
-        <section class="container left-align weight-1">
+<div class="">
+    <div class="">
+        <section class="">
             @for(title <- titles) {
-                <div class="spaced-lr-small">@title</div>
+                <div class="">@title</div>
             }
         </section>
-        <section class="spaced-lr-small">
+        <section class="">
             <a href="@closeAction">
-                <button class="btn-submit-sec">Close</button>
+                <button class="">Close</button>
             </a>
         </section>
     </div>

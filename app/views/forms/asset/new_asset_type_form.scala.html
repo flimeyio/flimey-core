@@ -20,11 +20,11 @@
 
 @()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
     @helper.form(action = routes.ModelAssetController.addAssetType()) {
-        <div class="pure-form">
-            <div class="inline-group right-align">
+        <div class="">
+            <div class="">
                 @CSRF.formField
-                <input type="text" name="value" id="input-nasf" class="form-input widget-large spaced-lr-small" placeholder="unique name"/>
-                <button class="btn-submit spaced-r-small">New</button>
+                <input type="text" name="value" id="input-nasf" class="" placeholder="unique name"/>
+                <button class="">New</button>
             </div>
         </div>
     }

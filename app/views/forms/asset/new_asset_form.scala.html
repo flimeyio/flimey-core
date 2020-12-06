@@ -46,18 +46,18 @@
 }
 
 @helper.form(action = routes.AssetController.addNewAsset(assetType.id)) {
-    <div class="pure-form full-width spaced-td-medium">
+    <div class="">
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
-            <div class="inline-group">
-                            <div class="spaced-lr-small col-3">@key(i)</div>
-                            <div class="spaced-lr-small col-3">@datatype(i)</div>
-                            <input type="text" name="@{"values[" + i + "]"}" class="form-input col-6 spaced-lr-small" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
+            <div class="">
+                            <div class="">@key(i)</div>
+                            <div class="">@datatype(i)</div>
+                            <input type="text" name="@{"values[" + i + "]"}" class="" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
             </div>
         }
-        <div class="container full-width right-align">
-            <button class="btn-submit spaced-lr-small spaced-td-small">Save</button>
+        <div class="">
+            <button class="">Save</button>
         </div>
     }
     </div>
