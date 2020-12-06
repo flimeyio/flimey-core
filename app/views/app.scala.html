@@ -21,17 +21,23 @@
 @(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
 @main {
-    @navbar_left()
-    <div>
-        @message_box_error(msg)
-        <div>
-        @leftContainer
-        </div>
-        @if(!rightContainer.equals(Html(""))) {
-            <div>
-            @rightContainer
+    <div class="container">
+        <div class="row">
+            <div class="column">
+            @navbar_left()
             </div>
-        }
+            <div class="column">
+                @message_box_error(msg)
+                <div>
+                @leftContainer
+                </div>
+            </div>
+            @if(!rightContainer.equals(Html(""))) {
+                <div class="column">
+                @rightContainer
+                </div>
+            }
+        </div>
     </div>
     @footer()
 
