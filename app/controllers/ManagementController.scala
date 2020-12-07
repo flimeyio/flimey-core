@@ -94,8 +94,11 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
-   * 
-   * @return
+   * Endpoint to get the admin page with open invitation form.<br />
+   * Shows an additional error if one is in the flash scope (on redirect).
+   * The form is always empty.
+   *
+   * @return new invitation page html
    */
   def getInvitationForm: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -111,8 +114,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to add a new invitation/Invite a new User.<br />
+   * Invalid form data leads to a returned form page with error messages.
+   * <br />
+   * Returns an empty new invitation form on success, else the filled form with error messages.
    *
-   * @return
+   * @return new invitation page html
    */
   def postNewInvitation: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -133,9 +140,11 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to delete an Invitation.<br />
+   * After deletion, the invited User can no longer authenticate.
    *
-   * @param userId
-   * @return
+   * @param userId id of the invitation (user) to delete
+   * @return invitation management html
    */
   def deleteInvitation(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
