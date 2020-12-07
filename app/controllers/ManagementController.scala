@@ -179,6 +179,22 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
    * @return
    */
   //FIXME
+  def getNewGroupForm: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
+        val error = request.flash.get("error")
+        redirectWithNoRights
+      } else {
+        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
+      }
+    }
+  }
+
+  /**
+   *
+   * @return
+   */
+  //FIXME
   def postNewGroup: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
