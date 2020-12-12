@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020  Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-@import './colors.css';
-@import "./font.css";
-@import "./text.css";
-@import "components.css";
+.sticky-footer{
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+}
+
+.full-size-container{
+    height: 100%;
+    width: 100%;
+    margin:0;
+}
