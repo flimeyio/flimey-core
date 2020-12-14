@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,24 +20,22 @@
 @import views.html.forms.auth.login_form
 @import views.html.components.utils.message_box_error
 @import formdata.auth.LoginForm
-
 @import views.html.components.page.footer
 @(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @main {
-    <div class="">
-        <div class="">
-            <div class="">
-                <div class="">
-                    <div class="">Log In</div> or <a href="@routes.AuthController.getAuthenticatePage()">Authenticate</a>
-                </div>
-                <div class="">
-                @login_form(loginForm, msg)
+        <div class="card">
+            <div class="card-divider">
+                <div class="card-header-left">Log In</div>
+                <div class="card-header-right"> &nbsp;or&nbsp;
+                    <a href="@routes.AuthController.getAuthenticatePage()">Authenticate&nbsp;&nbsp;</a>
                 </div>
             </div>
+            <div class="card-section">
+            @login_form(loginForm, msg)
+            </div>
         </div>
-    </div>
-    </div>
+    <div>
     @footer()
     </div>
 }

@@ -18,8 +18,13 @@
 @()
 
 <footer class="top-bar sticky-footer">
-    <div class="">
-        <img src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/>
-        <div class="">&nbsp;&nbsp;flimey&nbsp;&nbsp;|&nbsp;&nbsp;flimey-core version 0.1</div>
+    <div class="top-bar-left">
+        <ul class="menu">
+            <li><img src="@routes.Assets.versioned("images/icon.png")" width="32" height="32"/></li>
+            <li><div class="menu-text">flimey</div></li>
+        </ul>
+    </div>
+    <div class="top-bar-right">
+            <div class="menu">flimey-core version 0.1</div>
     </div>
 </footer>

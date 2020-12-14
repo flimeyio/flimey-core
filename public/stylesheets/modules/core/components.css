@@ -21,9 +21,64 @@
     bottom: 0px;
     width: 100%;
 }
+.top-bar{
+    padding-right: 2%;
+    padding-left: 2%;
+    padding-bottom: 0.2%;
+    padding-top: 0.2%;
+    background-color: var(--color-sec-dark);
+    color: #ffffff;
+}
+.top-bar .menu{
+    background-color:var(--color-sec-dark) ;
+}
 
 .full-size-container{
     height: 100%;
     width: 100%;
     margin:0;
 }
+
+.card{
+    width: 30%;
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate3d(-50%,-50%, 0);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    font-size: large;
+    padding: 7px;
+}
+.card-divider{
+    background-color: #ffffff;
+}
+
+.card-header-right{
+    position: absolute;
+    right: 0px;
+    padding-right: 10px;
+
+}
+
+.card-header-left{
+    font-size: 30px;
+}
+
+a{
+    color: var(--color-prim);
+}
+
+a:hover{
+    text-shadow: 0 0 1px var(--color-sec-light);
+    color: var(--color-prim-dark);
+}
+
+.button{
+    color: #ffffff;
+    background-color: var(--color-prim);
+}
+
+.button:hover{
+    background-color: var(--color-prim-dark);
+}
+
