@@ -65,10 +65,20 @@ create table `u_group` (
 
 create table `asset_viewer` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `asset_id` BIGINT NOT NULL,
-    `group_id` BIGINT NOT NULL,
-    FOREIGN KEY(asset_id) REFERENCES asset(id),
-    FOREIGN KEY(group_id) REFERENCES u_group(id)
+    `target_id` BIGINT NOT NULL,
+    `viewer_id` BIGINT NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+    FOREIGN KEY(target_id) REFERENCES asset(id),
+    FOREIGN KEY(viewer_id) REFERENCES u_group(id)
+);
+
+create table `group_viewer` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `target_id` BIGINT NOT NULL,
+    `viewer_id` BIGINT NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+    FOREIGN KEY(target_id) REFERENCES u_group(id),
+    FOREIGN KEY(viewer_id) REFERENCES u_group(id)
 );
 
 create table `group_membership` (

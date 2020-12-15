@@ -18,15 +18,22 @@
 
 package db.group
 
-import model.group.AssetViewer
+import model.group.Viewer
 import slick.jdbc.MySQLProfile.api._
 
-class AssetViewerTable(tag: Tag) extends Table[AssetViewer](tag, "asset_viewer") {
+/**
+ * Slick framework db mapping for Viewers which target Assets.
+ * see evolutions/default for schema creation.
+ *
+ * @param tag for mysql
+ */
+class AssetViewerTable(tag: Tag) extends Table[Viewer](tag, "asset_viewer") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def assetId = column[Long]("asset_id")
-  def groupId = column[Long]("group_id")
+  def targetId = column[Long]("target_id")
+  def viewerId = column[Long]("viewer_id")
+  def role = column[String]("role")
 
-  override def * = (id, assetId, groupId) <> (AssetViewer.tupled, AssetViewer.unapply)
+  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
 
 }

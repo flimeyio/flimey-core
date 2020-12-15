@@ -39,7 +39,7 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
 
   val groups = TableQuery[GroupTable]
   val groupMemberships = TableQuery[GroupMembershipTable]
-  val assetViewers = TableQuery[AssetViewerTable]
+  val assetViewers = TableQuery[GroupViewerTable]
 
   /**
    * Add a new Group.
@@ -73,7 +73,7 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    */
   def delete(id: Long): Future[Unit] = {
     db.run((for {
-      _ <- assetViewers.filter(_.groupId === id).delete
+      _ <- assetViewers.filter(_.viewerId === id).delete
       _ <- groupMemberships.filter(_.groupId === id).delete
       _ <- groups.filter(_.id === id).delete
     } yield ()).transactionally)
