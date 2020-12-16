@@ -18,7 +18,7 @@
 
 package middleware
 
-import model.auth.Ticket
+import auth.model.Ticket
 import play.api.mvc._
 
 import scala.concurrent.Future

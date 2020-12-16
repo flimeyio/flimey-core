@@ -18,15 +18,14 @@
 
 package controllers
 
-import formdata.asset.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
+import assetmodel.formdata.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
+import assetmodel.model.{AssetConstraint, AssetType}
+import assetmodel.service.ModelAssetService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
-import model.asset.AssetType
-import model.generic.Constraint
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import services.asset.ModelAssetService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -124,7 +123,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       modelService.getCombinedAssetEntity(id) map (res =>
-        ((assetTypes: Seq[AssetType], assetType: Option[AssetType], constraints: Seq[Constraint]) => {
+        ((assetTypes: Seq[AssetType], assetType: Option[AssetType], constraints: Seq[AssetConstraint]) => {
           if (assetType.nonEmpty) {
             val preparedAssetForm = EditAssetTypeForm.form.fill(EditAssetTypeForm.Data(assetType.get.value, assetType.get.active))
             var preparedConstraintForm = NewAssetConstraintForm.form.fill(NewAssetConstraintForm.Data("", "", ""))
@@ -201,7 +200,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
             Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId)).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val assetConstraint = Constraint(0, data.c, data.v1, data.v2, assetTypeId)
+            val assetConstraint = AssetConstraint(0, data.c, data.v1, data.v2, assetTypeId)
             modelService.addConstraint(assetConstraint) map { id =>
               Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId))
             } recoverWith {
