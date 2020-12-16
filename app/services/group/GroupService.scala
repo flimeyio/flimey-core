@@ -64,7 +64,7 @@ class GroupService @Inject()(groupRepository: GroupRepository, userRepository: U
   // * @param ticket implicit authentication ticket
   // * @return
   // */
-  //def getFirstClassGroupTransitions(groupId: Long)(implicit ticket: Ticket): Future[GroupViewerRelation] = {
+  //def getFirstClassGroupTransition(groupId: Long)(implicit ticket: Ticket): Future[GroupViewerRelation] = {
   //  //TODO
   //}
 
@@ -86,14 +86,45 @@ class GroupService @Inject()(groupRepository: GroupRepository, userRepository: U
   //  //TODO
   //}
 
-  //TODO
-  // def getAllGroupsOfUser()
+  /**
+   * Add a new Group.<br />
+   * The provided name must be unique.<br />
+   * <p> This operation requires at least admin rights
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param name unique name of the new Group
+   * @param ticket implicit authentication ticket
+   * @return group id on success
+   */
+  def addGroup(name: String)(implicit ticket: Ticket): Future[Long] = {
+    try {
+      assertAdmin
+      //FIXME check name for length and empty (if unique is checked by the db)
+      groupRepository.add(Group(0, name))
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
-  //TODO
-  // def addGroup()
-
-  //TODO
-  // def deleteGroup()
+  /**
+   * Delete a Group by its id.<br />
+   * This operation also deletes all Viewer relations and memberships regarding this Group.<br />
+   * <p> This operation requires at least admin rights
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param groupId id of the group to delete (but not 1 or 2)
+   * @param ticket implicit authentication ticket
+   * @return unit on success
+   */
+  def deleteGroup(groupId: Long)(implicit ticket: Ticket): Future[Unit] = {
+    try {
+      assertAdmin
+      if(groupId == 1 || groupId == 2) throw new Exception("The public and system groups can not be deleted.")
+      groupRepository.delete(groupId)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   //TODO
   // def renameGroup()
