@@ -16,12 +16,11 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 
-@import model.generic.Property
-
+@import assetmodel.model.AssetProperty
 @(typeId: Long,
         assetId: Long,
         selected: Boolean,
-        properties: Seq[Property])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        properties: Seq[AssetProperty])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="">
     <div class="">

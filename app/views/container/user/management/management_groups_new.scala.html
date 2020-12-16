@@ -15,15 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-
+@import auth.model.Ticket
+@import group.formdata.NewGroupForm
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
-
-@import model.auth.Ticket
 @import views.html.components.utils.navbar_category_closeable
 @import views.html.forms.user.management.new_group_form
-@import formdata.user.NewGroupForm
 @(newGroupForm: Form[NewGroupForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

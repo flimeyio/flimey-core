@@ -18,12 +18,12 @@
 
 package middleware
 
+import auth.service.AuthService
 import com.google.inject.Inject
 import controllers.routes
 import play.api.Logging
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
-import services.auth.AuthService
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -16,17 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * *@
 
-@import views.html.forms.asset.edit_asset_type_form
-@import formdata.asset.EditAssetTypeForm
 @import views.html.forms.asset.delete_asset_type_form
 @import views.html.components.utils.message_box_hint
 @import views.html.forms.asset.new_asset_constraint_form
 @import views.html.helper.CSRF
-@import formdata.asset.NewAssetConstraintForm
-@import model.asset.AssetType
-@import model.generic.Constraint
-
-@(assetType: AssetType, assetConstraints: Seq[Constraint],
+@import assetmodel.model.AssetConstraint
+@import assetmodel.model.AssetType
+@import assetmodel.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
+@import views.html.forms.asset.edit_asset_type_form
+@(assetType: AssetType, assetConstraints: Seq[AssetConstraint],
         editAssetTypeForm: Form[EditAssetTypeForm.Data],
         newAssetConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
