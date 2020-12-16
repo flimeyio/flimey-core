@@ -21,10 +21,10 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-            <!-- downloaded stylesheets -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+            <!-- library stylesheets -->
+        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/lib/foundation.min.css")" />
+        <script src="@routes.Assets.versioned("../../public/javascripts/lib/jquery-3.5.1.min.js")"></script>
+        <script src="@routes.Assets.versioned("../../public/javascripts/lib/foundation.min.js")"></script>
 
             <!-- custom stylesheets -->
         <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/flimey.css")" />
@@ -36,7 +36,6 @@
     </head>
     <body>
         @content
-        <script src="@routes.Assets.versioned("javascripts/jquery-3.5.1.min.js")"></script>
         <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     </body>
 
