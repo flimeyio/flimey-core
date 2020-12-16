@@ -26,7 +26,6 @@
 @import model.group.Group
 @(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
-<!-- TODO: this template is not used yet -->
 @app {
     @navbar_category(Seq("Admin Area"))
     @management_nav()

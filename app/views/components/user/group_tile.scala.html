@@ -17,4 +17,13 @@
 * *@
 
 @import model.group.Group
-@(group: Group)
+@import views.html.helper.CSRF
+@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+<div>
+    <p> @group.name </p>
+    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
+        @CSRF.formField
+        <button type="submit" class="">X</button>
+    </form>
+</div>
