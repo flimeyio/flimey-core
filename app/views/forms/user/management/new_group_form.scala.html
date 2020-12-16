@@ -16,4 +16,17 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 
-@()
+@import views.html.helper.CSRF
+@import formdata.user.NewGroupForm
+@import views.html.components.utils.message_box_error
+@(newGroupForm: Form[NewGroupForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@helper.form(action = routes.ManagementController.postNewGroup()) {
+    @CSRF.formField
+
+    <!--Errors that are thrown by the server logic-->
+    <div>@message_box_error(msg)</div>
+
+    <input type="text" name="groupName" placeholder="group name" value="@newGroupForm.data("groupName")"/>
+    <button class="">Create</button>
+}
