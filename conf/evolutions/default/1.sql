@@ -91,12 +91,15 @@ create table `group_membership` (
 
 -- Default inserts on installation
 INSERT INTO u_group(id, name) VALUES(1, 'public');
+INSERT INTO u_group(id, name) VALUES(2, 'system');
 INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', NULL, NULL, 'SYSTEM', 'root', false, false);
+INSERT INTO group_membership(id, group_id, user_id) VALUES (1, 2, 1);
 
 -- !Downs
 
 drop table `group_membership`;
 drop table `asset_viewer`;
+drop table `group_viewer`;
 drop table `u_group`;
 drop table `user`;
 drop table `asset_property`;
