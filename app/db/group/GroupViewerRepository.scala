@@ -26,18 +26,18 @@ import slick.lifted.TableQuery
 import scala.concurrent.ExecutionContext
 
 /**
- * DB interface for Asset Viewer relations.
+ * DB interface for Group Viewer relations.
  * Provided methods are UNSAFE and must only be used by service classes!
  *
  * @param dbConfigProvider injected db config
  * @param executionContext future execution context
  */
-class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
+class GroupViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
-  val assetViewers = TableQuery[AssetViewerTable]
+  val groupViewers = TableQuery[GroupViewerTable]
   val groups = TableQuery[GroupTable]
-
+  
   //TODO
 
 }

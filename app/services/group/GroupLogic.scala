@@ -16,28 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.group
+package services.group
 
-import com.google.inject.Inject
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
-
-import scala.concurrent.ExecutionContext
-
-/**
- * DB interface for Asset Viewer relations.
- * Provided methods are UNSAFE and must only be used by service classes!
- *
- * @param dbConfigProvider injected db config
- * @param executionContext future execution context
- */
-class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
-
-  val assetViewers = TableQuery[AssetViewerTable]
-  val groups = TableQuery[GroupTable]
-
-  //TODO
+object GroupLogic {
 
 }

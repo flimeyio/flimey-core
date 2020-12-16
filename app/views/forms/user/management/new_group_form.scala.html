@@ -16,21 +16,17 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 
+@import views.html.helper.CSRF
+@import formdata.user.NewGroupForm
 @import views.html.components.utils.message_box_error
-@import views.html.components.utils.navbar_category
-@import views.html.components.utils.management_nav
+@(newGroupForm: Form[NewGroupForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@import model.auth.Ticket
-@import views.html.components.utils.navbar_category_closeable
-@import views.html.components.user.group_block
-@import model.group.Group
-@(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+@helper.form(action = routes.ManagementController.postNewGroup()) {
+    @CSRF.formField
 
-@app {
-    @navbar_category(Seq("Admin Area"))
-    @management_nav()
-}{
-    @navbar_category_closeable(Seq("Group Management"), routes.ManagementController.index())
-    @message_box_error(msg)
-    @group_block(groups)
-}()
+    <!--Errors that are thrown by the server logic-->
+    <div>@message_box_error(msg)</div>
+
+    <input type="text" name="groupName" placeholder="group name" value="@newGroupForm.data("groupName")"/>
+    <button class="">Create</button>
+}

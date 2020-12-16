@@ -16,21 +16,14 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 
-@import views.html.components.utils.message_box_error
-@import views.html.components.utils.navbar_category
-@import views.html.components.utils.management_nav
-
-@import model.auth.Ticket
-@import views.html.components.utils.navbar_category_closeable
-@import views.html.components.user.group_block
 @import model.group.Group
-@(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+@import views.html.helper.CSRF
+@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@app {
-    @navbar_category(Seq("Admin Area"))
-    @management_nav()
-}{
-    @navbar_category_closeable(Seq("Group Management"), routes.ManagementController.index())
-    @message_box_error(msg)
-    @group_block(groups)
-}()
+<div>
+    <p> @group.name </p>
+    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
+        @CSRF.formField
+        <button type="submit" class="">X</button>
+    </form>
+</div>

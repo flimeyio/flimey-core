@@ -22,15 +22,14 @@
 
 @import model.auth.Ticket
 @import views.html.components.utils.navbar_category_closeable
-@import views.html.components.user.group_block
-@import model.group.Group
-@(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+@import views.html.forms.user.management.new_group_form
+@import formdata.user.NewGroupForm
+@(newGroupForm: Form[NewGroupForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @navbar_category(Seq("Admin Area"))
     @management_nav()
 }{
-    @navbar_category_closeable(Seq("Group Management"), routes.ManagementController.index())
-    @message_box_error(msg)
-    @group_block(groups)
+    @navbar_category_closeable(Seq("New Group"), routes.ManagementController.index())
+    @new_group_form(newGroupForm, msg)
 }()

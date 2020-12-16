@@ -18,7 +18,7 @@
 
 package controllers
 
-import formdata.user.NewUserForm
+import formdata.user.{NewGroupForm, NewUserForm}
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import model.user.Role
@@ -94,8 +94,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
-   * 
-   * @return
+   * Endpoint to get the admin page with open invitation form.<br />
+   * Shows an additional error if one is in the flash scope (on redirect).
+   * The form is always empty.
+   * <p> required admin rights are checked directly here.
+   *
+   * @return new invitation page html
    */
   def getInvitationForm: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -111,8 +115,12 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to add a new invitation/Invite a new User.<br />
+   * Invalid form data leads to a returned form page with error messages.
+   * <br />
+   * Returns an empty new invitation form on success, else the filled form with error messages.
    *
-   * @return
+   * @return new invitation page html
    */
   def postNewInvitation: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -133,9 +141,11 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to delete an Invitation.<br />
+   * After deletion, the invited User can no longer authenticate.
    *
-   * @param userId
-   * @return
+   * @param userId id of the invitation (user) to delete
+   * @return invitation management html
    */
   def deleteInvitation(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -150,48 +160,83 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to get all Groups.<br />
    *
-   * @return
+   * @return management view html with group list
    */
-  //FIXME
   def getGroups: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
+      groupService.getAllGroups map (groups => {
         val error = request.flash.get("error")
-        redirectWithNoRights
-      } else {
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
+        Ok(views.html.container.user.management.management_groups(groups, error))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> e.getMessage))
       }
     }
   }
 
   /**
+   * Endpoint to get the admin page with open new Group form.<br />
+   * The form is empty by default.<br />
+   * <p> required admin rights are checked directly here.
    *
-   * @return
+   * @return management page html with new Group form
    */
-  //FIXME
+  def getNewGroupForm: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      //In this plain get controller, the rights must be checked here, because no service call is executed
+      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
+        redirectWithNoRights
+      } else {
+        val emptyForm = NewGroupForm.form.fill(NewGroupForm.Data(""))
+        val error = request.flash.get("error")
+        Future.successful(Ok(views.html.container.user.management.management_groups_new(emptyForm, error)))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to post a new Group.<br />
+   * Invalid form data leads to a returned form page with error messages.
+   * <br />
+   * Redirects to group overview on success, else the filled form with error messages.
+   *
+   * @return new group page or group overview on success
+   */
   def postNewGroup: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
-        redirectWithNoRights
-      } else {
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
-      }
+      NewGroupForm.form.bindFromRequest fold(
+        errorForm => {
+          Future.successful(Ok(views.html.container.user.management.management_groups_new(errorForm)))
+        },
+        data => {
+          groupService.addGroup(data.groupName) map (_ => {
+            Redirect(routes.ManagementController.getGroups())
+          }) recoverWith {
+            case e =>
+              logger.error(e.getMessage, e)
+              Future.successful(Ok(views.html.container.user.management.management_groups_new(NewGroupForm.form.fill(data), Option(e.getMessage))))
+          }
+        })
     }
   }
 
   /**
+   * Endpoint to delete a Group.<br />
    *
-   * @param groupId
-   * @return
+   * @param groupId id of the Group to delete
+   * @return redirect to getGroups (Group overview management html)
    */
-  //FIXME
   def deleteGroup(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
-        redirectWithNoRights
-      } else {
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
+      groupService.deleteGroup(groupId) map (_ => {
+        Redirect(routes.ManagementController.getGroups())
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getGroups()).flashing("error" -> e.getMessage))
       }
     }
   }

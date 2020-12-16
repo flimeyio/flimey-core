@@ -16,28 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.group
-
-import com.google.inject.Inject
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
-
-import scala.concurrent.ExecutionContext
+package model.group
 
 /**
- * DB interface for Asset Viewer relations.
- * Provided methods are UNSAFE and must only be used by service classes!
+ * Model class representing the viewer and editor group relations of a target group.
+ * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive hull.
  *
- * @param dbConfigProvider injected db config
- * @param executionContext future execution context
+ * @param target the group whose contents are viewed or edited by others
+ * @param viewers groups that can only view the content of the target
+ * @param editors groups that can view and edit the content of the target
  */
-class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
-
-  val assetViewers = TableQuery[AssetViewerTable]
-  val groups = TableQuery[GroupTable]
-
-  //TODO
-
-}
+case class GroupViewerRelation(target: Group, viewers: Set[Group], editors: Set[Group])

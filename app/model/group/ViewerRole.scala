@@ -19,11 +19,20 @@
 package model.group
 
 /**
- * The AssetView data class.
- * An AssetView represents the many to many 'can view' relation between Group and Asset.
- *
- * @param id unique identifier
- * @param assetId id of the asset
- * @param groupId id of the group with 'view' rights
+ * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
  */
-case class AssetViewer(id: Long, assetId: Long, groupId: Long)
+object ViewerRole extends Enumeration {
+
+  type Role = Value
+
+  val VIEWER, EDITOR = Value
+
+  def isAtLeastViewer(role: Role): Boolean = {
+    role == VIEWER || role == EDITOR
+  }
+
+  def isAtLeastEditor(role: Role): Boolean = {
+    role == EDITOR
+  }
+
+}

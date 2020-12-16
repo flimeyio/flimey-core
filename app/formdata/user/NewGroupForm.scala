@@ -16,28 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package db.group
+package formdata.user
 
-import com.google.inject.Inject
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
+import play.api.data.Forms._
+import play.api.data._
 
-import scala.concurrent.ExecutionContext
+object NewGroupForm {
 
-/**
- * DB interface for Asset Viewer relations.
- * Provided methods are UNSAFE and must only be used by service classes!
- *
- * @param dbConfigProvider injected db config
- * @param executionContext future execution context
- */
-class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+  case class Data(groupName: String)
 
-  val assetViewers = TableQuery[AssetViewerTable]
-  val groups = TableQuery[GroupTable]
-
-  //TODO
+  val form: Form[Data] = Form(
+    mapping(
+      "groupName" -> nonEmptyText
+    )(Data.apply)(Data.unapply)
+  )
 
 }
