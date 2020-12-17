@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020  Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,20 +23,21 @@
 
 @helper.form(action = routes.AuthController.authenticate) {
     @CSRF.formField
-
+    <div>
+    @if(authForm.error("email").isDefined){
+        <div>@message_box_error(Option("Invalid email"))</div>
+    }
+    </div>
     <div>@message_box_error(msg)</div>
 
     <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email" value="@authForm.data("email")"/>
     <input type="text" name="key" id="input-nasf" class="form-input spaced-top-10" placeholder="key" value="@authForm.data("key")"/>
     <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password" value="@authForm.data("password")"/>
     <div class="">
-        <label class="">
+        <fieldset class="large-7 cell">
             <input type="checkbox" name="agree" @if(authForm.data.contains("agree") && authForm.data("agree").toBoolean){checked="true"} value="true"/>
-            <span class=""></span>
-        </label>
-        <div class="">
-            I agree to the Terms and Conditions
-        </div>
+            <label for="checkbox"> I agree to the Terms and Conditions </label>
+        </fieldset>
     </div>
-    <button class="">Go</button>
+    <button class="button">Go</button>
 }
