@@ -15,23 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import auth.model.Ticket
-@import user.model.Role
-@()(implicit ticket: Ticket)
 
-<div class="" >
-    <a href="#" class=""><div class="">Overview</div></a>
-    <a href="#" class=""><div class="">Collections</div></a>
-    <a href="@routes.AssetController.index()" class=""><div class="">Assets</div></a>
-
-    @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-        <a href="@routes.ModelAssetController.index()" class=""><div class="">Model</div></a>
-    }
-
-    @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
-        <a href="@routes.ManagementController.index()" class=""><div class="">Admin</div></a>
-    }
-
-    <a href="@routes.AccountController.getAccountOverview()" class=""><div class="">Account</div></a>
-</div>
-
+@import group.model.Group
+@import views.html.components.user.group_tile
+@(groups: Seq[Group])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+<ul>
+@for(group <- groups){
+    <li>@group.name</li>
+}
+</ul>

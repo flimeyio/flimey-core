@@ -22,7 +22,6 @@ import auth.model.Ticket
 import com.google.inject.Inject
 import group.model.Group
 import group.repository.GroupRepository
-import user.repository.UserRepository
 import util.assertions.RoleAssertion
 
 import scala.concurrent.Future
@@ -32,9 +31,8 @@ import scala.concurrent.Future
  * This class is normally used by dependency injection inside controller endpoints.
  *
  * @param groupRepository injected db interface for Group entities.
- * @param userRepository injected db interface for User entities.
  */
-class GroupService @Inject()(groupRepository: GroupRepository, userRepository: UserRepository) extends RoleAssertion {
+class GroupService @Inject()(groupRepository: GroupRepository) extends RoleAssertion {
 
   /**
    * Get all existing Groups<br />
@@ -43,12 +41,30 @@ class GroupService @Inject()(groupRepository: GroupRepository, userRepository: U
    * Fails without WORKER rights.
    *
    * @param ticket implicit authentication ticket
-   * @return
+   * @return all Groups of the system
    */
   def getAllGroups(implicit ticket: Ticket): Future[Seq[Group]] = {
     try {
       assertWorker
       groupRepository.getAll
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Get all Groups of a single User.<br />
+   * The User is specified by his authentication ticket.<br />
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without WORKER rights.
+   *
+   * @param ticket implicit authentication ticket
+   * @return groups of the calling User
+   */
+  def getGroupsOfUser(implicit ticket: Ticket): Future[Seq[Group]] = {
+    try {
+      assertWorker
+      groupRepository.getAllOfUser(ticket.authSession.userId)
     } catch {
       case e: Throwable => Future.failed(e)
     }
