@@ -64,6 +64,18 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   def getAll: Future[Seq[Group]] = db.run(groups.result)
 
   /**
+   * Get all Groups of a single User.
+   *
+   * @param userId id of the User
+   * @return groups the User is member of
+   */
+  def getAllOfUser(userId: Long): Future[Seq[Group]] = {
+    db.run((for {
+      (c, s) <- groupMemberships.filter(_.userId === userId) join groups on (_.groupId === _.id)
+    } yield (c, s)).result).map(_.map(_._2))
+  }
+
+  /**
    * Delete an existing Group.
    * This operation deletes also all associated GroupMemberships
    * and all associated AssetViewers.

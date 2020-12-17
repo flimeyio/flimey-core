@@ -31,6 +31,7 @@ GET     /auth                                               controllers.AuthCont
 POST    /auth                                               controllers.AuthController.authenticate()
 
 GET     /account                                            controllers.AccountController.index()
+GET     /account/overview                                   controllers.AccountController.getAccountOverview()
 
 GET     /model                                              controllers.ModelAssetController.index()
 
