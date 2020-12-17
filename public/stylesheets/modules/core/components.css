@@ -26,11 +26,11 @@
     padding-left: 2%;
     padding-bottom: 0.2%;
     padding-top: 0.2%;
-    background-color: var(--color-sec-dark);
+    background-color: var(--color-sec);
     color: #ffffff;
 }
 .top-bar .menu{
-    background-color:var(--color-sec-dark) ;
+    background-color:var(--color-sec) ;
 }
 
 .full-size-container{
@@ -48,6 +48,7 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     font-size: large;
     padding: 7px;
+    z-index: 2;
 }
 .card-divider{
     background-color: #ffffff;
@@ -82,3 +83,16 @@ a:hover{
     background-color: var(--color-prim-dark);
 }
 
+.background-image{
+    position:relative;
+    top: 5%;
+    left: 15%;
+    z-index: 1;
+    width: 28%;
+}
+
+.callout{
+    padding: 6px;
+    font-size: medium;
+    color: var(--color-error);
+}

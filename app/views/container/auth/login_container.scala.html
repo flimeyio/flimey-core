@@ -16,7 +16,6 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-
 @import views.html.forms.auth.login_form
 @import views.html.components.utils.message_box_error
 @import formdata.auth.LoginForm
@@ -24,17 +23,20 @@
 @(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @main {
-        <div class="card">
-            <div class="card-divider">
-                <div class="card-header-left">Log In</div>
-                <div class="card-header-right"> &nbsp;or&nbsp;
-                    <a href="@routes.AuthController.getAuthenticatePage()">Authenticate&nbsp;&nbsp;</a>
-                </div>
-            </div>
-            <div class="card-section">
-            @login_form(loginForm, msg)
+    <div class="card">
+        <div class="card-divider">
+            <div class="card-header-left">Log In</div>
+            <div class="card-header-right"> &nbsp;or&nbsp;
+                <a href="@routes.AuthController.getAuthenticatePage()">Authenticate&nbsp;&nbsp;</a>
             </div>
         </div>
+        <div class="card-section">
+        @login_form(loginForm, msg)
+        </div>
+    </div>
+    <div class="background-image">
+        <img src="@routes.Assets.versioned("images/flimey_core_blurr20_1024.png")"/>
+    </div>
     <div>
     @footer()
     </div>
