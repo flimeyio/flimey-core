@@ -15,19 +15,20 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-
+@import auth.model.Ticket
+@import group.model.Group
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
+@import views.html.components.utils.navbar_category_closeable
+@import views.html.components.user.group_block
+@(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
-@import model.auth.Ticket
-@(msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
-
-<!-- TODO: this template is not used yet -->
 @app {
-    @navbar_category(Seq("Group Management"))
-    @message_box_error(msg)
+    @navbar_category(Seq("Admin Area"))
     @management_nav()
 }{
-    <!-- TODO -->
+    @navbar_category_closeable(Seq("Group Management"), routes.ManagementController.index())
+    @message_box_error(msg)
+    @group_block(groups)
 }()

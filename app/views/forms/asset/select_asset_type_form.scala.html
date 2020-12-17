@@ -16,8 +16,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 
-@import model.asset.AssetType
-
+@import assetmodel.model.AssetType
 @(selectedType: Option[AssetType], assetTypes: Seq[AssetType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
     @helper.form(action = routes.AssetController.changeAssetType()) {

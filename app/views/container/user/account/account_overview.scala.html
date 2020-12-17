@@ -15,28 +15,21 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-
+@import auth.model.Ticket
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
-
 @import views.html.helper.CSRF
-@import model.auth.Ticket
-@(msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+@import group.model.Group
+@import views.html.components.user.group_grid
+@import views.html.forms.user.account.log_out_form
+@(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @navbar_category(Seq("Account"))
     @message_box_error(msg)
-
-    <!-- FIXME: the logout buttons should me moved to a separate component -->
-
-    <form role="form" action='@routes.AuthController.logout()' method="post">
-        @CSRF.formField
-        <button type="submit">Log out</button>
-    </form>
-    <hr>
-    <form role="form" action='@routes.AuthController.logout(Option(true))' method="post">
-        @CSRF.formField
-        <button type="submit">Log out on all devices</button>
-    </form>
+    <h1>Log Out</h1>
+    @log_out_form()
+    <h1>Memberships</h1>
+    @group_grid(groups)
 }()()

@@ -1,0 +1,32 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+
+@import auth.model.Ticket
+@import views.html.components.utils.message_box_error
+@import views.html.components.utils.navbar_category
+@import views.html.components.utils.management_nav
+@import views.html.helper.CSRF
+@import views.html.forms.user.account.log_out_form
+@(msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@app {
+    @navbar_category(Seq("Account"))
+    @message_box_error(msg)
+    <h1>Log Out</h1>
+    @log_out_form()
+}()()

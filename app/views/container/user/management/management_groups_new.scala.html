@@ -1,0 +1,33 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import auth.model.Ticket
+@import group.formdata.NewGroupForm
+@import views.html.components.utils.message_box_error
+@import views.html.components.utils.navbar_category
+@import views.html.components.utils.management_nav
+@import views.html.components.utils.navbar_category_closeable
+@import views.html.forms.user.management.new_group_form
+@(newGroupForm: Form[NewGroupForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@app {
+    @navbar_category(Seq("Admin Area"))
+    @management_nav()
+}{
+    @navbar_category_closeable(Seq("New Group"), routes.ManagementController.index())
+    @new_group_form(newGroupForm, msg)
+}()

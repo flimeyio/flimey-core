@@ -1,0 +1,31 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020  Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import group.formdata.NewGroupForm
+@import views.html.helper.CSRF
+@import views.html.components.utils.message_box_error
+@(newGroupForm: Form[NewGroupForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@helper.form(action = routes.ManagementController.postNewGroup()) {
+    @CSRF.formField
+
+    <!--Errors that are thrown by the server logic-->
+    <div>@message_box_error(msg)</div>
+
+    <input type="text" name="groupName" placeholder="group name" value="@newGroupForm.data("groupName")"/>
+    <button class="">Create</button>
+}

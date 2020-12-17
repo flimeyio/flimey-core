@@ -15,15 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-
+@import auth.model.Ticket
+@import user.model.User
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
-
-@import model.user.User
 @import views.html.components.user.invitation_block
 @import views.html.components.utils.navbar_category_closeable
-@import model.auth.Ticket
 @(invitedUsers: Seq[User], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

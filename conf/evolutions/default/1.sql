@@ -65,10 +65,20 @@ create table `u_group` (
 
 create table `asset_viewer` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `asset_id` BIGINT NOT NULL,
-    `group_id` BIGINT NOT NULL,
-    FOREIGN KEY(asset_id) REFERENCES asset(id),
-    FOREIGN KEY(group_id) REFERENCES u_group(id)
+    `target_id` BIGINT NOT NULL,
+    `viewer_id` BIGINT NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+    FOREIGN KEY(target_id) REFERENCES asset(id),
+    FOREIGN KEY(viewer_id) REFERENCES u_group(id)
+);
+
+create table `group_viewer` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `target_id` BIGINT NOT NULL,
+    `viewer_id` BIGINT NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+    FOREIGN KEY(target_id) REFERENCES u_group(id),
+    FOREIGN KEY(viewer_id) REFERENCES u_group(id)
 );
 
 create table `group_membership` (
@@ -81,12 +91,15 @@ create table `group_membership` (
 
 -- Default inserts on installation
 INSERT INTO u_group(id, name) VALUES(1, 'public');
+INSERT INTO u_group(id, name) VALUES(2, 'system');
 INSERT INTO user(id, username, email, password, role, auth_key, accepted, enabled) VALUES(1, 'System', NULL, NULL, 'SYSTEM', 'root', false, false);
+INSERT INTO group_membership(id, group_id, user_id) VALUES (1, 2, 1);
 
 -- !Downs
 
 drop table `group_membership`;
 drop table `asset_viewer`;
+drop table `group_viewer`;
 drop table `u_group`;
 drop table `user`;
 drop table `asset_property`;

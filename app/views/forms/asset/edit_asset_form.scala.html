@@ -15,11 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-
-@import formdata.asset.NewAssetForm
-@import model.asset.AssetType
+@import asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
-
+@import assetmodel.model.AssetType
 @(assetType: AssetType,
         assetId: Long,
         propertyKeys: Seq[(String, String)],

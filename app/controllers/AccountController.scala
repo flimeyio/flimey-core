@@ -18,6 +18,7 @@
 
 package controllers
 
+import group.service.GroupService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
@@ -25,17 +26,50 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-
+/**
+ * AccountController responsible for account actions and information.
+ *
+ * @param cc                 injected ControllerComponents
+ * @param withAuthentication injected AuthenticationFilter
+ * @param groupService       injected GroupService
+ */
 @Singleton
-class AccountController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter)
+class AccountController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter, groupService: GroupService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
 
-
+  /**
+   * Endpoint to get the account page without overview information (just log out buttons).<br />
+   * This endpoint should not be accessed directly but is a fallback for the actual overview endpoint.
+   *
+   * @return account overview html
+   */
   def index: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
+      val error = request.flash.get("error")
+      Future.successful(Ok(views.html.container.user.account.account_overview_fallback(error)))
+    }
+  }
+
+  /**
+   * Endpoint to get the account overview page.<br />
+   * Provides all information at once the user needs to understand his rights an accesses.
+   *
+   * @return account overview html
+   */
+  def getAccountOverview: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      for {
+        groups <- groupService.getGroupsOfUser
+      } yield {
         val error = request.flash.get("error")
-        Future.successful(Ok(views.html.container.user.account.account_overview(error)))
+        Ok(views.html.container.user.account.account_overview(groups, error))
+      }
+    } recoverWith {
+      case e =>
+        logger.error(e.getMessage, e)
+        Future.successful(Redirect(routes.ApplicationController.index()).flashing("error" -> e.getMessage))
     }
   }
 

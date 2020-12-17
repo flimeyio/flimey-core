@@ -31,6 +31,7 @@ GET     /auth                                               controllers.AuthCont
 POST    /auth                                               controllers.AuthController.authenticate()
 
 GET     /account                                            controllers.AccountController.index()
+GET     /account/overview                                   controllers.AccountController.getAccountOverview()
 
 GET     /model                                              controllers.ModelAssetController.index()
 
@@ -69,9 +70,9 @@ POST    /management/invitations/new                         controllers.Manageme
 POST    /management/invitations/:userId/delete              controllers.ManagementController.deleteInvitation(userId: Long)
 
 GET     /management/groups                                  controllers.ManagementController.getGroups()
-#GET     /management/groups/new                              controllers.ManagementController.ge
-#POST    /management/groups/new
-#POST    /management/groups/:groupId/delete
+GET     /management/groups/new                              controllers.ManagementController.getNewGroupForm()
+POST    /management/groups/new                             controllers.ManagementController.postNewGroup()
+POST    /management/groups/:groupId/delete                  controllers.ManagementController.deleteGroup(groupId: Long)
 
 
 
