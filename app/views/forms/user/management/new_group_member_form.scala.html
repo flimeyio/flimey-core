@@ -15,15 +15,18 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import group.model.Group
 @import views.html.helper.CSRF
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.utils.message_box_error
+@import group.formdata.NewGroupMemberForm
+@(groupId: Long, newGroupMemberForm: Form[NewGroupMemberForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Show Details and Edit</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
-</div>
+@helper.form(action = routes.ManagementController.addUserToGroup(groupId)) {
+    @CSRF.formField
+
+    @if(newGroupMemberForm.error("userMail").isDefined){
+        <div>@message_box_error(Option("Invalid email"))</div>
+    }
+
+    <input type="text" name="userMail" placeholder="User E-Mail" value="@newGroupMemberForm.data("userMail")"/>
+    <button class="">Add Member</button>
+}
