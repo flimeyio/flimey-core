@@ -64,6 +64,13 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   def getAll: Future[Seq[Group]] = db.run(groups.result)
 
   /**
+   * Get a Group by their id.
+   *
+   * @return specified Group
+   */
+  def getById(groupId: Long): Future[Option[Group]] = db.run(groups.filter(_.id === groupId).result.headOption)
+
+  /**
    * Get all Groups of a single User.
    *
    * @param userId id of the User

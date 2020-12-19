@@ -20,11 +20,14 @@ package group.service
 
 import auth.model.Ticket
 import com.google.inject.Inject
-import group.model.Group
-import group.repository.GroupRepository
+import group.model.{Group, GroupMembership}
+import group.repository.{GroupMembershipRepository, GroupRepository}
+import user.model.{Role, User}
+import user.repository.UserRepository
 import util.assertions.RoleAssertion
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Service class to provide SAFE business logic for Groups, Viewers and their User relations.
@@ -32,7 +35,8 @@ import scala.concurrent.Future
  *
  * @param groupRepository injected db interface for Group entities.
  */
-class GroupService @Inject()(groupRepository: GroupRepository) extends RoleAssertion {
+class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRepository: GroupMembershipRepository,
+                             userRepository: UserRepository) extends RoleAssertion {
 
   /**
    * Get all existing Groups<br />
@@ -47,6 +51,27 @@ class GroupService @Inject()(groupRepository: GroupRepository) extends RoleAsser
     try {
       assertWorker
       groupRepository.getAll
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Get a single Group by its id. fails if no Group can be found.<br />
+   * * <p> This is a safe implementation and can be used by controller classes.
+   * * <p> Fails without WORKER rights.
+   *
+   * @param groupId id of the Group
+   * @param ticket implicit authentication ticket
+   * @return the Group
+   */
+  def getGroup(groupId: Long)(implicit ticket: Ticket): Future[Group] = {
+    try {
+      assertWorker
+      groupRepository.getById(groupId) map (groupOption => {
+        if(groupOption.isEmpty) throw new Exception("No such Group found")
+        groupOption.get
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -69,6 +94,25 @@ class GroupService @Inject()(groupRepository: GroupRepository) extends RoleAsser
       case e: Throwable => Future.failed(e)
     }
   }
+
+  /**
+   * Get all Users (members) of a single Group.<br />
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without WORKER rights.
+   *
+   * @param groupId if of the Group
+   * @param ticket implicit authentication ticket
+   * @return Users of the Group
+   */
+  def getUsersOfGroup(groupId: Long)(implicit ticket: Ticket): Future[Seq[User]] = {
+    try {
+      assertWorker
+      groupMembershipRepository.getMembersOfGroup(groupId)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
 
   ///**
   // * Get all Groups with their Rights (GroupViewerRelation) which are direct viewer of the target group.<br />
@@ -124,7 +168,9 @@ class GroupService @Inject()(groupRepository: GroupRepository) extends RoleAsser
 
   /**
    * Delete a Group by its id.<br />
-   * This operation also deletes all Viewer relations and memberships regarding this Group.<br />
+   * This operation also deletes all Viewer relations and memberships regarding this Group.
+   * The "system" and "public" groups can not be deleted
+   * <br />
    * <p> This operation requires at least admin rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -135,8 +181,68 @@ class GroupService @Inject()(groupRepository: GroupRepository) extends RoleAsser
   def deleteGroup(groupId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       assertAdmin
-      if(groupId == 1 || groupId == 2) throw new Exception("The public and system groups can not be deleted.")
-      groupRepository.delete(groupId)
+      groupRepository.getById(groupId) flatMap (groupOption => {
+        if(groupOption.isEmpty) throw new Exception("Invalid Group")
+        val group = groupOption.get
+        if(group.name == "public" || group.name == "system") throw new Exception("The public and system groups can not be deleted.")
+        groupRepository.delete(groupId)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Add a User as member to a Group.<br />
+   * <p> This operation requires at least admin rights
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param groupId id of the Group to add the User
+   * @param email of the User to add
+   * @param ticket implicit authentication ticket
+   * @return id of the new membership
+   */
+  def addMembership(groupId: Long, email: String)(implicit ticket: Ticket): Future[Long] = {
+    try {
+      assertAdmin
+      userRepository.getByEMail(email) flatMap (userOption => {
+        if(userOption.isEmpty) throw new Exception("No such User found")
+        val user = userOption.get
+        groupMembershipRepository.add(GroupMembership(0, groupId, user.id))
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Delete a User from a Group<br />
+   * No User can be removed from the "public" Group.
+   * SYSTEM Users can not be removed from the "system" Group.<br />
+   * <p> This operation requires at least admin rights
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param groupId id of the Group to remove the User from
+   * @param userId id of the User to remove from the Group
+   * @param ticket implicit authentication ticket
+   * @return status future
+   */
+  def deleteMembership(groupId: Long, userId: Long)(implicit ticket: Ticket): Future[Int] = {
+    try {
+      assertAdmin
+      groupRepository.getById(groupId) flatMap (groupOption => {
+        if(groupOption.isEmpty) throw new Exception("Invalid Group")
+        val group = groupOption.get
+        if(group.name == "public") throw new Exception("No user can be removed from this group")
+        userRepository.getById(userId) flatMap (userOption => {
+          if(userOption.isEmpty) throw new Exception("Invalid User")
+          val user = userOption.get
+          if(Role.isAtLeastSystem(user.role) && group.name == "system"){
+            throw new Exception("The SYSTEM user can not be removed from this group")
+          }
+          groupMembershipRepository.delete(userId, groupId)
+        })
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }
