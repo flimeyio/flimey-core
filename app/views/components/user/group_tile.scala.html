@@ -15,12 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import group.model.Group
 @import views.html.helper.CSRF
+@import user.model.Group
 @(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div>
-    <p> @group.name </p>
+    <p>@group.name</p>
+    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Show Details and Edit</a></p>
     <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
         @CSRF.formField
         <button type="submit" class="">X</button>

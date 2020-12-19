@@ -16,27 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.model
+package user.model
 
 /**
- * Model and db entity class representing the relation between two groups.
+ * The GroupMembership data class.
+ * A GroupMembership represents the many to many 'is member' relations between Group and User.
  *
  * @param id unique identifier
- * @param targetId id of the target group
- * @param viewerId id of the viewer group (which can do something to the target)
- * @param role role of the viewer group regarding the target
+ * @param groupId id of the group
+ * @param userId id of the user
  */
-case class Viewer (id: Long, targetId: Long, viewerId: Long, role: ViewerRole.Role)
-
-object Viewer {
-
-  def applyRaw (id: Long, targetId: Long, viewerId: Long, role: String): Viewer = {
-    Viewer(id, targetId, viewerId, ViewerRole.withName(role))
-  }
-
-  def unapplyToRaw(arg: Viewer): Option[(Long, Long, Long, String)] =
-    Option((arg.id, arg.targetId, arg.viewerId, arg.role.toString))
-
-  val tupledRaw: ((Long, Long, Long, String)) => Viewer = (this.applyRaw _).tupled
-
-}
+case class GroupMembership(id: Long, groupId: Long, userId: Long)

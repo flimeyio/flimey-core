@@ -18,12 +18,12 @@
 
 package controllers
 
-import group.service.GroupService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import user.service.GroupService
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global

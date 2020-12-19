@@ -16,11 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.model
+package user.model
 
 /**
- * The Group data class
+ * Model and db entity class representing the relation between two groups.
+ *
  * @param id unique identifier
- * @param name unique name
+ * @param targetId id of the target group
+ * @param viewerId id of the viewer group (which can do something to the target)
+ * @param role role of the viewer group regarding the target
  */
-case class Group (id: Long, name: String)
+case class Viewer (id: Long, targetId: Long, viewerId: Long, role: ViewerRole.Role)
+
+object Viewer {
+
+  def applyRaw (id: Long, targetId: Long, viewerId: Long, role: String): Viewer = {
+    Viewer(id, targetId, viewerId, ViewerRole.withName(role))
+  }
+
+  def unapplyToRaw(arg: Viewer): Option[(Long, Long, Long, String)] =
+    Option((arg.id, arg.targetId, arg.viewerId, arg.role.toString))
+
+  val tupledRaw: ((Long, Long, Long, String)) => Viewer = (this.applyRaw _).tupled
+
+}

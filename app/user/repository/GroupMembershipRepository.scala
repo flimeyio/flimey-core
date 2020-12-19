@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
+package user.repository
 
 import com.google.inject.Inject
-import group.model.{Group, GroupMembership}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
+import user.model.{Group, GroupMembership, User}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,6 +39,7 @@ class GroupMembershipRepository @Inject()(protected val dbConfigProvider: Databa
 
   val groupMemberships = TableQuery[GroupMembershipTable]
   val groups = TableQuery[GroupTable]
+  val users = TableQuery[UserTable]
 
   /**
    * Get all Groups a User is member of.
@@ -49,6 +50,20 @@ class GroupMembershipRepository @Inject()(protected val dbConfigProvider: Databa
   def get(userId: Long): Future[Seq[Group]] = {
     db.run((for {
       (c, s) <- groupMemberships.filter(_.userId === userId) joinLeft groups on (_.groupId === _.id)
+    } yield (c, s)).result).map(res => {
+      res.map(_._2).filter(_.isDefined).map(_.get)
+    })
+  }
+
+  /**
+   * Get all Users who are members of a given Group.
+   *
+   * @param groupId id of the Group
+   * @return all Users who are member of the Group
+   */
+  def getMembersOfGroup(groupId: Long): Future[Seq[User]] = {
+    db.run((for {
+      (c, s) <- groupMemberships.filter(_.groupId === groupId) joinLeft users on (_.userId === _.id)
     } yield (c, s)).result).map(res => {
       res.map(_._2).filter(_.isDefined).map(_.get)
     })

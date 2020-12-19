@@ -71,8 +71,13 @@ POST    /management/invitations/:userId/delete              controllers.Manageme
 
 GET     /management/groups                                  controllers.ManagementController.getGroups()
 GET     /management/groups/new                              controllers.ManagementController.getNewGroupForm()
-POST    /management/groups/new                             controllers.ManagementController.postNewGroup()
+POST    /management/groups/new                              controllers.ManagementController.postNewGroup()
 POST    /management/groups/:groupId/delete                  controllers.ManagementController.deleteGroup(groupId: Long)
+
+GET     /management/groups/:groupId                         controllers.ManagementController.getGroupEditor(groupId: Long)
+POST    /management/groups/:groupId/user                    controllers.ManagementController.addUserToGroup(groupId: Long)
+POST    /management/groups/:groupId/user/:userId/delete     controllers.ManagementController.deleteUserFromGroup(groupId: Long, userId: Long)
+
 
 
 

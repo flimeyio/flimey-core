@@ -18,27 +18,25 @@
 
 package controllers
 
-import group.formdata.NewGroupForm
-import group.service.GroupService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.formdata.NewUserForm
+import user.formdata.{NewGroupForm, NewGroupMemberForm, NewUserForm}
 import user.model.Role
-import user.service.UserService
+import user.service.{GroupService, UserService}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * ManagementController responsible for all administrative actions like user and group management.
  *
- * @param cc injected ControllerComponents
+ * @param cc                 injected ControllerComponents
  * @param withAuthentication injected AuthenticationFilter
- * @param userService injected UserService
- * @param groupService injected GroupService
+ * @param userService        injected UserService
+ * @param groupService       injected GroupService
  */
 @Singleton
 class ManagementController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
@@ -108,7 +106,7 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
       if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
         redirectWithNoRights
       } else {
-        val emptyForm = NewUserForm.form.fill(NewUserForm.Data("","WORKER"))
+        val emptyForm = NewUserForm.form.fill(NewUserForm.Data("", "WORKER"))
         val error = request.flash.get("error")
         Future.successful(Ok(views.html.container.user.management.management_invitations_new(emptyForm, error)))
       }
@@ -242,36 +240,69 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+
   /**
+   * Endpoint to get the Group editor with all members and the new member form.<br />
    *
-   * @param email
-   * @param groupId
-   * @return
+   * @return management view html with group editor
    */
-  //FIXME
-  def addUserToGroup(email: Long, groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+  def getGroupEditor(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
-        redirectWithNoRights
-      } else {
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
+      for {
+        group <- groupService.getGroup(groupId)
+        members <- groupService.getUsersOfGroup(groupId)
+      } yield {
+        val error = request.flash.get("error")
+        val emptyForm = NewGroupMemberForm.form.fill(NewGroupMemberForm.Data(""))
+        Ok(views.html.container.user.management.management_group_editor(group, members, emptyForm, error))
       }
+    } recoverWith {
+      case e =>
+        logger.error(e.getMessage, e)
+        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> e.getMessage))
     }
   }
 
   /**
+   * Endpoint to add a new member (User) to a Group.<br />
+   * Invalid form data leads to a returned editor page with empty form and error messages.
    *
-   * @param email
-   * @param groupId
-   * @return
+   * @param groupId id of the Group
+   * @return redirect to group editor
    */
-  //FIXME
-  def deleteUserFromGroup(email: Long, groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+  def addUserToGroup(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
-        redirectWithNoRights
-      } else {
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
+      NewGroupMemberForm.form.bindFromRequest fold(
+        errorForm => {
+          Future.successful(Redirect(routes.ManagementController.getGroupEditor(groupId)).flashing("error" -> "Invalid e-mail address"))
+        },
+        data => {
+          groupService.addMembership(groupId, data.userMail) map (_ => {
+            Redirect(routes.ManagementController.getGroupEditor(groupId))
+          }) recoverWith {
+            case e =>
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ManagementController.getGroupEditor(groupId)).flashing("error" -> e.getMessage))
+          }
+        })
+    }
+  }
+
+  /**
+   * Delete a member (User) from a Group.<br />
+   *
+   * @param groupId id of the Group
+   * @param userId  id of the User to remove
+   * @return redirect to group editor
+   */
+  def deleteUserFromGroup(groupId: Long, userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      groupService.deleteMembership(groupId, userId) map (_ => {
+        Redirect(routes.ManagementController.getGroupEditor(groupId))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getGroupEditor(groupId)).flashing("error" -> e.getMessage))
       }
     }
   }

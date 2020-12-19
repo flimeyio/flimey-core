@@ -16,16 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package auth.model
+package user.repository
 
-import user.model.Group
+import slick.jdbc.MySQLProfile.api._
+import user.model.Viewer
 
 /**
- * The Ticket data class.<br />
- * A Ticket is a non persistent. It stores data at runtime to provide all authentication based information of
- * a authenticated User.
+ * Slick framework db mapping for Viewers which target Groups.
+ * see evolutions/default for schema creation.
  *
- * @param authSession AuthSession object of the Users current session
- * @param groups all Groups the User is Member.
+ * @param tag for mysql
  */
-case class Ticket(authSession: AuthSession, groups: Seq[Group])
+class GroupViewerTable(tag: Tag) extends Table[Viewer](tag, "group_viewer") {
+
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def targetId = column[Long]("target_id")
+  def viewerId = column[Long]("viewer_id")
+  def role = column[String]("role")
+
+  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
+
+}

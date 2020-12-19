@@ -69,7 +69,8 @@ create table `asset_viewer` (
     `viewer_id` BIGINT NOT NULL,
     `role` VARCHAR(255) NOT NULL,
     FOREIGN KEY(target_id) REFERENCES asset(id),
-    FOREIGN KEY(viewer_id) REFERENCES u_group(id)
+    FOREIGN KEY(viewer_id) REFERENCES u_group(id),
+    UNIQUE KEY (`target_id`, `viewer_id`)
 );
 
 create table `group_viewer` (
@@ -78,7 +79,8 @@ create table `group_viewer` (
     `viewer_id` BIGINT NOT NULL,
     `role` VARCHAR(255) NOT NULL,
     FOREIGN KEY(target_id) REFERENCES u_group(id),
-    FOREIGN KEY(viewer_id) REFERENCES u_group(id)
+    FOREIGN KEY(viewer_id) REFERENCES u_group(id),
+    UNIQUE KEY (`target_id`, `viewer_id`)
 );
 
 create table `group_membership` (
@@ -86,7 +88,8 @@ create table `group_membership` (
     `group_id` BIGINT NOT NULL,
     `user_id` BIGINT NOT NULL,
     FOREIGN KEY(group_id) REFERENCES u_group(id),
-    FOREIGN KEY(user_id) REFERENCES user(id)
+    FOREIGN KEY(user_id) REFERENCES user(id),
+    UNIQUE KEY (`group_id`, `user_id`)
 );
 
 -- Default inserts on installation

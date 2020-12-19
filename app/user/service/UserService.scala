@@ -20,9 +20,8 @@ package user.service
 
 import auth.model.Ticket
 import com.google.inject.Inject
-import user.model
-import user.model.User
-import user.repository.UserRepository
+import user.model.{GroupMembership, GroupStats, User}
+import user.repository.{GroupMembershipRepository, UserRepository}
 import util.assertions.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,7 +33,7 @@ import scala.concurrent.Future
  *
  * @param userRepository injected db interface for User entities.
  */
-class UserService @Inject()(userRepository: UserRepository) extends RoleAssertion {
+class UserService @Inject()(userRepository: UserRepository, groupMembershipRepository: GroupMembershipRepository) extends RoleAssertion {
 
   /**
    * Create a new User (invitation).<br />
@@ -44,7 +43,7 @@ class UserService @Inject()(userRepository: UserRepository) extends RoleAssertio
    * This is a safe implementation and can be used by controller classes.
    *
    * @param userName unique visible name of the User
-   * @param role represents rights see [[model.user.Role]] management doc for more information
+   * @param role represents rights see [[user.model.Role]] management doc for more information
    * @param ticket implicit authentication ticket
    * @return id of the newly created User
    */
@@ -86,6 +85,7 @@ class UserService @Inject()(userRepository: UserRepository) extends RoleAssertio
   /**
    * Authenticate a invited User.<br />
    * Fills the missing fields of a previously invited User and enables the login.
+   * Adds the User to the public group.
    * <br />
    * This is a safe implementation and can be used by controller classes.
    * <br />
@@ -97,7 +97,7 @@ class UserService @Inject()(userRepository: UserRepository) extends RoleAssertio
    * @param agree agreement to terms and conditions
    * @return
    */
-  def authenticateUser(key: String, email: String, password: String, agree: Boolean): Future[Int] = {
+  def authenticateUser(key: String, email: String, password: String, agree: Boolean): Future[Long] = {
     try {
       if (!agree) throw new Exception("You must agree to the Terms & Conditions to create an account!")
       userRepository.getByKey(key) flatMap (userOption => {
@@ -105,8 +105,7 @@ class UserService @Inject()(userRepository: UserRepository) extends RoleAssertio
         val credentialStatus = UserLogic.isValidAuthenticationData(email, password)
         if (!credentialStatus.valid) credentialStatus.throwError
         val userUpdate = UserLogic.updateCredentialsOnAuthentication(userOption.get, email, password)
-        //FIXME: add User to the public group
-        userRepository.update(userUpdate)
+        userRepository.update(userUpdate) flatMap( _ => groupMembershipRepository.add(GroupMembership(0, GroupStats.PUBLIC_ID, userUpdate.id)))
       })
     } catch {
       case e: Throwable => Future.failed(e)

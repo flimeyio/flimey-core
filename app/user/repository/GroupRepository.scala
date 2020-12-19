@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
+package user.repository
 
 import com.google.inject.Inject
-import group.model.Group
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
+import user.model.Group
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -62,6 +62,13 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * @return all Groups
    */
   def getAll: Future[Seq[Group]] = db.run(groups.result)
+
+  /**
+   * Get a Group by their id.
+   *
+   * @return specified Group
+   */
+  def getById(groupId: Long): Future[Option[Group]] = db.run(groups.filter(_.id === groupId).result.headOption)
 
   /**
    * Get all Groups of a single User.

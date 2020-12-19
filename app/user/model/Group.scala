@@ -16,14 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.model
+package user.model
 
 /**
- * Model class representing the viewer and editor group relations of a target group.
- * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive hull.
- *
- * @param target the group whose contents are viewed or edited by others
- * @param viewers groups that can only view the content of the target
- * @param editors groups that can view and edit the content of the target
+ * The Group data class
+ * @param id unique identifier
+ * @param name unique name
  */
-case class GroupViewerRelation(target: Group, viewers: Set[Group], editors: Set[Group])
+case class Group (id: Long, name: String)
