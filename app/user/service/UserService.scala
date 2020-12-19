@@ -20,7 +20,6 @@ package user.service
 
 import auth.model.Ticket
 import com.google.inject.Inject
-import user.model
 import user.model.User
 import user.repository.UserRepository
 import util.assertions.RoleAssertion
@@ -44,7 +43,7 @@ class UserService @Inject()(userRepository: UserRepository) extends RoleAssertio
    * This is a safe implementation and can be used by controller classes.
    *
    * @param userName unique visible name of the User
-   * @param role represents rights see [[model.user.Role]] management doc for more information
+   * @param role represents rights see [[user.model.Role]] management doc for more information
    * @param ticket implicit authentication ticket
    * @return id of the newly created User
    */
