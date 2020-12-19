@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,19 +22,22 @@
 @(authForm: Form[AuthenticateForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @main {
-    <div class="">
-        <div class="">
-            <div class="">
-                <div class="">
-                    <div class="">Authenticate</div> or <a href="@routes.AuthController.getLoginPage()">Log In</a>
-                </div>
-                <div class="">
-                @authenticate_form(authForm, msg)
-                </div>
+    <div class="card">
+        <div class="card-divider">
+            <div class="card-header-left">Authenticate</div>
+            <div class="card-header-right"> &nbsp;or&nbsp;
+                <a href="@routes.AuthController.getLoginPage()">Log In&nbsp;&nbsp;</a>
             </div>
         </div>
+        <div class="card-section">
+        @authenticate_form(authForm, msg)
+        </div>
+    </div>
+    <div class="background-image">
+        <img src="@routes.Assets.versioned("images/flimey_core_blurr20_1024.png")"/>
     </div>
     </div>
     @footer()
     </div>
 }
+

@@ -18,3 +18,7 @@
 
 @import './modules/core/index.css';
 /* more imports can be added here */
+html, body {
+    height: 100%;
+    margin: 0;
+}
