@@ -21,8 +21,7 @@ package auth.service
 import auth.model.Ticket
 import auth.repository.SessionRepository
 import com.google.inject.Inject
-import group.repository.GroupMembershipRepository
-import user.repository.UserRepository
+import user.repository.{GroupMembershipRepository, UserRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

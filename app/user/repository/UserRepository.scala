@@ -19,7 +19,6 @@
 package user.repository
 
 import com.google.inject.Inject
-import group.repository.GroupMembershipTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._

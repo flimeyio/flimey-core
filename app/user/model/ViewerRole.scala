@@ -16,23 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
-
-import group.model.GroupMembership
-import slick.jdbc.MySQLProfile.api._
+package user.model
 
 /**
- * Slick framework db mapping for GroupMembership.
- * see evolutions/default for schema creation.
- *
- * @param tag for mysql
+ * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
  */
-class GroupMembershipTable(tag: Tag) extends Table[GroupMembership](tag, "group_membership")  {
+object ViewerRole extends Enumeration {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def groupId = column[Long]("group_id")
-  def userId = column[Long]("user_id")
+  type Role = Value
 
-  override def * = (id, groupId, userId) <> (GroupMembership.tupled, GroupMembership.unapply)
+  val VIEWER, EDITOR = Value
+
+  def isAtLeastViewer(role: Role): Boolean = {
+    role == VIEWER || role == EDITOR
+  }
+
+  def isAtLeastEditor(role: Role): Boolean = {
+    role == EDITOR
+  }
 
 }

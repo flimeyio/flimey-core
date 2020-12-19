@@ -16,7 +16,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import auth.model.Ticket
-@import group.model.Group
+@import user.formdata.NewGroupMemberForm
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
@@ -25,7 +25,7 @@
 @import views.html.components.user.group_member_block
 @import views.html.components.user.group_detail_view
 @import views.html.forms.user.management.new_group_member_form
-@import group.formdata.NewGroupMemberForm
+@import user.model.Group
 @(group: Group, members: Seq[User], newGroupMemberForm: Form[NewGroupMemberForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

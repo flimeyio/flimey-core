@@ -16,18 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.service
+package user.service
 
 import auth.model.Ticket
 import com.google.inject.Inject
-import group.model.{Group, GroupMembership}
-import group.repository.{GroupMembershipRepository, GroupRepository}
-import user.model.{Role, User}
-import user.repository.UserRepository
+import user.model.{Group, GroupMembership, Role, User}
+import user.repository.{GroupMembershipRepository, GroupRepository, UserRepository}
 import util.assertions.RoleAssertion
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * Service class to provide SAFE business logic for Groups, Viewers and their User relations.

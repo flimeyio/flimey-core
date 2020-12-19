@@ -16,19 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.formdata
+package user.repository
 
-import play.api.data.Forms._
-import play.api.data._
+import slick.jdbc.MySQLProfile.api._
+import user.model.Viewer
 
-object NewGroupForm {
+/**
+ * Slick framework db mapping for Viewers which target Assets.
+ * see evolutions/default for schema creation.
+ *
+ * @param tag for mysql
+ */
+class AssetViewerTable(tag: Tag) extends Table[Viewer](tag, "asset_viewer") {
 
-  case class Data(groupName: String)
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def targetId = column[Long]("target_id")
+  def viewerId = column[Long]("viewer_id")
+  def role = column[String]("role")
 
-  val form: Form[Data] = Form(
-    mapping(
-      "groupName" -> nonEmptyText
-    )(Data.apply)(Data.unapply)
-  )
+  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
 
 }

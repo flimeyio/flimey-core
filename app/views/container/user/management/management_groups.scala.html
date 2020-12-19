@@ -16,12 +16,12 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import auth.model.Ticket
-@import group.model.Group
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
 @import views.html.components.utils.navbar_category_closeable
 @import views.html.components.user.group_block
+@import user.model.Group
 @(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

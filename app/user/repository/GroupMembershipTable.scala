@@ -16,19 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.formdata
+package user.repository
 
-import play.api.data.Forms._
-import play.api.data._
+import slick.jdbc.MySQLProfile.api._
+import user.model.GroupMembership
 
-object NewGroupMemberForm {
+/**
+ * Slick framework db mapping for GroupMembership.
+ * see evolutions/default for schema creation.
+ *
+ * @param tag for mysql
+ */
+class GroupMembershipTable(tag: Tag) extends Table[GroupMembership](tag, "group_membership")  {
 
-  case class Data(userMail: String)
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def groupId = column[Long]("group_id")
+  def userId = column[Long]("user_id")
 
-  val form: Form[Data] = Form(
-    mapping(
-      "userMail" -> email
-    )(Data.apply)(Data.unapply)
-  )
+  override def * = (id, groupId, userId) <> (GroupMembership.tupled, GroupMembership.unapply)
 
 }

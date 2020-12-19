@@ -16,22 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
+package user.repository
 
-import group.model.Group
 import slick.jdbc.MySQLProfile.api._
+import user.model.Viewer
 
 /**
- * Slick framework db mapping for Groups
+ * Slick framework db mapping for Viewers which target Groups.
  * see evolutions/default for schema creation.
  *
  * @param tag for mysql
  */
-class GroupTable(tag: Tag) extends Table[Group](tag, "u_group") {
+class GroupViewerTable(tag: Tag) extends Table[Viewer](tag, "group_viewer") {
 
-  def id = column[Long]("id",  O.PrimaryKey, O.AutoInc)
-  def name = column[String]("name", O.Unique)
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def targetId = column[Long]("target_id")
+  def viewerId = column[Long]("viewer_id")
+  def role = column[String]("role")
 
-  override def * = (id, name) <> (Group.tupled, Group.unapply)
+  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
 
 }

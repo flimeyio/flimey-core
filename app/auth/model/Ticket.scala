@@ -18,7 +18,7 @@
 
 package auth.model
 
-import group.model.Group
+import user.model.Group
 
 /**
  * The Ticket data class.<br />

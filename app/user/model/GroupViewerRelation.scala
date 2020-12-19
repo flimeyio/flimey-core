@@ -16,24 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
-
-import group.model.Viewer
-import slick.jdbc.MySQLProfile.api._
+package user.model
 
 /**
- * Slick framework db mapping for Viewers which target Groups.
- * see evolutions/default for schema creation.
+ * Model class representing the viewer and editor group relations of a target group.
+ * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive hull.
  *
- * @param tag for mysql
+ * @param target the group whose contents are viewed or edited by others
+ * @param viewers groups that can only view the content of the target
+ * @param editors groups that can view and edit the content of the target
  */
-class GroupViewerTable(tag: Tag) extends Table[Viewer](tag, "group_viewer") {
-
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def targetId = column[Long]("target_id")
-  def viewerId = column[Long]("viewer_id")
-  def role = column[String]("role")
-
-  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
-
-}
+case class GroupViewerRelation(target: Group, viewers: Set[Group], editors: Set[Group])

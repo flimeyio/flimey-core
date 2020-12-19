@@ -16,28 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
-
-import com.google.inject.Inject
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
-
-import scala.concurrent.ExecutionContext
+package user.model
 
 /**
- * DB interface for Group Viewer relations.
- * Provided methods are UNSAFE and must only be used by service classes!
+ * The GroupMembership data class.
+ * A GroupMembership represents the many to many 'is member' relations between Group and User.
  *
- * @param dbConfigProvider injected db config
- * @param executionContext future execution context
+ * @param id unique identifier
+ * @param groupId id of the group
+ * @param userId id of the user
  */
-class GroupViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
-
-  val groupViewers = TableQuery[GroupViewerTable]
-  val groups = TableQuery[GroupTable]
-  
-  //TODO
-
-}
+case class GroupMembership(id: Long, groupId: Long, userId: Long)

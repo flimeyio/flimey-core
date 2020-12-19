@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.model
+package user.model
 
 /**
  * Model and db entity class representing the relation between two groups.

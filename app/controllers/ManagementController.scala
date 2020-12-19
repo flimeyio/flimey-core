@@ -18,16 +18,14 @@
 
 package controllers
 
-import group.formdata.{NewGroupForm, NewGroupMemberForm}
-import group.service.GroupService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.formdata.NewUserForm
+import user.formdata.{NewGroupForm, NewGroupMemberForm, NewUserForm}
 import user.model.Role
-import user.service.UserService
+import user.service.{GroupService, UserService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

@@ -16,14 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.model
+package user.formdata
 
-/**
- * The GroupMembership data class.
- * A GroupMembership represents the many to many 'is member' relations between Group and User.
- *
- * @param id unique identifier
- * @param groupId id of the group
- * @param userId id of the user
- */
-case class GroupMembership(id: Long, groupId: Long, userId: Long)
+import play.api.data.Forms._
+import play.api.data._
+
+object NewGroupForm {
+
+  case class Data(groupName: String)
+
+  val form: Form[Data] = Form(
+    mapping(
+      "groupName" -> nonEmptyText
+    )(Data.apply)(Data.unapply)
+  )
+
+}
