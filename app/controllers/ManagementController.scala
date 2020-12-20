@@ -23,7 +23,7 @@ import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.formdata.{NewGroupForm, NewGroupMemberForm, NewUserForm}
+import user.formdata.{NewGroupForm, NewGroupMemberForm, NewGroupViewerForm, NewUserForm}
 import user.model.Role
 import user.service.{GroupService, UserService}
 
@@ -240,7 +240,6 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
-
   /**
    * Endpoint to get the Group editor with all members and the new member form.<br />
    *
@@ -259,7 +258,7 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     } recoverWith {
       case e =>
         logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> e.getMessage))
+        Future.successful(Redirect(routes.ManagementController.getGroups()).flashing("error" -> e.getMessage))
     }
   }
 
@@ -303,6 +302,75 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
         case e =>
           logger.error(e.getMessage, e)
           Future.successful(Redirect(routes.ManagementController.getGroupEditor(groupId)).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to get the GroupRelation (Viewer) editor with all viewers and the new viewer form.
+   *
+   * @return management view html with group relation editor
+   */
+  def getGroupRelationEditor(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      groupService.getGroup(groupId) flatMap (group => {
+        groupService.getFirstClassGroupViewers(groupId) map (groupViewerRelation => {
+          val error = request.flash.get("error")
+          val emptyForm = NewGroupViewerForm.form.fill(NewGroupViewerForm.Data("", ""))
+          Ok(views.html.container.user.management.management_group_relation_editor(group, groupViewerRelation, emptyForm, error))
+        })
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getGroups()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to add a new member (User) to a Group.<br />
+   * Invalid form data leads to a returned editor page with empty form and error messages.
+   *
+   * @param groupId id of the Group
+   * @return redirect to group editor
+   */
+  def postNewGroupRelation(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      NewGroupViewerForm.form.bindFromRequest fold(
+        errorForm => {
+          groupService.getGroup(groupId) flatMap (group => {
+            groupService.getFirstClassGroupViewers(groupId) map (groupViewerCombinator => {
+              Ok(views.html.container.user.management.management_group_relation_editor(group, groupViewerCombinator, errorForm, None))
+            })
+          })
+        },
+        data => {
+          groupService.addRelation(groupId, data.viewerName, data.viewerRole) map (_ => {
+            Redirect(routes.ManagementController.getGroupRelationEditor(groupId))
+          }) recoverWith {
+            case e =>
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ManagementController.getGroupRelationEditor(groupId)).flashing("error" -> e.getMessage))
+          }
+        })
+    }
+  }
+
+  /**
+   * Delete Group(Viewer) relation.
+   *
+   * @param groupId  id of the viewed Group
+   * @param viewerId id of the viewing Group
+   * @return redirect to group editor
+   */
+  def deleteGroupRelation(groupId: Long, viewerId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      groupService.removeRelation(groupId, viewerId) map (_ => {
+        Redirect(routes.ManagementController.getGroupRelationEditor(groupId))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getGroupRelationEditor(groupId)).flashing("error" -> e.getMessage))
       }
     }
   }

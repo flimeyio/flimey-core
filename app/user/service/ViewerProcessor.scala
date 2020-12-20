@@ -18,25 +18,23 @@
 
 package user.service
 
-import user.model.{Group, GroupViewerCombinator, Viewer, ViewerRole}
+import user.model.ViewerRole
 
-object GroupLogic extends ViewerProcessor {
+trait ViewerProcessor {
 
-  def buildGroupViewerCombinator(relations: Seq[(Group, Viewer)]): GroupViewerCombinator = {
-    var maintainers: Set[Group] = Set()
-    var editors: Set[Group] = Set()
-    var viewers: Set[Group] = Set()
-    relations.foreach(rel => {
-      val (group, viewer) = rel
-      if(ViewerRole.isAtLeastMaintainer(viewer.role)){
-        maintainers = maintainers + group
-      } else if(ViewerRole.isAtLeastEditor(viewer.role)){
-        editors = editors + group
-      } else if(ViewerRole.isAtLeastViewer(viewer.role)){
-        viewers = viewers + group
-      }
-    })
-    GroupViewerCombinator(viewers, editors, maintainers)
+  /**
+   * Transform a ViewerRole string in its enum representation.
+   * Throws an exception, if an invalid string is passed.
+   *
+   * @param viewerRole string value of a ViewerRole
+   * @return ViewerRole
+   */
+  def parseViewerRole(viewerRole: String): ViewerRole.Role = {
+    try{
+      ViewerRole.withName(viewerRole)
+    }catch {
+      case e: Throwable => throw new Exception("Invalid viewer role")
+    }
   }
 
 }

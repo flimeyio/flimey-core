@@ -19,24 +19,11 @@
 package user.model
 
 /**
- * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
+ * Model class representing the viewer and editor group relations of a target group.
+ * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive closure.
+ *
+ * @param viewers groups that can only view the content of the target
+ * @param editors groups that can view and edit the content of the target
+ * @param maintainers groups that can delete, administrate of migrate the target
  */
-object ViewerRole extends Enumeration {
-
-  type Role = Value
-
-  val VIEWER, EDITOR, MAINTAINER = Value
-
-  def isAtLeastViewer(role: Role): Boolean = {
-    role == VIEWER || role == EDITOR || role == MAINTAINER
-  }
-
-  def isAtLeastEditor(role: Role): Boolean = {
-    role == EDITOR || role == MAINTAINER
-  }
-
-  def isAtLeastMaintainer(role: Role): Boolean = {
-    role == MAINTAINER
-  }
-
-}
+case class GroupViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
