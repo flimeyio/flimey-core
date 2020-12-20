@@ -39,7 +39,7 @@
     margin:0;
 }
 
-.card{
+.card-login{
     width: 30%;
     position: absolute;
     top: 45%;
@@ -95,4 +95,19 @@ a:hover{
     padding: 6px;
     font-size: medium;
     color: var(--color-error);
+}
+
+.grid-container{
+    height: 100%;
+    width: 100%;
+    margin-bottom: 5%;
+}
+.main{
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+}
+
+.margin-10{
+    margin: 10px;
 }
