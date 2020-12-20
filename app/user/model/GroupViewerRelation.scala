@@ -16,16 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package auth.model
-
-import user.model.Group
+package user.model
 
 /**
- * The Ticket data class.<br />
- * A Ticket is a non persistent. It stores data at runtime to provide all authentication based information of
- * a authenticated User.
+ * Model class representing the viewer and editor group relations of a target group.
+ * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive hull.
  *
- * @param authSession AuthSession object of the Users current session
- * @param groups all Groups the User is Member.
+ * @param target the group whose contents are viewed or edited by others
+ * @param viewers groups that can only view the content of the target
+ * @param editors groups that can view and edit the content of the target
  */
-case class Ticket(authSession: AuthSession, groups: Seq[Group])
+case class GroupViewerRelation(target: Group, viewers: Set[Group], editors: Set[Group])

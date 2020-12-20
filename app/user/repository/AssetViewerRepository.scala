@@ -16,24 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
+package user.repository
 
-import group.model.Viewer
-import slick.jdbc.MySQLProfile.api._
+import com.google.inject.Inject
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import slick.jdbc.JdbcProfile
+import slick.lifted.TableQuery
+
+import scala.concurrent.ExecutionContext
 
 /**
- * Slick framework db mapping for Viewers which target Groups.
- * see evolutions/default for schema creation.
+ * DB interface for Asset Viewer relations.
+ * Provided methods are UNSAFE and must only be used by service classes!
  *
- * @param tag for mysql
+ * @param dbConfigProvider injected db config
+ * @param executionContext future execution context
  */
-class GroupViewerTable(tag: Tag) extends Table[Viewer](tag, "group_viewer") {
+class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
+  extends HasDatabaseConfigProvider[JdbcProfile] {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def targetId = column[Long]("target_id")
-  def viewerId = column[Long]("viewer_id")
-  def role = column[String]("role")
+  val assetViewers = TableQuery[AssetViewerTable]
+  val groups = TableQuery[GroupTable]
 
-  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
+  //TODO
 
 }

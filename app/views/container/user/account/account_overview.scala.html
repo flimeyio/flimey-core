@@ -18,11 +18,9 @@
 @import auth.model.Ticket
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
-@import views.html.components.utils.management_nav
-@import views.html.helper.CSRF
-@import group.model.Group
 @import views.html.components.user.group_grid
 @import views.html.forms.user.account.log_out_form
+@import user.model.Group
 @(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

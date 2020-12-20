@@ -16,8 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.service
+package user.repository
 
-object GroupLogic {
+import slick.jdbc.MySQLProfile.api._
+import user.model.Group
+
+/**
+ * Slick framework db mapping for Groups
+ * see evolutions/default for schema creation.
+ *
+ * @param tag for mysql
+ */
+class GroupTable(tag: Tag) extends Table[Group](tag, "u_group") {
+
+  def id = column[Long]("id",  O.PrimaryKey, O.AutoInc)
+  def name = column[String]("name", O.Unique)
+
+  override def * = (id, name) <> (Group.tupled, Group.unapply)
 
 }

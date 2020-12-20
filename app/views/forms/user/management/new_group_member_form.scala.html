@@ -15,14 +15,18 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import user.model.Group
-@import views.html.components.user.group_tile
-@(groups: Seq[Group])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import user.formdata.NewGroupMemberForm
+@import views.html.helper.CSRF
+@import views.html.components.utils.message_box_error
+@(groupId: Long, newGroupMemberForm: Form[NewGroupMemberForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@for(group <- groups){
-    <div>
-        <hr>
-        @group_tile(group)
-        <hr>
-    </div>
+@helper.form(action = routes.ManagementController.addUserToGroup(groupId)) {
+    @CSRF.formField
+
+    @if(newGroupMemberForm.error("userMail").isDefined){
+        <div>@message_box_error(Option("Invalid email"))</div>
+    }
+
+    <input type="text" name="userMail" placeholder="User E-Mail" value="@newGroupMemberForm.data("userMail")"/>
+    <button class="">Add Member</button>
 }

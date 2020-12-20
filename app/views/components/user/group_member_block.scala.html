@@ -15,14 +15,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import user.model.Group
-@import views.html.components.user.group_tile
-@(groups: Seq[Group])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import user.model.User
+@import views.html.components.user.member_tile
+@(members: Seq[User], groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@for(group <- groups){
+@for(user <- members){
     <div>
         <hr>
-        @group_tile(group)
+        @member_tile(user, groupId)
         <hr>
     </div>
 }

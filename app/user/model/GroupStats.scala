@@ -16,24 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
+package user.model
 
-import group.model.Viewer
-import slick.jdbc.MySQLProfile.api._
-
-/**
- * Slick framework db mapping for Viewers which target Assets.
- * see evolutions/default for schema creation.
- *
- * @param tag for mysql
- */
-class AssetViewerTable(tag: Tag) extends Table[Viewer](tag, "asset_viewer") {
-
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def targetId = column[Long]("target_id")
-  def viewerId = column[Long]("viewer_id")
-  def role = column[String]("role")
-
-  override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)
-
+object GroupStats {
+  val PUBLIC_GROUP = "public"
+  val SYSTEM_GROUP = "system"
+  val PUBLIC_ID = 1
+  val SYSTEM_ID = 1
 }

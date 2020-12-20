@@ -16,28 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package group.repository
+package user.repository
 
-import com.google.inject.Inject
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
-
-import scala.concurrent.ExecutionContext
+import slick.jdbc.MySQLProfile.api._
+import user.model.GroupMembership
 
 /**
- * DB interface for Group Viewer relations.
- * Provided methods are UNSAFE and must only be used by service classes!
+ * Slick framework db mapping for GroupMembership.
+ * see evolutions/default for schema creation.
  *
- * @param dbConfigProvider injected db config
- * @param executionContext future execution context
+ * @param tag for mysql
  */
-class GroupViewerRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class GroupMembershipTable(tag: Tag) extends Table[GroupMembership](tag, "group_membership")  {
 
-  val groupViewers = TableQuery[GroupViewerTable]
-  val groups = TableQuery[GroupTable]
-  
-  //TODO
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def groupId = column[Long]("group_id")
+  def userId = column[Long]("user_id")
+
+  override def * = (id, groupId, userId) <> (GroupMembership.tupled, GroupMembership.unapply)
 
 }

@@ -21,8 +21,7 @@ package auth.service
 import java.util.UUID.randomUUID
 
 import auth.model.{Access, AuthSession}
-import group.model.Group
-import user.model.User
+import user.model.{Group, User}
 import user.service.PasswordProcessor
 
 /**
