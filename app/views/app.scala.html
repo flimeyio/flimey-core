@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,25 +21,25 @@
 @import views.html.components.utils.message_box_error
 @(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
-@main {
-    <div class="">
+    @main {
         <div class="">
-            <div class="">
-            @navbar_left()
-            </div>
-            <div class="">
-                @message_box_error(msg)
-                <div>
-                @leftContainer
+            <div class="grid-x main">
+                <div class="cell small-1 margin-10">
+                @navbar_left()
                 </div>
-            </div>
-            @if(!rightContainer.equals(Html(""))) {
-                <div class="">
-                @rightContainer
+                <div class="cell large-4 margin-10">
+                    @message_box_error(msg)
+                    <div>
+                    @leftContainer
+                    </div>
                 </div>
-            }
+                <div class="cell large-4 margin-10">
+                @if(!rightContainer.equals(Html(""))) {
+                    @rightContainer
+                </div>
+                }
+            </div>
         </div>
-    </div>
-    @footer()
+        @footer()
 
-}
+    }
