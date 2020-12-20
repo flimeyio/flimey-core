@@ -78,6 +78,10 @@ GET     /management/groups/:groupId                         controllers.Manageme
 POST    /management/groups/:groupId/user                    controllers.ManagementController.addUserToGroup(groupId: Long)
 POST    /management/groups/:groupId/user/:userId/delete     controllers.ManagementController.deleteUserFromGroup(groupId: Long, userId: Long)
 
+GET     /management/groups/:groupId/viewer                  controllers.ManagementController.getGroupRelationEditor(groupId: Long)
+POST    /management/groups/:groupId/viewer/new              controllers.ManagementController.postNewGroupRelation(groupId: Long)
+POST    /management/groups/:groupId/viewer/:viewerId/delete controllers.ManagementController.deleteGroupRelation(groupId: Long, viewerId: Long)
+
 
 
 

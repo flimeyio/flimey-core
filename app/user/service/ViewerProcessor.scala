@@ -16,14 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.model
+package user.service
 
-/**
- * Model class representing the viewer and editor group relations of a target group.
- * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive hull.
- *
- * @param target the group whose contents are viewed or edited by others
- * @param viewers groups that can only view the content of the target
- * @param editors groups that can view and edit the content of the target
- */
-case class GroupViewerRelation(target: Group, viewers: Set[Group], editors: Set[Group])
+import user.model.ViewerRole
+
+trait ViewerProcessor {
+
+  /**
+   * Transform a ViewerRole string in its enum representation.
+   * Throws an exception, if an invalid string is passed.
+   *
+   * @param viewerRole string value of a ViewerRole
+   * @return ViewerRole
+   */
+  def parseViewerRole(viewerRole: String): ViewerRole.Role = {
+    try{
+      ViewerRole.withName(viewerRole)
+    }catch {
+      case e: Throwable => throw new Exception("Invalid viewer role")
+    }
+  }
+
+}

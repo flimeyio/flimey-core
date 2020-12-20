@@ -16,15 +16,14 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import views.html.helper.CSRF
-@import user.model.Group
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.utils.message_box_error
+@import user.formdata.NewGroupViewerForm
+@(groupId: Long, newGroupViewerForm: Form[NewGroupViewerForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
-</div>
+@helper.form(action = routes.ManagementController.postNewGroupRelation(groupId)) {
+    @CSRF.formField
+    @message_box_error(msg)
+    <input type="text" name="viewerName" placeholder="Viewing Group" value="@newGroupViewerForm.data("viewerName")"/>
+    <input type="text" name="viewerRole" placeholder="Role" value="@newGroupViewerForm.data("viewerRole")"/>
+    <button class="">Create Relation</button>
+}

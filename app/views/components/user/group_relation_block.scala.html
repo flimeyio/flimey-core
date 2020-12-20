@@ -15,16 +15,33 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import views.html.helper.CSRF
-@import user.model.Group
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import user.model.GroupViewerCombinator
+@import views.html.components.user.group_relation_tile
+@(groupViewerCombinator: GroupViewerCombinator, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
-</div>
+<h2>Maintainers</h2>
+@for(maintainer <- groupViewerCombinator.maintainers){
+    <div>
+        <hr>
+        @group_relation_tile(maintainer, groupId)
+        <hr>
+    </div>
+}
+
+<h2>Editors</h2>
+@for(editor <- groupViewerCombinator.editors){
+    <div>
+        <hr>
+        @group_relation_tile(editor, groupId)
+        <hr>
+    </div>
+}
+
+<h2>Viewers</h2>
+@for(viewer <- groupViewerCombinator.viewers){
+    <div>
+        <hr>
+        @group_relation_tile(viewer, groupId)
+        <hr>
+    </div>
+}

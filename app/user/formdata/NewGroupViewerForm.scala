@@ -16,27 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.model
+package user.formdata
 
-/**
- * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
- */
-object ViewerRole extends Enumeration {
+import play.api.data.Forms._
+import play.api.data._
 
-  type Role = Value
+object NewGroupViewerForm {
 
-  val VIEWER, EDITOR, MAINTAINER = Value
+  case class Data(viewerName: String, viewerRole: String)
 
-  def isAtLeastViewer(role: Role): Boolean = {
-    role == VIEWER || role == EDITOR || role == MAINTAINER
-  }
-
-  def isAtLeastEditor(role: Role): Boolean = {
-    role == EDITOR || role == MAINTAINER
-  }
-
-  def isAtLeastMaintainer(role: Role): Boolean = {
-    role == MAINTAINER
-  }
+  val form: Form[Data] = Form(
+    mapping(
+      "viewerName" -> nonEmptyText,
+      "viewerRole" -> nonEmptyText
+    )(Data.apply)(Data.unapply)
+  )
 
 }

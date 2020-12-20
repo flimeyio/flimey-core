@@ -21,12 +21,14 @@ package user.repository
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
+import user.model.{Group, Viewer}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * DB interface for Group Viewer relations.
+ * DB interface for Group - Viewer relations.
  * Provided methods are UNSAFE and must only be used by service classes!
  *
  * @param dbConfigProvider injected db config
@@ -37,7 +39,41 @@ class GroupViewerRepository @Inject()(protected val dbConfigProvider: DatabaseCo
 
   val groupViewers = TableQuery[GroupViewerTable]
   val groups = TableQuery[GroupTable]
-  
-  //TODO
+
+  /**
+   * Insert a new Viewer.
+   * Duplicated Viewer relations are not inserted and lead to an exception.
+   *
+   * @param viewer new viewer objecte with 0 id
+   * @return Viewer id
+   */
+  def add(viewer: Viewer): Future[Long] = {
+    db.run((groupViewers returning groupViewers.map(_.id)) += viewer)
+  }
+
+  /**
+   * Delete a Viewer by its targetId - viewerId combination.
+   *
+   * @param targetId id of the target Group
+   * @param viewerId id of the viewing Group
+   * @return Future[Int]
+   */
+  def delete(targetId: Long, viewerId: Long): Future[Int] = {
+    db.run(groupViewers.filter(_.targetId === targetId).filter(_.viewerId === viewerId).delete)
+  }
+
+  /**
+   * Get all first class viewing Groups of a target Group.
+   *
+   * @param groupId id of the target Group
+   * @return Seq[(Viewing Group, Viewer Rights)]
+   */
+  def getFirstClassViewers(groupId: Long): Future[Seq[(Group, Viewer)]] = {
+    db.run((for {
+      (c, s) <- (groups.filter(_.id === groupId) join groupViewers on (_.id === _.targetId)) join groups on (_._2.viewerId === _.id)
+    } yield (c, s)).result).map(res => {
+      res.map(data => (data._2, data._1._2))
+    })
+  }
 
 }
