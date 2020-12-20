@@ -52,10 +52,10 @@ class AuthenticationFilter @Inject()(authService: AuthService, val parser: BodyP
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.AuthController.getLoginPage()).flashing("error" -> e.getMessage))
+          Future.successful(Redirect(routes.AuthController.getLoginPage()).flashing("error" -> e.getMessage).withNewSession)
       }
     } else {
-      Future.successful(Redirect(routes.AuthController.getLoginPage()).flashing("error" -> "Forbidden - You need to Log In to access this resource!"))
+      Future.successful(Redirect(routes.AuthController.getLoginPage()).flashing("error" -> "Forbidden - You need to Log In to access this resource!").withNewSession)
     }
   }
 
