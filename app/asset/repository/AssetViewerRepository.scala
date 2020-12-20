@@ -16,12 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.repository
+package asset.repository
 
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.lifted.TableQuery
+import user.repository.GroupTable
 
 import scala.concurrent.ExecutionContext
 

@@ -16,14 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.model
+package asset.model
+
+import user.model.Group
 
 /**
  * Model class representing the viewer and editor group relations of a target group.
- * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive hull.
+ * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive closure.
  *
- * @param target the group whose contents are viewed or edited by others
+ * @param target the asset whose contents are viewed or edited by others
  * @param viewers groups that can only view the content of the target
  * @param editors groups that can view and edit the content of the target
+ * @param maintainers groups that can delete, administrate of migrate the target
  */
-case class GroupViewerRelation(target: Group, viewers: Set[Group], editors: Set[Group])
+case class AssetViewerRelation(target: Asset, viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
