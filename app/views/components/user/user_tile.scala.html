@@ -15,12 +15,20 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
+@import user.model.User
+@import views.html.helper.CSRF
+@(user: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<ul>
-    <li><a href="@routes.ManagementController.getInvitedUsers()">Invited Users</a></li>
-    <li><a href="@routes.ManagementController.getInvitationForm()">New Invitation</a></li>
-    <li><a href="@routes.ManagementController.getGroups()">Group Management</a></li>
-    <li><a href="@routes.ManagementController.getNewGroupForm()">New Group</a></li>
-    <li><a href="@routes.ManagementController.getUsers()">User Management</a></li>
-</ul>
+<div>
+    <table>
+        <tr><td>Username</td><td>@user.username</td></tr>
+        <tr><td>EMail</td><td>@user.email</td></tr>
+        <tr><td>Role</td><td>@user.role.toString</td></tr>
+        <tr><td>
+            <form role="form" action='@routes.ManagementController.deleteUser(user.id)' method="post">
+                @CSRF.formField
+                <button type="submit" class="">X</button>
+            </form>
+        </td></tr>
+    </table>
+</div>

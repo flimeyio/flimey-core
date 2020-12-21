@@ -117,4 +117,14 @@ class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(users.filter(_.key.isDefined).result)
   }
 
+  /**
+   * Get all Users which are authenticated.
+   * I.e. get all Users which can log in and be member of Groups
+   *
+   * @return Users with undefined authentication key
+   */
+  def getAllAuthenticated: Future[Seq[User]] = {
+    db.run(users.filter(_.key.isEmpty).result)
+  }
+
 }
