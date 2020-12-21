@@ -20,7 +20,7 @@ package user.service
 
 import auth.model.Ticket
 import com.google.inject.Inject
-import user.model.{GroupMembership, GroupStats, User}
+import user.model.{GroupMembership, GroupStats, Role, User}
 import user.repository.{GroupMembershipRepository, UserRepository}
 import util.assertions.RoleAssertion
 
@@ -78,7 +78,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
       if (ticket.authSession.userId != userId) {
         assertAdmin
       }
-      if(userId == 1) throw new Exception("The default SYSTEM user can not be deleted")
+      if (userId == 1) throw new Exception("The default SYSTEM user can not be deleted")
       userRepository.delete(userId)
     } catch {
       case e: Throwable => Future.failed(e)
@@ -151,6 +151,27 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
     }
   }
 
+  /**
+   * Get an authenticated User by id.<br />
+   * This is a safe implementation and can be used by controller classes.
+   * <br />
+   * Fails without ADMIN rights.
+   *
+   * @param ticket implicit authentication ticket
+   * @return Future[User]
+   */
+  def getAuthenticatedUser(userId: Long)(implicit ticket: Ticket): Future[User] = {
+    try {
+      assertAdmin
+      userRepository.getById(userId) map (userOption => {
+        if(userOption.isEmpty || userOption.get.key.isDefined) throw new Exception("No such user found")
+        userOption.get
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
   //TODO
   // def isUserByMail(String email): Boolean = {}
 
@@ -160,7 +181,34 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
   //TODO
   // def updateUserData()
 
-  //TODO
-  // def updateUserRole()
+
+  /**
+   * Update a Users role.<br />
+   * The role of the SYSTEM User can not be changed and no User can be promoted to SYSTEM.
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without ADMIN rights
+   *
+   * @param userId id of the User which role is changed
+   * @param roleUpdate string value of the new role
+   * @param ticket implicit authentication ticket
+   * @return Future[Int]
+   */
+  def updateUserRole(userId: Long, roleUpdate: String)(implicit ticket: Ticket): Future[Int] = {
+    try {
+      assertAdmin
+      val role = UserLogic.parseRole(roleUpdate)
+      if (role == Role.SYSTEM) throw new Exception("Promotion to SYSTEM is not possible")
+      userRepository.getById(userId) flatMap (userOption => {
+        if (userOption.isEmpty) throw new Exception("No such user found")
+        val user = userOption.get
+        if (user.role == Role.SYSTEM) throw new Exception("The SYSTEM user can not be changed")
+        val userUpdate = User(user.id, user.username, user.email, user.password, role, user.key, user.accepted, user.enabled)
+        userRepository.update(userUpdate)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
 
 }
