@@ -82,5 +82,8 @@ POST    /management/groups/:groupId/viewer/new              controllers.Manageme
 POST    /management/groups/:groupId/viewer/:viewerId/delete controllers.ManagementController.deleteGroupRelation(groupId: Long, viewerId: Long)
 
 GET     /management/users                                   controllers.ManagementController.getUsers()
+GET     /management/users/:userId                           controllers.ManagementController.getUserEditor(userId: Long)
+POST    /management/users/:userId                           controllers.ManagementController.postUser(userId: Long)
 POST    /management/users/:userId/delete                    controllers.ManagementController.deleteUser(userId: Long)
+POST    /management/users/:userId/logout                    controllers.ManagementController.logUserOut(userId: Long)
 

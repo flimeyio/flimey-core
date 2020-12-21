@@ -57,7 +57,7 @@ class AuthService @Inject()(userRepository: UserRepository,
       userRepository.getByEMail(email) flatMap (userRes => {
         if (userRes.isEmpty) throw new Exception("Wrong E-Mail")
         val user = userRes.get
-        if (!AuthLogic.checkPassword(user.password.get, password)) throw new Exception("Wrong Password")
+        if(!AuthLogic.checkPassword(user.password.get, password)) throw new Exception("Wrong Password")
         groupMembershipRepository.get(user.id) flatMap (groups => {
           val (session, accesses) = AuthLogic.createSession(user, groups)
           sessionRepository.add(session, accesses) map (sessionId => {
@@ -116,14 +116,14 @@ class AuthService @Inject()(userRepository: UserRepository,
    */
   def deleteSession(all: Option[Boolean], userId: Option[Long] = None)(implicit ticket: Ticket): Future[Unit] = {
     try {
-      if (userId.isEmpty) {
+      if(userId.isEmpty) {
         assertWorker
         if (all.isDefined && all.get) {
           sessionRepository.deleteAll(ticket.authSession.userId)
         } else {
           sessionRepository.delete(ticket.authSession.id)
         }
-      } else {
+      }else{
         assertAdmin
         if (all.isDefined && all.get) {
           sessionRepository.deleteAll(userId.get)

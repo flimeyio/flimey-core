@@ -16,10 +16,9 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import user.model.User
-@import views.html.components.user.user_detail_view
 @(user: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-
-<div>
-    @user_detail_view(user)
-    <a href="@routes.ManagementController.getUserEditor(user.id)">Edit</a>
-</div>
+<table>
+    <tr><td>Username</td><td>@user.username</td></tr>
+    <tr><td>EMail</td><td>@user.email</td></tr>
+    <tr><td>Role</td><td>@user.role.toString</td></tr>
+</table>

@@ -75,6 +75,20 @@ object UserLogic extends CredentialProcessor with PasswordProcessor {
   }
 
   /**
+   * Check if a role string matches a Role. Throws an exception otherwise
+   *
+   * @param role role string value
+   * @return Role
+   */
+  def parseRole(role: String): Role = {
+    try{
+      Role.withName(role)
+    } catch {
+      case e: Throwable => throw new Exception("Invalid role")
+    }
+  }
+
+  /**
    * Map the invitation data to a User object.
    * The returned User can be stored in the repository without further mappings.
    * <br/>
