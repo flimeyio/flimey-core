@@ -22,6 +22,7 @@ import auth.model.Ticket
 import auth.repository.SessionRepository
 import com.google.inject.Inject
 import user.repository.{GroupMembershipRepository, UserRepository}
+import util.assertions.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -36,7 +37,7 @@ import scala.concurrent.Future
  */
 class AuthService @Inject()(userRepository: UserRepository,
                             sessionRepository: SessionRepository,
-                            groupMembershipRepository: GroupMembershipRepository) {
+                            groupMembershipRepository: GroupMembershipRepository) extends RoleAssertion {
 
   /**
    * Create a new Session for an existing User.<br />
@@ -56,7 +57,7 @@ class AuthService @Inject()(userRepository: UserRepository,
       userRepository.getByEMail(email) flatMap (userRes => {
         if (userRes.isEmpty) throw new Exception("Wrong E-Mail")
         val user = userRes.get
-        if(!AuthLogic.checkPassword(user.password.get, password)) throw new Exception("Wrong Password")
+        if (!AuthLogic.checkPassword(user.password.get, password)) throw new Exception("Wrong Password")
         groupMembershipRepository.get(user.id) flatMap (groups => {
           val (session, accesses) = AuthLogic.createSession(user, groups)
           sessionRepository.add(session, accesses) map (sessionId => {
@@ -97,27 +98,38 @@ class AuthService @Inject()(userRepository: UserRepository,
   }
 
   /**
-   * Delete an AuthSession entry in the auth database.<br />
+   * Delete an AuthSession entry in the auth database. <br />
    * Afterwards the User will not be able to access protected content and must renew his log in.
    * By default, only the session of the requesting device is removed. All other sessions (other devices) remain logged in.
-   * However if the global flag is set, all sessions of this user will be removed.
+   * However if the global flag is set, all sessions of the User will be removed.
    * <br />
    * After this call, the calling controller should notify the client and unset his request session. Otherwise, the following
    * request will fail (wanted behaviour).
    * <br />
-   * This is a safe implementation and can be used by controller classes.
+   * By default, the session(s) of the requesting User are removed, this call requires WORKER rights. If a separate userId is specified, the session(s)
+   * of the specified User are removed, this call requires ADMIN rights
    * <br />
-   * Fails without WORKER rights.
+   * This is a safe implementation and can be used by controller classes.
    *
    * @param ticket implicit authentication data
    * @return
    */
-  def deleteSession(all: Option[Boolean])(implicit ticket: Ticket): Future[Unit] = {
+  def deleteSession(all: Option[Boolean], userId: Option[Long] = None)(implicit ticket: Ticket): Future[Unit] = {
     try {
-      if(all.isDefined && all.get){
-        sessionRepository.deleteAll(ticket.authSession.userId)
-      }else {
-        sessionRepository.delete(ticket.authSession.id)
+      if (userId.isEmpty) {
+        assertWorker
+        if (all.isDefined && all.get) {
+          sessionRepository.deleteAll(ticket.authSession.userId)
+        } else {
+          sessionRepository.delete(ticket.authSession.id)
+        }
+      } else {
+        assertAdmin
+        if (all.isDefined && all.get) {
+          sessionRepository.deleteAll(userId.get)
+        } else {
+          sessionRepository.delete(userId.get)
+        }
       }
     } catch {
       case e: Throwable => Future.failed(e)

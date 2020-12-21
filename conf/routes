@@ -61,7 +61,6 @@ GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetCon
 POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
 POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
 
-
 GET     /management                                         controllers.ManagementController.index()
 
 GET     /management/invitations                             controllers.ManagementController.getInvitedUsers()
@@ -82,6 +81,6 @@ GET     /management/groups/:groupId/viewer                  controllers.Manageme
 POST    /management/groups/:groupId/viewer/new              controllers.ManagementController.postNewGroupRelation(groupId: Long)
 POST    /management/groups/:groupId/viewer/:viewerId/delete controllers.ManagementController.deleteGroupRelation(groupId: Long, viewerId: Long)
 
-
-
+GET     /management/users                                   controllers.ManagementController.getUsers()
+POST    /management/users/:userId/delete                    controllers.ManagementController.deleteUser(userId: Long)
 

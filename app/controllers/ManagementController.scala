@@ -18,6 +18,7 @@
 
 package controllers
 
+import auth.service.AuthService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
@@ -37,10 +38,14 @@ import scala.concurrent.Future
  * @param withAuthentication injected AuthenticationFilter
  * @param userService        injected UserService
  * @param groupService       injected GroupService
+ * @param authService        injected AuthService
  */
 @Singleton
-class ManagementController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                     userService: UserService, groupService: GroupService) extends
+class ManagementController @Inject()(cc: ControllerComponents,
+                                     withAuthentication: AuthenticationFilter,
+                                     userService: UserService,
+                                     groupService: GroupService,
+                                     authService: AuthService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -154,6 +159,50 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
         case e =>
           logger.error(e.getMessage, e)
           Future.successful(Redirect(routes.ManagementController.getInvitedUsers()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to delete a User.<br />
+   * After deletion, the User can no longer log in and is immediately logged out from all devices.<br />
+   * <p> This endpoint is accessable with ADMIN and WORKER rights.
+   *
+   * @param userId id of the invitation (user) to delete
+   * @return invitation management html
+   */
+  def deleteUser(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      userService.deleteUser(userId) flatMap (_ => {
+        authService.deleteSession(Option(true), Option(userId)) map (_ => {
+          if(userId == ticket.authSession.userId) {
+            Redirect(routes.AuthController.login()).flashing("error" -> "Account was deleted successfully")
+          }else{
+            Redirect(routes.ManagementController.getUsers())
+          }
+        })
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getUsers()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to get all (authenticated) Users.<br />
+   *
+   * @return management view html with User list
+   */
+  def getUsers: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      userService.getAllAuthenticatedUsers map (users => {
+        val error = request.flash.get("error")
+        Ok(views.html.container.user.management.management_users(users, error))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> e.getMessage))
       }
     }
   }
