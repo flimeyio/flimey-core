@@ -15,13 +15,11 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.model.Asset
-@import assetmodel.model.AssetProperty
+@import asset.model.{Asset, AssetProperty, AssetType}
 @import auth.model.Ticket
 @import views.html.components.asset.asset_view
 @import views.html.components.utils.{message_box_error, navbar_category_searchable}
 @import views.html.forms.asset.select_asset_type_form
-@import assetmodel.model.AssetType
 @(selectedType: Option[AssetType],
         assetTypes: Seq[AssetType],
         assetData: Seq[(Asset, scala.Seq[AssetProperty])],

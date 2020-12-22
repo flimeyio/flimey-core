@@ -20,10 +20,10 @@
 @import views.html.components.utils.navbar_category_searchable
 @import views.html.components.utils.navbar_category_closeable
 @import views.html.components.asset.asset_type_editor
-@import assetmodel.model.AssetConstraint
-@import assetmodel.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
+@import asset.model.AssetConstraint
+@import asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
 @import auth.model.Ticket
-@import assetmodel.model.AssetType
+@import asset.model.AssetType
 @(assetTypes: Seq[AssetType],
         assetType: AssetType,
         assetConstraints: Seq[AssetConstraint],

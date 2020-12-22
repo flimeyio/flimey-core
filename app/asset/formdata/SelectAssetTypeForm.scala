@@ -18,8 +18,8 @@
 
 package asset.formdata
 
+import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data._
 
 object SelectAssetTypeForm {
 

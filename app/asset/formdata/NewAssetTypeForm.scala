@@ -16,14 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.model
+package asset.formdata
 
-/**
- * The AssetProperty data class.
- *
- * @param id unique identifier
- * @param key of the property
- * @param value of the property
- * @param parentId id of the parent Asset
- */
-case class AssetProperty(id: Long, key: String, value: String, parentId: Long)
+import play.api.data.Forms._
+import play.api.data._
+
+object NewAssetTypeForm {
+
+  case class Data(value: String)
+
+  val form = Form(
+    mapping(
+      "value" -> nonEmptyText
+    )(Data.apply)(Data.unapply)
+  )
+
+}

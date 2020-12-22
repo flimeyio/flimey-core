@@ -16,21 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.formdata
+package asset.repository
 
-import play.api.data.Forms._
-import play.api.data._
+import asset.model.AssetConstraint
+import slick.jdbc.MySQLProfile.api._
 
-object NewAssetConstraintForm {
+/**
+ * Slick framework db mapping for Asset associated Constraints.
+ * see evolutions/default for schema creation.
+ * @param tag for mysql
+ */
+class AssetConstraintTable(tag: Tag) extends Table[AssetConstraint](tag, "asset_constraint") {
 
-  case class Data(c: String, v1: String, v2: String)
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def c = column[String]("c")
+  def v1 = column[String]("v1")
+  def v2 = column[String]("v2")
+  def typeId = column[Long]("type_id")
 
-  val form = Form(
-    mapping(
-      "c" -> nonEmptyText,
-      "v1" -> text,
-      "v2" -> text
-    )(Data.apply)(Data.unapply)
-  )
+  override def * =
+    (id, c, v1, v2, typeId) <>(AssetConstraint.tupled, AssetConstraint.unapply)
 
 }

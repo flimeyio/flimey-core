@@ -16,24 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.repository
-
-import assetmodel.model.AssetProperty
-import slick.jdbc.MySQLProfile.api._
+package asset.model
 
 /**
- * Slick framework db mapping for Asset associated Properties.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * The AssetProperty data class.
+ *
+ * @param id unique identifier
+ * @param key of the property
+ * @param value of the property
+ * @param parentId id of the parent Asset
  */
-class AssetPropertyTable(tag: Tag) extends Table[AssetProperty](tag, "asset_property") {
-
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def key = column[String]("key")
-  def value = column[String]("value")
-  def parentId = column[Long]("parent_id")
-
-  override def * =
-    (id, key, value, parentId) <> (AssetProperty.tupled, AssetProperty.unapply)
-
-}
+case class AssetProperty(id: Long, key: String, value: String, parentId: Long)

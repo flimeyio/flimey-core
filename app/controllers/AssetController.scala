@@ -18,9 +18,9 @@
 
 package controllers
 
+import asset.formdata.NewAssetForm
 import asset.formdata.{NewAssetForm, SelectAssetTypeForm}
-import asset.service.AssetService
-import assetmodel.service.ModelAssetService
+import asset.service.{AssetService, ModelAssetService}
 import auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}

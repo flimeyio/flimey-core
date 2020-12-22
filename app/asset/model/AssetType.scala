@@ -16,33 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.service
+package asset.model
 
 /**
- * Trait which provides some unspecific string processing functionality
+ * The AssetType data class
+ * @param id unique primary key (given by db interface)
+ * @param value name of the AssetType
+ * @param active status if AssetType can be used to create new Assets and Assets of this type can be accessed
  */
-trait StringProcessor {
-
-  /**
-   * Transforms a string value to lower case and removes all tabs and space characters
-   *
-   * @param value raw string
-   * @return refactored string
-   */
-  def toLowerCaseNoSpaces(value: String): String = {
-    value.toLowerCase.replaceAll("(( )*|\t*)".r.regex, "")
-  }
-
-  /**
-   * Checks if a given string contains a numeric value.
-   * For more flexibility, this function does not make a difference between '.' (dot) and ',' (colon).
-   *
-   * @param value to check
-   * @return result
-   */
-  def isNumericString(value: String): Boolean = {
-    value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
-  }
-
-
-}
+case class AssetType(id: Long, value: String, active: Boolean)

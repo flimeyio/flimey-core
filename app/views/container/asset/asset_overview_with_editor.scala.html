@@ -16,15 +16,13 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import asset.formdata.NewAssetForm
-@import asset.model.Asset
-@import assetmodel.model.AssetProperty
+@import asset.model.{Asset, AssetProperty, AssetType}
 @import auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
 @import views.html.forms.asset.edit_asset_form
 @import views.html.container.asset.asset_view_container
 @import views.html.forms.asset.delete_asset_form
 @import views.html.forms.asset.delete_asset_form
-@import assetmodel.model.AssetType
 @(      //Data to display the overview:
         selectedType: AssetType,
         assetTypes: Seq[AssetType],

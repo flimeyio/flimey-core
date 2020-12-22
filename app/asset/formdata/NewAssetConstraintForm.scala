@@ -16,20 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.formdata
+package asset.formdata
 
 import play.api.data.Forms._
 import play.api.data._
 
-object
-EditAssetTypeForm {
+object NewAssetConstraintForm {
 
-  case class Data(value: String, active: Boolean)
+  case class Data(c: String, v1: String, v2: String)
 
   val form = Form(
     mapping(
-      "value" -> nonEmptyText,
-      "active" -> boolean
+      "c" -> nonEmptyText,
+      "v1" -> text,
+      "v2" -> text
     )(Data.apply)(Data.unapply)
   )
 

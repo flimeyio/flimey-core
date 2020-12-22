@@ -18,9 +18,7 @@
 
 package asset.repository
 
-import asset.model.Asset
-import assetmodel.model.AssetProperty
-import assetmodel.repository.{AssetConstraintTable, AssetPropertyTable, AssetTypeTable}
+import asset.model.{Asset, AssetProperty}
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile

@@ -16,10 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.service
+package asset.service
 
-import assetmodel.model.{AssetConstraint, AssetType}
-import assetmodel.repository.{AssetConstraintRepository, AssetTypeRepository}
+import asset.model.{AssetConstraint, AssetType}
+import asset.repository.{AssetConstraintRepository, AssetTypeRepository}
 import auth.model.Ticket
 import com.google.inject.Inject
 import util.assertions.RoleAssertion

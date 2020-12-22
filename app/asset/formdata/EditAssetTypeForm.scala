@@ -16,23 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.repository
+package asset.formdata
 
-import assetmodel.model.AssetType
-import slick.jdbc.MySQLProfile.api._
+import play.api.data.Forms._
+import play.api.data._
 
-/**
- * Slick framework db mapping for AssetTypes.
- * see evolutions/default for schema creation.
- * @param tag for mysql
- */
-class AssetTypeTable(tag: Tag) extends Table[AssetType](tag, "asset_type") {
+object
+EditAssetTypeForm {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def value = column[String]("value")
-  def active = column[Boolean]("active")
+  case class Data(value: String, active: Boolean)
 
-  override def * =
-    (id, value, active) <>(AssetType.tupled, AssetType.unapply)
+  val form = Form(
+    mapping(
+      "value" -> nonEmptyText,
+      "active" -> boolean
+    )(Data.apply)(Data.unapply)
+  )
 
 }

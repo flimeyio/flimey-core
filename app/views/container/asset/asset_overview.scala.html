@@ -15,11 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.model.Asset
-@import assetmodel.model.AssetProperty
+@import asset.model.{Asset, AssetProperty, AssetType}
 @import auth.model.Ticket
 @import views.html.container.asset.asset_view_container
-@import assetmodel.model.AssetType
 @(selectedType: Option[AssetType],
         assetTypes: Seq[AssetType],
         assetData: Seq[(Asset, scala.Seq[AssetProperty])],

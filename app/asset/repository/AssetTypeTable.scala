@@ -16,15 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.model
+package asset.repository
+
+import asset.model.AssetType
+import slick.jdbc.MySQLProfile.api._
 
 /**
- * The AssetConstraint data class.
- *
- * @param id unique primary key (given by db interface)
- * @param c constraint rule key
- * @param v1 first rule argument
- * @param v2 second rule argument
- * @param typeId id of the associated AssetType
+ * Slick framework db mapping for AssetTypes.
+ * see evolutions/default for schema creation.
+ * @param tag for mysql
  */
-case class AssetConstraint(id: Long, c: String, v1: String, v2: String, typeId: Long)
+class AssetTypeTable(tag: Tag) extends Table[AssetType](tag, "asset_type") {
+
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def value = column[String]("value")
+  def active = column[Boolean]("active")
+
+  override def * =
+    (id, value, active) <>(AssetType.tupled, AssetType.unapply)
+
+}

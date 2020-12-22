@@ -18,12 +18,8 @@
 
 package asset.service
 
-import asset.model.{Asset, AssetComplex}
-import asset.repository.AssetRepository
-import assetmodel._
-import assetmodel.model.{AssetConstraint, AssetProperty}
-import assetmodel.repository.{AssetPropertyRepository, AssetTypeRepository}
-import assetmodel.service.{AssetLogic, ModelAssetService}
+import asset.model.{Asset, AssetComplex, AssetConstraint, AssetProperty}
+import asset.repository.{AssetPropertyRepository, AssetRepository, AssetTypeRepository}
 import auth.model.Ticket
 import com.google.inject.Inject
 import util.assertions.RoleAssertion
