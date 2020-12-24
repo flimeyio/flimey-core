@@ -18,4 +18,4 @@
 
 package asset.model
 
-case class AssetComplex(parentAssetType: Option[AssetType], allAssetTypes: Seq[AssetType], children: Seq[(Asset, scala.Seq[AssetProperty])])
+case class AssetTypeCombination(parentAssetType: Option[AssetType], allAssetTypes: Seq[AssetType], children: Seq[ExtendedAsset])
