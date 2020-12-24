@@ -44,5 +44,14 @@ trait StringProcessor {
     value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
   }
 
+  /**
+   * Splits a string containing of an Int list into single Int values.<br />
+   * The string must have the form "v1,v2,v3,..."
+   * @param value
+   * @return
+   */
+  def splitNumericList(value: String): Seq[Int] = {
+    value.split(",").map(_.toInt)
+  }
 
 }
