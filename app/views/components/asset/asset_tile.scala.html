@@ -15,32 +15,49 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-
-@import asset.model.AssetProperty
-@(typeId: Long,
-        assetId: Long,
-        selected: Boolean,
-        properties: Seq[AssetProperty])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import asset.model.ExtendedAsset
+@(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="">
     <div class="">
-        @if(properties.nonEmpty) {
-            @for(i <- properties.indices) {
+        @if(asset.properties.nonEmpty) {
+            @for(i <- asset.properties.indices) {
                 <div class="">
                     <div class="">
-                    @properties(i).key
+                    @asset.properties(i).key
                     </div>
                     <div class="">
-                    @properties(i).value
+                    @asset.properties(i).value
                     </div>
                 </div>
             }
         }
+        <!--FIXME: the part with the groups should be hidden and open with a little extension arrow-->
+        <div>
+            <div>
+            View:
+            @for(group <- asset.viewers.viewers){
+                @group.name
+            }
+            </div>
+            <div>
+            Edit:
+            @for(group <- asset.viewers.editors){
+                @group.name
+            }
+            </div>
+            <div>
+            Maintain:
+            @for(group <- asset.viewers.maintainers){
+                @group.name
+            }
+            </div>
+        </div>
     </div>
     <div class="">
-        <a href="@routes.AssetController.getAssetEditor(typeId, assetId)">
+        <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
             <button class="">
-                <i class=""></i>
+                Edit
             </button>
         </a>
     </div>
