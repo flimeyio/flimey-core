@@ -53,7 +53,7 @@ POST    /asset/type                                         controllers.AssetCon
 # FIXME
 POST    /asset/search                                       controllers.AssetController.searchAssets
 
-GET     /asset/:assetTypeId                                 controllers.AssetController.getAssetsOfType(assetTypeId: Long)
+GET     /asset/:assetTypeId                                 controllers.AssetController.getAssets(assetTypeId: Long, pageNumber: Int, groupSelector: Option[String] = None)
 GET     /asset/:assetTypeId/new                             controllers.AssetController.getNewAssetEditor(assetTypeId: Long)
 POST    /asset/:assetTypeId/new                             controllers.AssetController.addNewAsset(assetTypeId: Long)
 
