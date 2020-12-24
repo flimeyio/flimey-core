@@ -237,7 +237,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
     try {
       assertWorker
       groupViewerRepository.getFirstClassViewers(groupId) map (relations => {
-        GroupLogic.buildGroupViewerCombinator(relations)
+        GroupViewerCombinator.fromRelations(relations)
       })
     } catch {
       case e: Throwable => Future.failed(e)
