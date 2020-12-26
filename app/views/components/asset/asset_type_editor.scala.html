@@ -28,7 +28,7 @@
         editAssetTypeForm: Form[EditAssetTypeForm.Data],
         newAssetConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
+<div class="scroll-container">
     <div>
         @edit_asset_type_form(assetType, editAssetTypeForm)
         @if(assetType.active){
