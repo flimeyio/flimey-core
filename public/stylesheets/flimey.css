@@ -21,4 +21,24 @@
 html, body {
     height: 100%;
     margin: 0;
+    overflow: hidden;
 }
+
+body::-webkit-scrollbar {
+    width: 5px;
+}
+
+body {
+    scrollbar-color: var(--color-sec) var(--color-sec-light);
+}
+/*
+body::-webkit-scrollbar-track {
+    background: var(--color-sec-light);
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: var(--color-sec-light) ;
+    border: 3px solid var(--color-sec-light);
+}
+
+
