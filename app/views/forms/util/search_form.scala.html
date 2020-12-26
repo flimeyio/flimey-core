@@ -21,11 +21,11 @@
 @(searchAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = searchAction) {
-    <div class="">
-        <div class="">
+    <div class="input-group no-margin">
             @CSRF.formField
-            <input class="" name="query" type="text" placeholder="search">
-            <button class="">Search</button>
+            <input class="input-group-field" name="query" type="text" placeholder="search">
+        <div class="input-group-button  button-small">
+            <input class="button" type="submit" value="Search" />
         </div>
     </div>
 }

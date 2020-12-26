@@ -35,10 +35,8 @@
     @navbar_category_searchable(Seq("Asset Types"), routes.ModelAssetController.searchAssetType)
     @asset_type_multibox(assetTypes)
 } {
-    <div class="">
             @navbar_category_closeable(Seq("Asset Model Editor"), routes.ModelAssetController.index())
             @message_box_error(msg)
             @asset_type_editor(assetType, assetConstraints, editAssetTypeForm, newAssetConstraintForm)
-    </div>
 }()
 
