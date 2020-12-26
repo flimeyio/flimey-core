@@ -61,7 +61,7 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    *
    * @return all Groups
    */
-  def getAll: Future[Seq[Group]] = db.run(groups.result)
+  def getAll: Future[Seq[Group]] = db.run(groups.sortBy(_.id).result)
 
   /**
    * Get a Group by their id.
@@ -71,6 +71,13 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   def getById(groupId: Long): Future[Option[Group]] = db.run(groups.filter(_.id === groupId).result.headOption)
 
   /**
+   * Get a Group by its unique name.
+   *
+   * @return specified Group
+   */
+  def getByName(groupName: String): Future[Option[Group]] = db.run(groups.filter(_.name === groupName).result.headOption)
+
+  /**
    * Get all Groups of a single User.
    *
    * @param userId id of the User
@@ -78,7 +85,7 @@ class GroupRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    */
   def getAllOfUser(userId: Long): Future[Seq[Group]] = {
     db.run((for {
-      (c, s) <- groupMemberships.filter(_.userId === userId) join groups on (_.groupId === _.id)
+      (c, s) <- groupMemberships.filter(_.userId === userId).sortBy(_.id) join groups on (_.groupId === _.id)
     } yield (c, s)).result).map(_.map(_._2))
   }
 

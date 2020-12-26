@@ -20,8 +20,8 @@ package user.service
 
 import auth.model.Ticket
 import com.google.inject.Inject
-import user.model.{Group, GroupMembership, Role, User}
-import user.repository.{GroupMembershipRepository, GroupRepository, UserRepository}
+import user.model._
+import user.repository.{GroupMembershipRepository, GroupRepository, GroupViewerRepository, UserRepository}
 import util.assertions.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,10 +31,16 @@ import scala.concurrent.Future
  * Service class to provide SAFE business logic for Groups, Viewers and their User relations.
  * This class is normally used by dependency injection inside controller endpoints.
  *
- * @param groupRepository injected db interface for Group entities.
+ * @param groupRepository           injected db interface for Group entities.
+ * @param groupMembershipRepository injected db interface for GroupMembership entities
+ * @param userRepository            injected db interface for User entities
+ * @param groupViewerRepository     injected db interface for (Group)Viewer entities
  */
-class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRepository: GroupMembershipRepository,
-                             userRepository: UserRepository) extends RoleAssertion {
+class GroupService @Inject()(groupRepository: GroupRepository,
+                             groupMembershipRepository: GroupMembershipRepository,
+                             userRepository: UserRepository,
+                             groupViewerRepository: GroupViewerRepository)
+  extends RoleAssertion {
 
   /**
    * Get all existing Groups<br />
@@ -60,14 +66,14 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
    * * <p> Fails without WORKER rights.
    *
    * @param groupId id of the Group
-   * @param ticket implicit authentication ticket
+   * @param ticket  implicit authentication ticket
    * @return the Group
    */
   def getGroup(groupId: Long)(implicit ticket: Ticket): Future[Group] = {
     try {
       assertWorker
       groupRepository.getById(groupId) map (groupOption => {
-        if(groupOption.isEmpty) throw new Exception("No such Group found")
+        if (groupOption.isEmpty) throw new Exception("No such Group found")
         groupOption.get
       })
     } catch {
@@ -99,7 +105,7 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
    * <p> Fails without WORKER rights.
    *
    * @param groupId if of the Group
-   * @param ticket implicit authentication ticket
+   * @param ticket  implicit authentication ticket
    * @return Users of the Group
    */
   def getUsersOfGroup(groupId: Long)(implicit ticket: Ticket): Future[Seq[User]] = {
@@ -111,46 +117,13 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
     }
   }
 
-
-  ///**
-  // * Get all Groups with their Rights (GroupViewerRelation) which are direct viewer of the target group.<br />
-  // * This is a safe implementation and can be used by controller classes.
-  // * <br />
-  // * Fails without WORKER rights.
-  // *
-  // * @param groupId id of the target (viewed) group
-  // * @param ticket implicit authentication ticket
-  // * @return
-  // */
-  //def getFirstClassGroupTransition(groupId: Long)(implicit ticket: Ticket): Future[GroupViewerRelation] = {
-  //  //TODO
-  //}
-
-  ///**
-  // * Get all Groups with their Rights (GroupViewerRelation) which are direct or indirect viewer of the target group.<br />
-  // * The search resolves viewer cycles, so that the result contains each viewer only once.
-  // * <p>
-  // * Per definition of the viewer relation, a far away transitive viewer receives the minimum rights of its predecessors.
-  // * However, if the minimum of the predecessors is higher that its own, it will keep its own lower right.
-  // * <p>
-  // * This is a safe implementation and can be used by controller classes.
-  // * <br />
-  // *
-  // * @param groupId id of the target (viewed) group
-  // * @param ticket implicit authentication ticket
-  // * @return
-  // */
-  //def getTransitiveGroupTransitionClosure(groupId: Long)(implicit ticket: Ticket): Future[GroupViewerRelation] = {
-  //  //TODO
-  //}
-
   /**
    * Add a new Group.<br />
    * The provided name must be unique.<br />
    * <p> This operation requires at least admin rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param name unique name of the new Group
+   * @param name   unique name of the new Group
    * @param ticket implicit authentication ticket
    * @return group id on success
    */
@@ -164,6 +137,9 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
     }
   }
 
+  //TODO
+  // def renameGroup()
+
   /**
    * Delete a Group by its id.<br />
    * This operation also deletes all Viewer relations and memberships regarding this Group.
@@ -173,16 +149,16 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
    * <p> This is a safe implementation and can be used by controller classes.
    *
    * @param groupId id of the group to delete (but not 1 or 2)
-   * @param ticket implicit authentication ticket
+   * @param ticket  implicit authentication ticket
    * @return unit on success
    */
   def deleteGroup(groupId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       assertAdmin
       groupRepository.getById(groupId) flatMap (groupOption => {
-        if(groupOption.isEmpty) throw new Exception("Invalid Group")
+        if (groupOption.isEmpty) throw new Exception("Invalid Group")
         val group = groupOption.get
-        if(group.name == "public" || group.name == "system") throw new Exception("The public and system groups can not be deleted.")
+        if (group.name == "public" || group.name == "system") throw new Exception("The public and system groups can not be deleted.")
         groupRepository.delete(groupId)
       })
     } catch {
@@ -196,15 +172,15 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
    * <p> This is a safe implementation and can be used by controller classes.
    *
    * @param groupId id of the Group to add the User
-   * @param email of the User to add
-   * @param ticket implicit authentication ticket
+   * @param email   of the User to add
+   * @param ticket  implicit authentication ticket
    * @return id of the new membership
    */
   def addMembership(groupId: Long, email: String)(implicit ticket: Ticket): Future[Long] = {
     try {
       assertAdmin
       userRepository.getByEMail(email) flatMap (userOption => {
-        if(userOption.isEmpty) throw new Exception("No such User found")
+        if (userOption.isEmpty) throw new Exception("No such User found")
         val user = userOption.get
         groupMembershipRepository.add(GroupMembership(0, groupId, user.id))
       })
@@ -221,21 +197,21 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
    * <p> This is a safe implementation and can be used by controller classes.
    *
    * @param groupId id of the Group to remove the User from
-   * @param userId id of the User to remove from the Group
-   * @param ticket implicit authentication ticket
+   * @param userId  id of the User to remove from the Group
+   * @param ticket  implicit authentication ticket
    * @return status future
    */
   def deleteMembership(groupId: Long, userId: Long)(implicit ticket: Ticket): Future[Int] = {
     try {
       assertAdmin
       groupRepository.getById(groupId) flatMap (groupOption => {
-        if(groupOption.isEmpty) throw new Exception("Invalid Group")
+        if (groupOption.isEmpty) throw new Exception("Invalid Group")
         val group = groupOption.get
-        if(group.name == "public") throw new Exception("No user can be removed from this group")
+        if (group.name == "public") throw new Exception("No user can be removed from this group")
         userRepository.getById(userId) flatMap (userOption => {
-          if(userOption.isEmpty) throw new Exception("Invalid User")
+          if (userOption.isEmpty) throw new Exception("Invalid User")
           val user = userOption.get
-          if(Role.isAtLeastSystem(user.role) && group.name == "system"){
+          if (Role.isAtLeastSystem(user.role) && group.name == "system") {
             throw new Exception("The SYSTEM user can not be removed from this group")
           }
           groupMembershipRepository.delete(userId, groupId)
@@ -246,15 +222,71 @@ class GroupService @Inject()(groupRepository: GroupRepository, groupMembershipRe
     }
   }
 
-  //TODO
-  // def renameGroup()
+  /**
+   * Get all Groups with their Rights (GroupViewerCombinator) which
+   * are DIRECT (first class) viewers of the target group.<br />
+   * This is a safe implementation and can be used by controller classes.
+   * <br />
+   * Fails without WORKER rights.
+   *
+   * @param groupId id of the target (viewed) group
+   * @param ticket  implicit authentication ticket
+   * @return Future[GroupViewerRelation]
+   */
+  def getFirstClassGroupViewers(groupId: Long)(implicit ticket: Ticket): Future[GroupViewerCombinator] = {
+    try {
+      assertWorker
+      groupViewerRepository.getFirstClassViewers(groupId) map (relations => {
+        GroupLogic.buildGroupViewerCombinator(relations)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
-  //TODO
-  // def addRelation()
+  /**
+   * Add a new GroupViewerRelation.<br />
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without ADMIN rights.
+   *
+   * @param targetId   id of the Group to be viewed
+   * @param viewerName name of the Group which views the target
+   * @param viewerRole ViewerRole string of the role the viewer will have
+   * @param ticket     implicit authentication ticket
+   * @return Future[Long]
+   */
+  def addRelation(targetId: Long, viewerName: String, viewerRole: String)(implicit ticket: Ticket): Future[Long] = {
+    try {
+      assertAdmin
+      val roleStatus = GroupLogic.parseViewerRole(viewerRole)
+      groupRepository.getByName(viewerName) flatMap (viewerOption => {
+        if (viewerOption.isEmpty) throw new Exception("No such viewer group found")
+        val viewerGroup = viewerOption.get
+        if(viewerGroup.id == targetId) throw new Exception("No self-relations possible")
+        groupViewerRepository.add(Viewer(0, targetId, viewerGroup.id, roleStatus))
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
-  //TODO
-  // def removeRelation()
+  /**
+   * Remove an existing GroupViewerRelation.<br />
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without ADMIN rights.
+   *
+   * @param targetId id of the viewed Group
+   * @param viewerId if of the viewing Group
+   * @param ticket   implicit authentication ticket
+   * @return Future[Int]
+   */
+  def removeRelation(targetId: Long, viewerId: Long)(implicit ticket: Ticket): Future[Int] = {
+    try {
+      assertAdmin
+      groupViewerRepository.delete(targetId, viewerId)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
-  //TODO
-  // def updateRelationRole()
 }

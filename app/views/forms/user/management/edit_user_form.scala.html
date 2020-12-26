@@ -16,15 +16,11 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import views.html.helper.CSRF
-@import user.model.Group
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import user.formdata.EditUserForm
+@(userId: Long, editUserForm: Form[EditUserForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
-</div>
+@helper.form(action = routes.ManagementController.postUser(userId)) {
+    @CSRF.formField
+    <input type="text" name="role" placeholder="New Role" value="@editUserForm.data("role")"/>
+    <button class="">Update</button>
+}

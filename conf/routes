@@ -61,7 +61,6 @@ GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetCon
 POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
 POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
 
-
 GET     /management                                         controllers.ManagementController.index()
 
 GET     /management/invitations                             controllers.ManagementController.getInvitedUsers()
@@ -78,6 +77,13 @@ GET     /management/groups/:groupId                         controllers.Manageme
 POST    /management/groups/:groupId/user                    controllers.ManagementController.addUserToGroup(groupId: Long)
 POST    /management/groups/:groupId/user/:userId/delete     controllers.ManagementController.deleteUserFromGroup(groupId: Long, userId: Long)
 
+GET     /management/groups/:groupId/viewer                  controllers.ManagementController.getGroupRelationEditor(groupId: Long)
+POST    /management/groups/:groupId/viewer/new              controllers.ManagementController.postNewGroupRelation(groupId: Long)
+POST    /management/groups/:groupId/viewer/:viewerId/delete controllers.ManagementController.deleteGroupRelation(groupId: Long, viewerId: Long)
 
-
+GET     /management/users                                   controllers.ManagementController.getUsers()
+GET     /management/users/:userId                           controllers.ManagementController.getUserEditor(userId: Long)
+POST    /management/users/:userId                           controllers.ManagementController.postUser(userId: Long)
+POST    /management/users/:userId/delete                    controllers.ManagementController.deleteUser(userId: Long)
+POST    /management/users/:userId/logout                    controllers.ManagementController.logUserOut(userId: Long)
 

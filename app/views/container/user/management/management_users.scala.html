@@ -15,16 +15,22 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import views.html.helper.CSRF
+@import auth.model.Ticket
+@import views.html.components.utils.message_box_error
+@import views.html.components.utils.navbar_category
+@import views.html.components.utils.management_nav
+@import views.html.components.utils.navbar_category_closeable
+@import views.html.components.user.group_block
 @import user.model.Group
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import user.model.User
+@import views.html.components.user.user_block
+@(users: Seq[User], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
-</div>
+@app {
+    @navbar_category(Seq("Admin Area"))
+    @management_nav()
+}{
+    @navbar_category_closeable(Seq("User Management"), routes.ManagementController.index())
+    @message_box_error(msg)
+    @user_block(users)
+}()

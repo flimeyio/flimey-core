@@ -15,16 +15,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import views.html.helper.CSRF
-@import user.model.Group
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import user.model.User
+@import views.html.components.user.user_tile
+@(users: Seq[User])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
-</div>
+@for(user <- users){
+    <div>
+        <hr>
+        @user_tile(user)
+        <hr>
+    </div>
+}

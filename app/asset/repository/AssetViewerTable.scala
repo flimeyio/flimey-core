@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.repository
+package asset.repository
 
 import slick.jdbc.MySQLProfile.api._
 import user.model.Viewer

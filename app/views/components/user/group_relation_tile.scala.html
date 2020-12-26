@@ -17,13 +17,11 @@
 * *@
 @import views.html.helper.CSRF
 @import user.model.Group
-@(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(relatedGroup: Group, targetGroupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
+    <p>@relatedGroup.name</p>
+    <form role="form" action='@routes.ManagementController.deleteGroupRelation(targetGroupId, relatedGroup.id)' method="post">
         @CSRF.formField
         <button type="submit" class="">X</button>
     </form>

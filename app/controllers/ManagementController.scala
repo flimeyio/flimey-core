@@ -18,12 +18,13 @@
 
 package controllers
 
+import auth.service.AuthService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.formdata.{NewGroupForm, NewGroupMemberForm, NewUserForm}
+import user.formdata._
 import user.model.Role
 import user.service.{GroupService, UserService}
 
@@ -37,10 +38,14 @@ import scala.concurrent.Future
  * @param withAuthentication injected AuthenticationFilter
  * @param userService        injected UserService
  * @param groupService       injected GroupService
+ * @param authService        injected AuthService
  */
 @Singleton
-class ManagementController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                     userService: UserService, groupService: GroupService) extends
+class ManagementController @Inject()(cc: ControllerComponents,
+                                     withAuthentication: AuthenticationFilter,
+                                     userService: UserService,
+                                     groupService: GroupService,
+                                     authService: AuthService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -159,6 +164,50 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to delete a User.<br />
+   * After deletion, the User can no longer log in and is immediately logged out from all devices.<br />
+   * <p> This endpoint is accessable with ADMIN and WORKER rights.
+   *
+   * @param userId id of the invitation (user) to delete
+   * @return invitation management html
+   */
+  def deleteUser(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      userService.deleteUser(userId) flatMap (_ => {
+        authService.deleteSession(Option(true), Option(userId)) map (_ => {
+          if (userId == ticket.authSession.userId) {
+            Redirect(routes.AuthController.login()).flashing("error" -> "Account was deleted successfully")
+          } else {
+            Redirect(routes.ManagementController.getUsers())
+          }
+        })
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getUserEditor(userId)).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to get all (authenticated) Users.<br />
+   *
+   * @return management view html with User list
+   */
+  def getUsers: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      userService.getAllAuthenticatedUsers map (users => {
+        val error = request.flash.get("error")
+        Ok(views.html.container.user.management.management_users(users, error))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
    * Endpoint to get all Groups.<br />
    *
    * @return management view html with group list
@@ -240,7 +289,6 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
-
   /**
    * Endpoint to get the Group editor with all members and the new member form.<br />
    *
@@ -259,7 +307,7 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
     } recoverWith {
       case e =>
         logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> e.getMessage))
+        Future.successful(Redirect(routes.ManagementController.getGroups()).flashing("error" -> e.getMessage))
     }
   }
 
@@ -308,18 +356,139 @@ class ManagementController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
+   * Endpoint to get the GroupRelation (Viewer) editor with all viewers and the new viewer form.
    *
-   * @param email
-   * @param role
+   * @return management view html with group relation editor
+   */
+  def getGroupRelationEditor(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      groupService.getGroup(groupId) flatMap (group => {
+        groupService.getFirstClassGroupViewers(groupId) map (groupViewerRelation => {
+          val error = request.flash.get("error")
+          val emptyForm = NewGroupViewerForm.form.fill(NewGroupViewerForm.Data("", ""))
+          Ok(views.html.container.user.management.management_group_relation_editor(group, groupViewerRelation, emptyForm, error))
+        })
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getGroups()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to add a new member (User) to a Group.<br />
+   * Invalid form data leads to a returned editor page with empty form and error messages.
+   *
+   * @param groupId id of the Group
+   * @return redirect to group editor
+   */
+  def postNewGroupRelation(groupId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      NewGroupViewerForm.form.bindFromRequest fold(
+        errorForm => {
+          groupService.getGroup(groupId) flatMap (group => {
+            groupService.getFirstClassGroupViewers(groupId) map (groupViewerCombinator => {
+              Ok(views.html.container.user.management.management_group_relation_editor(group, groupViewerCombinator, errorForm, None))
+            })
+          })
+        },
+        data => {
+          groupService.addRelation(groupId, data.viewerName, data.viewerRole) map (_ => {
+            Redirect(routes.ManagementController.getGroupRelationEditor(groupId))
+          }) recoverWith {
+            case e =>
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ManagementController.getGroupRelationEditor(groupId)).flashing("error" -> e.getMessage))
+          }
+        })
+    }
+  }
+
+  /**
+   * Delete Group(Viewer) relation.
+   *
+   * @param groupId  id of the viewed Group
+   * @param viewerId id of the viewing Group
+   * @return redirect to group editor
+   */
+  def deleteGroupRelation(groupId: Long, viewerId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      groupService.removeRelation(groupId, viewerId) map (_ => {
+        Redirect(routes.ManagementController.getGroupRelationEditor(groupId))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getGroupRelationEditor(groupId)).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to get the Group editor with all members and the new member form.<br />
+   *
+   * @return management view html with group editor
+   */
+  def getUserEditor(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      userService.getAuthenticatedUser(userId) map (user => {
+        val error = request.flash.get("error")
+        val emptyForm = EditUserForm.form.fill(EditUserForm.Data(""))
+        Ok(views.html.container.user.management.management_user_editor(user, emptyForm, error))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getUsers()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
+  /**
+   * Endpoint to update a User.<br />
+   * This endpoint updates currently only the role.
+   * The role update does not take effect until the updated User logs out and in again.
+   *
+   * @param userId id of the User to update
    * @return
    */
-  //FIXME
-  def postUserRole(email: Long, role: String): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+  def postUser(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      if (!Role.isAtLeastAdmin(ticket.authSession.role)) {
-        redirectWithNoRights
-      } else {
-        Future.successful(Redirect(routes.ManagementController.index()).flashing("error" -> "Not implemented yet!"))
+      EditUserForm.form.bindFromRequest fold(
+        errorForm => {
+          userService.getAuthenticatedUser(userId) map (user => {
+            Ok(views.html.container.user.management.management_user_editor(user, errorForm, None))
+          })
+        },
+        data => {
+          userService.updateUserRole(userId, data.role) map (_ => {
+            Redirect(routes.ManagementController.getUserEditor(userId))
+          }) recoverWith {
+            case e =>
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ManagementController.getUserEditor(userId)).flashing("error" -> e.getMessage))
+          }
+        })
+    }
+  }
+
+  /**
+   * Endpoint to perform a forced log out of a User on all his devices.<br />
+   *
+   * @param userId id of the User to log out
+   * @return
+   */
+  def logUserOut(userId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      authService.deleteSession(Option(true), Option(userId)) map (_ => {
+        if (userId == ticket.authSession.userId) {
+          Redirect(routes.AuthController.login()).flashing("error" -> "Logged out successfully")
+        } else {
+          Redirect(routes.ManagementController.getUserEditor(userId))
+        }
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ManagementController.getUserEditor(userId)).flashing("error" -> e.getMessage))
       }
     }
   }
