@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package util.assertions
+package auth.util
 
 import auth.model.Ticket
 import user.model.Role
