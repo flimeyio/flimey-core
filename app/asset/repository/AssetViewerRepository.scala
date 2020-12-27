@@ -21,10 +21,12 @@ package asset.repository
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
+import user.model.{Group, Viewer}
 import user.repository.GroupTable
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * DB interface for Asset Viewer relations.
@@ -38,7 +40,43 @@ class AssetViewerRepository @Inject()(protected val dbConfigProvider: DatabaseCo
 
   val assetViewers = TableQuery[AssetViewerTable]
   val groups = TableQuery[GroupTable]
+  val assets = TableQuery[AssetTable]
 
-  //TODO
+  /**
+   * Add a new AssetViewer.<br />
+   * Id must be set to 0 to enable auto increment.
+   * Duplications lead to an database exception
+   *
+   * @param viewer new Viewer object with id = 0
+   * @return Future[Long]
+   */
+  def add(viewer: Viewer): Future[Long] = {
+    db.run((assetViewers returning assetViewers.map(_.id)) += viewer)
+  }
+
+  /**
+   * Delete an AssetViewer by its unique combination of targetId and viewerId.
+   *
+   * @param targetId id of the target Asset
+   * @param viewerId id of the viewing Group
+   * @return Future[Long]
+   */
+  def delete(targetId: Long, viewerId: Long): Future[Int] = {
+    db.run(assetViewers.filter(_.targetId === targetId).filter(_.viewerId === viewerId).delete)
+  }
+
+  /**
+   * Get all Groups which have an AssetViewer relation to an specified Asset.
+   *
+   * @param assetId id of the Asset which Viewers shall be fetched
+   * @return Future Seq[(Group, Viewer)]
+   */
+  def getAllViewingGroups(assetId: Long): Future[Seq[(Group, Viewer)]] = {
+    db.run((for {
+      (c, s) <- (assets.filter(_.id === assetId) join assetViewers on (_.id === _.targetId)) join groups on (_._2.viewerId === _.id)
+    } yield (c, s)).result).map(res => {
+      res.map(data => (data._2, data._1._2))
+    })
+  }
 
 }
