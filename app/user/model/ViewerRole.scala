@@ -39,4 +39,12 @@ object ViewerRole extends Enumeration {
     role == MAINTAINER
   }
 
+  def parseViewerRole(viewerRole: String): ViewerRole.Role = {
+    try{
+      ViewerRole.withName(viewerRole)
+    }catch {
+      case e: Throwable => throw new Exception("Invalid viewer role")
+    }
+  }
+
 }

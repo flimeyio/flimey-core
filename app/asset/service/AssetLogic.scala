@@ -26,7 +26,7 @@ import util.messages.{ERR, OK, Status}
  * The AssetLogic object provides static functionality to process, verify and validate
  * constraints of the AssetType model.
  */
-object AssetLogic extends ConstraintProcessor with PropertyProcessor with StringProcessor {
+object AssetLogic extends ConstraintProcessor with PropertyProcessor with StringProcessor with ViewerProcessor {
 
   /**
    * Checks a given AssetType constraint model for semantic correctness.
