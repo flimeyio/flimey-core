@@ -21,8 +21,8 @@ package asset.service
 import asset.model.{AssetConstraint, AssetType}
 import asset.repository.{AssetConstraintRepository, AssetTypeRepository}
 import auth.model.Ticket
+import auth.util.RoleAssertion
 import com.google.inject.Inject
-import util.assertions.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -86,10 +86,14 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
     }
   }
 
-  def getCompleteAssetType(id: Long)(implicit ticket: Ticket): Future[(Option[AssetType], Seq[AssetConstraint])] = {
+  def getCompleteAssetType(id: Long)(implicit ticket: Ticket): Future[(AssetType, Seq[AssetConstraint])] = {
     try {
       assertWorker
-      assetTypeRepository.getComplete(id)
+      assetTypeRepository.getComplete(id) map (assetTypeData => {
+        val (assetType, constraints) = assetTypeData
+        if(assetType.isEmpty) throw new Exception("Invalid asset type")
+        (assetType.get, constraints)
+      })
     } catch {
       case e: Throwable => Future.failed(e)
 
