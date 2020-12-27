@@ -19,10 +19,10 @@
 package user.service
 
 import auth.model.Ticket
+import auth.util.RoleAssertion
 import com.google.inject.Inject
 import user.model.{GroupMembership, GroupStats, Role, User}
 import user.repository.{GroupMembershipRepository, UserRepository}
-import util.assertions.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
