@@ -18,10 +18,10 @@
 
 @(titles: Seq[String])
 
-<div class="">
-    <section class="">
+<div class="top-bar navbar-layout">
+    <section class="top-bar-left">
         @for(title <- titles) {
-            <div class="">@title</div>
+            <div class="navbar-title">@title</div>
         }
     </section>
 </div>

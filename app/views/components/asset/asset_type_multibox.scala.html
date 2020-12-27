@@ -17,7 +17,7 @@
 * *@
 @import asset.model.AssetType
 @(assetTypes: Seq[AssetType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-
+<div class="scroll-container">
 <table class="">
     <tr>
         <th>ID</th>
@@ -39,6 +39,7 @@
         </tr>
     }
 </table>
+</div>
 
 
 

@@ -22,24 +22,20 @@
 @(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
     @main {
-        <div class="">
-            <div class="grid-x main">
-                <div class="cell small-1 margin-10">
+            <div class="grid-x main full-height">
+                <div class="cell small-1 margin-10 full-height">
                 @navbar_left()
                 </div>
-                <div class="cell large-4 margin-10">
-                    @message_box_error(msg)
-                    <div>
+                <div class="cell large-5 margin-10 full-height" >
+                    <div  class="card view-container">
                     @leftContainer
                     </div>
                 </div>
-                <div class="cell large-4 margin-10">
+                <div class="cell large-4 margin-10 full-height">
                 @if(!rightContainer.equals(Html(""))) {
-                    @rightContainer
-                </div>
-                }
+                   <div class="card view-container">@rightContainer</div>
+                }</div>
             </div>
-        </div>
         @footer()
 
     }
