@@ -18,7 +18,6 @@
 
 package asset.repository
 
-import asset.repository.AssetTable
 import asset.model.{AssetConstraint, AssetType}
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -111,12 +110,13 @@ class AssetTypeRepository @Inject()(protected val dbConfigProvider: DatabaseConf
    */
   def getComplete(id: Long): Future[(Option[AssetType], Seq[AssetConstraint])] = {
     db.run((for {
-      (c, s) <- assetTypes.filter(_.id === id) join assetConstraints.sortBy(_.id) on (_.id === _.typeId)
+      (c, s) <- assetTypes.filter(_.id === id) joinLeft assetConstraints on (_.id === _.typeId)
     } yield (c, s)).result) map (res => {
       if(res.isEmpty){
         (None, Seq())
       }else {
-        res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2))).values.head
+        val result = res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2))).values.head
+        (result._1, result._2.filter(_.isDefined).map(_.get).sortBy(_.id))
       }
     })
   }
