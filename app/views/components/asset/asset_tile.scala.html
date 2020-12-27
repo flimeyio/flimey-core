@@ -16,7 +16,12 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import asset.model.ExtendedAsset
-@(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import auth.model.Ticket
+@(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@canEdit = @{
+    ticket.groups.exists(asset.viewers.editors.contains) || ticket.groups.exists(asset.viewers.maintainers.contains)
+}
 
 <div class="">
     <div class="">
@@ -33,12 +38,13 @@
             }
         }
         <!--FIXME: the part with the groups should be hidden and open with a little extension arrow-->
+        <!--Group Names should be small and with these nice bubble tag names in different colors like a rainbow unicorn-->
         <div>
             <div>
-            View:
-            @for(group <- asset.viewers.viewers){
-                @group.name
-            }
+                Maintain:
+                @for(group <- asset.viewers.maintainers){
+                    @group.name
+                }
             </div>
             <div>
             Edit:
@@ -47,18 +53,20 @@
             }
             </div>
             <div>
-            Maintain:
-            @for(group <- asset.viewers.maintainers){
-                @group.name
-            }
+                View:
+                @for(group <- asset.viewers.viewers){
+                    @group.name
+                }
             </div>
         </div>
     </div>
-    <div class="">
-        <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
-            <button class="">
-                Edit
-            </button>
-        </a>
-    </div>
+    @if(canEdit) {
+        <div class="">
+            <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
+                <button class="">
+                    Edit
+                </button>
+            </a>
+        </div>
+    }
 </div>

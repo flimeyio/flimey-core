@@ -17,7 +17,8 @@
 * *@
 @import asset.model.ExtendedAsset
 @import views.html.components.asset.asset_tile
-@(assets: Seq[ExtendedAsset])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import auth.model.Ticket
+@(assets: Seq[ExtendedAsset])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @for(asset <- assets){
     <div>

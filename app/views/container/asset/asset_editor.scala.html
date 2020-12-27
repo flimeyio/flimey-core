@@ -16,20 +16,23 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import asset.formdata.NewAssetForm
-@import asset.model.{Asset, AssetProperty, AssetType}
+@import asset.model.AssetType
 @import auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
-@import views.html.forms.asset.{delete_asset_form, edit_asset_form}
+@import views.html.forms.asset.edit_asset_form
+@import asset.model.ExtendedAsset
+@import views.html.components.utils.message_box_success
 @(selectedType: AssetType,
-        selectedAsset: Long,
+        selectedAsset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         newAssetForm: Form[NewAssetForm.Data],
-        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+        msg: Option[String] = None,
+        successMsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
     @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssets(selectedType.id, 0))
     @message_box_error(msg)
+    @message_box_success(successMsg)
     @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, newAssetForm)
-    @delete_asset_form(selectedType.id, selectedAsset)
 }()()

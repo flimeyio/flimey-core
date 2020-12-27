@@ -32,7 +32,5 @@
     @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssets(selectedType.id, 0))
     @message_box_error(errmsg)
     @message_box_success(succmsg)
-    <div class="">
-        @new_asset_form(selectedType, propertyKeys, obligatoryKeys, newAssetForm)
-    </div>
+    @new_asset_form(selectedType, propertyKeys, obligatoryKeys, newAssetForm)
 }()()
