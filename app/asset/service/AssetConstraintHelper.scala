@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.service
+package asset.service
 
 /**
  * Object with static helper functionality for Constraints used by AssetTypes.

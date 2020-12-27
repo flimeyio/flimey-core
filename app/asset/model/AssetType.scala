@@ -16,14 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.model
+package asset.model
 
 /**
- * Model class representing the viewer and editor group relations of a target group.
- * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive closure.
- *
- * @param viewers groups that can only view the content of the target
- * @param editors groups that can view and edit the content of the target
- * @param maintainers groups that can delete, administrate of migrate the target
+ * The AssetType data class
+ * @param id unique primary key (given by db interface)
+ * @param value name of the AssetType
+ * @param active status if AssetType can be used to create new Assets and Assets of this type can be accessed
  */
-case class GroupViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
+case class AssetType(id: Long, value: String, active: Boolean)

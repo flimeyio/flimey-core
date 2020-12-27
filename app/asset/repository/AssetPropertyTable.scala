@@ -16,25 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.repository
+package asset.repository
 
-import assetmodel.model.AssetConstraint
+import asset.model.AssetProperty
 import slick.jdbc.MySQLProfile.api._
 
 /**
- * Slick framework db mapping for Asset associated Constraints.
+ * Slick framework db mapping for Asset associated Properties.
  * see evolutions/default for schema creation.
  * @param tag for mysql
  */
-class AssetConstraintTable(tag: Tag) extends Table[AssetConstraint](tag, "asset_constraint") {
+class AssetPropertyTable(tag: Tag) extends Table[AssetProperty](tag, "asset_property") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def c = column[String]("c")
-  def v1 = column[String]("v1")
-  def v2 = column[String]("v2")
-  def typeId = column[Long]("type_id")
+  def key = column[String]("key")
+  def value = column[String]("value")
+  def parentId = column[Long]("parent_id")
 
   override def * =
-    (id, c, v1, v2, typeId) <>(AssetConstraint.tupled, AssetConstraint.unapply)
+    (id, key, value, parentId) <> (AssetProperty.tupled, AssetProperty.unapply)
 
 }

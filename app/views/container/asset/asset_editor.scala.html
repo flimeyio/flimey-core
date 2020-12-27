@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -9,28 +9,30 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import asset.formdata.NewAssetForm
+@import asset.model.AssetType
 @import auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
+@import views.html.forms.asset.edit_asset_form
+@import asset.model.ExtendedAsset
 @import views.html.components.utils.message_box_success
-@import views.html.forms.asset.new_asset_form
-@import asset.model.AssetType
 @(selectedType: AssetType,
+        selectedAsset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         newAssetForm: Form[NewAssetForm.Data],
-        errmsg: Option[String] = None,
-        succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+        msg: Option[String] = None,
+        successMsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssets(selectedType.id, 0))
-    @message_box_error(errmsg)
-    @message_box_success(succmsg)
-    @new_asset_form(selectedType, propertyKeys, obligatoryKeys, newAssetForm)
+    @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssets(selectedType.id, 0))
+    @message_box_error(msg)
+    @message_box_success(successMsg)
+    @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, newAssetForm)
 }()()

@@ -16,27 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package util.assertions
+package asset.model
 
-import auth.model.Ticket
-import user.model.Role
-
-trait RoleAssertion {
-
-  def assertWorker(implicit ticket: Ticket): Unit = {
-    if(!Role.isAtLeastWorker(ticket.authSession.role)) throw new Exception("No Rights!")
-  }
-
-  def assertModeler(implicit ticket: Ticket): Unit = {
-    if(!Role.isAtLeastModeler(ticket.authSession.role)) throw new Exception("No Rights!")
-  }
-
-  def assertAdmin(implicit ticket: Ticket): Unit = {
-    if(!Role.isAtLeastAdmin(ticket.authSession.role)) throw new Exception("No Rights!")
-  }
-
-  def assertSystem(implicit ticket: Ticket): Unit = {
-    if(!Role.isAtLeastSystem(ticket.authSession.role)) throw new Exception("No Rights!")
-  }
-
-}
+/**
+ * The AssetConstraint data class.
+ *
+ * @param id unique primary key (given by db interface)
+ * @param c constraint rule key
+ * @param v1 first rule argument
+ * @param v2 second rule argument
+ * @param typeId id of the associated AssetType
+ */
+case class AssetConstraint(id: Long, c: String, v1: String, v2: String, typeId: Long)

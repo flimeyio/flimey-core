@@ -16,13 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.service
+package user.model
 
-import user.model.{Group, GroupViewerCombinator, Viewer, ViewerRole}
+/**
+ * Model class representing the viewer and editor group relations of a target group.
+ * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive closure.
+ *
+ * @param viewers groups that can only view the content of the target
+ * @param editors groups that can view and edit the content of the target
+ * @param maintainers groups that can delete, administrate of migrate the target
+ */
+case class ViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
 
-object GroupLogic extends ViewerProcessor {
+object ViewerCombinator {
 
-  def buildGroupViewerCombinator(relations: Seq[(Group, Viewer)]): GroupViewerCombinator = {
+  def fromRelations(relations: Seq[(Group, Viewer)]): ViewerCombinator = {
     var maintainers: Set[Group] = Set()
     var editors: Set[Group] = Set()
     var viewers: Set[Group] = Set()
@@ -36,7 +44,7 @@ object GroupLogic extends ViewerProcessor {
         viewers = viewers + group
       }
     })
-    GroupViewerCombinator(viewers, editors, maintainers)
+    ViewerCombinator(viewers, editors, maintainers)
   }
 
 }

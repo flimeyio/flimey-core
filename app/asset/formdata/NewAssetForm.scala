@@ -23,11 +23,14 @@ import play.api.data.Forms.{mapping, seq, text}
 
 object NewAssetForm {
 
-  case class Data(values: Seq[String])
+  case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
 
   val form = Form(
     mapping(
-      "values" -> seq(text)
+      "values" -> seq(text),
+      "maintainers" -> seq(text),
+      "editors" -> seq(text),
+      "viewers" -> seq(text)
     )(Data.apply)(Data.unapply)
   )
 

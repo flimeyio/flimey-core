@@ -16,25 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package user.service
+package asset.formdata
 
-import user.model.ViewerRole
+import play.api.data.Forms._
+import play.api.data._
 
-trait ViewerProcessor {
+object NewAssetTypeForm {
 
-  /**
-   * Transform a ViewerRole string in its enum representation.
-   * Throws an exception, if an invalid string is passed.
-   *
-   * @param viewerRole string value of a ViewerRole
-   * @return ViewerRole
-   */
-  def parseViewerRole(viewerRole: String): ViewerRole.Role = {
-    try{
-      ViewerRole.withName(viewerRole)
-    }catch {
-      case e: Throwable => throw new Exception("Invalid viewer role")
-    }
-  }
+  case class Data(value: String)
+
+  val form = Form(
+    mapping(
+      "value" -> nonEmptyText
+    )(Data.apply)(Data.unapply)
+  )
 
 }

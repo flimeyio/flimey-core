@@ -16,19 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.formdata
+package auth.util
 
-import play.api.data.Forms._
-import play.api.data._
+import auth.model.Ticket
+import user.model.Role
 
-object NewAssetTypeForm {
+trait RoleAssertion {
 
-  case class Data(value: String)
+  def assertWorker(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastWorker(ticket.authSession.role)) throw new Exception("No Rights!")
+  }
 
-  val form = Form(
-    mapping(
-      "value" -> nonEmptyText
-    )(Data.apply)(Data.unapply)
-  )
+  def assertModeler(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastModeler(ticket.authSession.role)) throw new Exception("No Rights!")
+  }
+
+  def assertAdmin(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastAdmin(ticket.authSession.role)) throw new Exception("No Rights!")
+  }
+
+  def assertSystem(implicit ticket: Ticket): Unit = {
+    if(!Role.isAtLeastSystem(ticket.authSession.role)) throw new Exception("No Rights!")
+  }
 
 }

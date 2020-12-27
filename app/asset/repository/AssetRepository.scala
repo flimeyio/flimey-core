@@ -18,13 +18,14 @@
 
 package asset.repository
 
-import asset.model.Asset
-import assetmodel.model.AssetProperty
-import assetmodel.repository.{AssetConstraintTable, AssetPropertyTable, AssetTypeTable}
+import asset.model.{Asset, AssetProperty, ExtendedAsset}
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
+import slick.lifted.TableQuery
+import user.model.{Group, Viewer, ViewerCombinator}
+import user.repository.GroupTable
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,23 +43,50 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   val assetTypes = TableQuery[AssetTypeTable]
   val assetConstraints = TableQuery[AssetConstraintTable]
   val assetProperties = TableQuery[AssetPropertyTable]
+  val assetViewers = TableQuery[AssetViewerTable]
+  val groups = TableQuery[GroupTable]
 
   /**
-   * Add a new Asset with Properties to the db.
-   * The id must be set to 0 to enable auto increment.
+   * Add a new Asset with Properties to the db.<br />
+   * The Asset id and Property ids are set to 0 to enable auto increment.
+   * <p> Only valid Asset configurations should be added to the repository.
    *
-   * @param asset new Asset entity
-   * @return new id future
+   * @param asset      new Asset entity
+   * @param properties AssetProperties of the Asset.
+   * @param viewers    Viewers of the Asset.
+   * @return Future[Unit]
    */
-  def add(asset: Asset, properties: Seq[AssetProperty]): Future[Unit] = {
+  def add(asset: Asset, properties: Seq[AssetProperty], viewers: Seq[Viewer]): Future[Unit] = {
     db.run((for {
       key <- (assets returning assets.map(_.id)) += asset
       _ <- assetProperties ++= properties.map(p => AssetProperty(0, p.key, p.value, key))
+      _ <- assetViewers ++= viewers.map(v => Viewer(0, key, v.viewerId, v.role))
     } yield ()).transactionally)
   }
 
   /**
-   * Delete an Asset.
+   * Update Asset properties and Viewers.
+   * <p> Updates the value field of all given AssetProperties.
+   * <p> Deletes all given deleted Viewers.
+   * <p> Inserts all given new Viewers. The new Viewer objects must be complete and must already contain the target id.
+   *
+   * @param properties Properties to update the value field
+   * @param deletedViewers Group ids of Viewers to delete
+   * @param newViewers Viewers to add - id must be 0
+   * @return Future[Unit]
+   **/
+  def update(properties: Seq[AssetProperty], deletedViewers: Set[Long], newViewers: Set[Viewer]): Future[Unit] = {
+    db.run((for {
+      _ <- DBIO.sequence(properties.map(update => {
+        assetProperties.filter(_.id === update.id).map(_.value).update(update.value)
+      }))
+      _ <- assetViewers.filter(_.viewerId.inSet(deletedViewers)).delete
+      _ <- assetViewers ++= newViewers
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete an Asset.<br />
    * This operation will also delete all Properties
    *
    * @param id of the Asset to delete
@@ -67,18 +95,20 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   def delete(id: Long): Future[Unit] = {
     db.run((for {
       _ <- assetProperties.filter(_.parentId === id).delete
-      _ <- assets.filter(_.typeId === id).delete
+      _ <- assetViewers.filter(_.targetId === id).delete
+      _ <- assets.filter(_.id === id).delete
     } yield ()).transactionally)
   }
 
   /**
-   * Get the all Assets with Properties of a specific AssetType.
+   * Get the all Assets with Properties of a specific AssetType.<br />
    * This operation is more performant then fetching the data by separate methods.
-   * <br />
-   * It can be expected that the Property seq contains either a single None Option or only defined Properties.
+   * <p> It can be expected that the Property seq contains either a single None Option or only defined Properties.
+   * <p> This method should no longer be used, because it does not check for rights and can return huge amounts of data.
    *
    * @return future of result Seq (Properties mapped to Asset)
    */
+  @deprecated
   def getAll(typeId: Long): Future[Seq[(Asset, Seq[Option[AssetProperty]])]] = {
     db.run((for {
       (c, s) <- assets.filter(_.typeId === typeId).sortBy(_.id) joinLeft assetProperties.sortBy(_.id) on (_.id === _.parentId)
@@ -88,24 +118,79 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   }
 
   /**
-   * Get an Asset with its Properties by ID.
-   * This operation is more performant then fetching the data by separate methods.
-   * <br />
-   * It can be expected that the Property seq contains either a single None Option or only defined Properties.
+   * Get an Asset with its Properties by ID.<br />
+   * <p> Only Assets which are part of the specified Groups can be fetched.
    *
-   * @param id of the Asset
-   * @return future of result (Properties mapped to Asset)
+   * @param id       of the Asset
+   * @param groupIds ids of Groups which must be able to view the Asset
+   * @return Future Option[ExtendedAsset]
    */
-  def get(id: Long): Future[(Option[Asset], Seq[Option[AssetProperty]])] = {
+  def get(id: Long, groupIds: Set[Long]): Future[Option[ExtendedAsset]] = {
     db.run((for {
-      (c, s) <- assets.filter(_.id === id) joinLeft assetProperties.sortBy(_.id) on (_.id === _.parentId)
+      (c, s) <- ((assets.filter(_.id === id) join assetProperties.sortBy(_.id) on (_.id === _.parentId)) join
+        assetViewers.filter(_.viewerId.inSet(groupIds)) on (_._1.id === _.targetId)) join
+        groups on (_._2.viewerId === _.id)
     } yield (c, s)).result).map(res => {
       if (res.isEmpty) {
-        (None, Seq())
+        None
       } else {
-        res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2))).values.head
+        val assetData = res.groupBy(_._1._1._1).head
+        val asset = assetData._1
+        Option(extendedAssetFromRaw(asset, assetData._2))
       }
     })
+  }
+
+  /**
+   * Get a number of Assets by multiple query parameters.<br />
+   * <p> Only Assets which are part of the specified Groups can be fetched.
+   *
+   * @param groupIds ids of the Groups, which must have access to the Asset
+   * @param typeId   id of the AssetType, the Asset must have
+   * @param limit    maximum number of retrieved Assets - recommended to keep as small as possible
+   * @param offset   number of Assets to skip
+   * @return Future Seq[ExtendedAsset]
+   */
+  def getAssetSubset(groupIds: Set[Long], typeId: Long, limit: Int, offset: Int): Future[Seq[ExtendedAsset]] = {
+    //build sub-query to get all asset ids of assets of the given type which can be accessed by the given groups
+    //the returned keys are limited to provide the defined number of results for the second query
+    val subQuery = (for {
+      (c, s) <- assets.filter(_.typeId === typeId) join
+        assetViewers.filter(_.viewerId.inSet(groupIds)) on (_.id === _.targetId)
+    } yield (c, s)).groupBy(_._1.id).map(_._1)
+    //FIXME basically, the limit should be applied here and not in the main query...
+    // but MYSQL is not able to support that and throws a runtime error. Maybe try with Postgres again.
+
+    //main query to fetch all data from the by the sub-query specified assets
+    db.run((for {
+      (c, s) <- ((assets.filter(_.id in subQuery).sortBy(_.id.desc).drop(offset).take(limit) join
+        assetProperties on (_.id === _.parentId)) join
+        assetViewers.filter(_.viewerId.inSet(groupIds)) on (_._1.id === _.targetId)) join
+        groups on (_._2.viewerId === _.id)
+    } yield (c, s)).result).map(res => {
+      val assets = res.groupBy(_._1._1._1)
+      assets.keys.map(asset => {
+        val parameters = assets(asset)
+        extendedAssetFromRaw(asset, parameters)
+      }).toSeq.sortBy(-_.asset.id)
+    })
+
+  }
+
+  /**
+   * Build and ExtendedAsset model object from raw query data (join table entries)
+   * <p> This method does not perform any validation or verification!
+   * <p> The given data rows must all be able to be grouped on a single Asset. This Assets values are processed.
+   *
+   * @param asset the Asset to build the ExtendedAsset from (base to group values)
+   * @param parameters sequence of (partly redundant) table data after expected join operations
+   * @return ExtendedAsset
+   */
+  private def extendedAssetFromRaw(asset: Asset, parameters: Seq[(((Asset, AssetProperty), Viewer), Group)]): ExtendedAsset = {
+    val properties = parameters.groupBy(_._1._1._2).keySet.toSeq.sortBy(_.id)
+    val viewers = parameters.map(param => (param._1._2, param._2)).groupBy(_._1).mapValues(pairs => pairs.map(_._2).head).toSeq
+    val assetViewerCombinator = ViewerCombinator.fromRelations(viewers.map(_.swap))
+    ExtendedAsset(asset, properties, assetViewerCombinator)
   }
 
 }

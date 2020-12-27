@@ -19,8 +19,7 @@
 package controllers
 
 import asset.formdata.{NewAssetForm, SelectAssetTypeForm}
-import asset.service.AssetService
-import assetmodel.service.ModelAssetService
+import asset.service.{AssetService, ModelAssetService}
 import auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
@@ -56,11 +55,11 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
       withTicket { implicit ticket =>
         modelAssetService.getAllAssetTypes map (types => {
           val error = request.flash.get("error")
-          Ok(views.html.container.asset.asset_overview(None, types, Seq(), error))
+          Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, error))
         }) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
-            Future.successful(Ok(views.html.container.asset.asset_overview(None, Seq(), Seq(), Option(e.getMessage))))
+            Future.successful(Ok(views.html.container.asset.asset_overview(None, Seq(), Seq(), 0, Option(e.getMessage))))
         }
       }
     }
@@ -70,7 +69,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
       withTicket { implicit ticket =>
         modelAssetService.getAllAssetTypes map (types => {
           //FIXME
-          Ok(views.html.container.asset.asset_overview(None, types, Seq(), None))
+          Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, None))
         })
       }
     }
@@ -94,7 +93,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
             modelAssetService.getAssetTypeByValue(assetTypeValue) flatMap (assetType => {
               if (assetType.isEmpty) Future.failed(new Exception("No such AssetType found"))
               if (assetType.isDefined) {
-                Future.successful(Redirect(routes.AssetController.getAssetsOfType(assetType.get.id)))
+                Future.successful(Redirect(routes.AssetController.getAssets(assetType.get.id, 0)))
               } else {
                 Future.failed(new Exception("No Asset Type selected"))
               }
@@ -108,21 +107,21 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
     }
 
   /**
-   * Endpoint to show Assets of a selected AssetType.<br />
-   * <br />
-   * Not implemented yet: show only a range<br />
-   * Not implemented yet: accept search parameter<br />
+   * Endpoint to get a number of Assets based on multiple query parameters.<br />
+   * In every case, only Assets which can be accessed based on the Ticket can be selected.<br />
    *
-   * @param assetTypeId id of the shown AssetType
-   * @return asset overview with (currently) all Assets of the selected type
+   * @param assetTypeId id of the AssetType the Assets must have
+   * @param pageNumber number of the selection window - see AssetService.getAsset()
+   * @param groupSelector string containing group ids which the Assets can have (filter) in form "id,id,..."
+   * @return
    */
-  def getAssetsOfType(assetTypeId: Long):
+  def getAssets(assetTypeId: Long, pageNumber: Int, groupSelector: Option[String] = None):
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      assetService.getAssetComplex(assetTypeId) map (assetComplex => {
-        //FIXME actually fetch the assets or some part of them (additional url query params)
+      //FIXME set pageSize to something around 50
+      assetService.getAssetComplex(assetTypeId, pageNumber, pageSize = 8, groupSelector) map (assetComplex => {
         val error = request.flash.get("error")
-        Ok(views.html.container.asset.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, error))
+        Ok(views.html.container.asset.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, pageNumber, error))
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
@@ -141,9 +140,10 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def getNewAssetEditor(assetTypeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        val newAssetForm = NewAssetForm.form.fill(NewAssetForm.Data(Seq()))
+        val newAssetForm = NewAssetForm.form.fill(NewAssetForm.Data(Seq(), Seq(), Seq(), Seq()))
         val error = request.flash.get("error")
-        newAssetEditorFactory(assetTypeId, newAssetForm, error)
+        val success = request.flash.get("success")
+        newAssetEditorFactory(assetTypeId, newAssetForm, error, success)
       }
     }
 
@@ -159,11 +159,10 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         NewAssetForm.form.bindFromRequest fold(
-          errorForm => newAssetEditorFactory(assetTypeId, errorForm, Option("Error validation form data")),
+          errorForm => newAssetEditorFactory(assetTypeId, errorForm),
           data => {
-            assetService.addAsset(assetTypeId, data.values) flatMap (_ => {
-              val newAssetForm = NewAssetForm.form.fill(NewAssetForm.Data(Seq()))
-              newAssetEditorFactory(assetTypeId, newAssetForm, None, Option("Asset successfully created"))
+            assetService.addAsset(assetTypeId, data.values, data.maintainers, data.editors, data.viewers) map (_ => {
+              Redirect(routes.AssetController.getNewAssetEditor(assetTypeId)).flashing("success" -> "Asset successfully created")
             }) recoverWith {
               case e =>
                 logger.error(e.getMessage, e)
@@ -173,6 +172,31 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
           })
       }
     }
+
+  /**
+   * Helper function to build a 'new asset editor' view based on different configuration parameters.
+   *
+   * @param assetTypeId id of the AssetType
+   * @param form        NewAssetForm, which can be already filled
+   * @param errmsg      optional error message
+   * @param succmsg     optional positive message
+   * @param request     implicit request context
+   * @return new asset editor result future (view)
+   */
+  private def newAssetEditorFactory(assetTypeId: Long, form: Form[NewAssetForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
+                                   (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
+    modelAssetService.getCompleteAssetType(assetTypeId) map (typeData => {
+      val (assetType, constraints) = typeData
+        Ok(views.html.container.asset.new_asset_editor(assetType,
+          assetService.getAssetPropertyKeys(constraints),
+          assetService.getObligatoryPropertyKeys(constraints),
+          form, errmsg, succmsg))
+    }) recoverWith {
+      case e =>
+        logger.error(e.getMessage, e)
+        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
+    }
+  }
 
   /**
    * Endpoint to get the current asset overview with opened asset editor.<br />
@@ -185,8 +209,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def getAssetEditor(assetTypeId: Long, assetId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        val error = request.flash.get("error")
-        assetEditorFactory(assetTypeId, assetId, None, error)
+        assetEditorFactory(assetTypeId, assetId, None)
       }
     }
 
@@ -203,12 +226,12 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         NewAssetForm.form.bindFromRequest fold(
-          errorForm => assetEditorFactory(assetTypeId, assetId, Option(errorForm), Option("Error validation form data")),
+          errorForm => assetEditorFactory(assetTypeId, assetId, Option(errorForm)),
           data => {
-            assetService.updateAssetProperties(assetId, data.values) flatMap (_ => {
-              assetEditorFactory(assetTypeId, assetId, Option(NewAssetForm.form.fill(data)), None)
+            assetService.updateAsset(assetId, data.values, data.maintainers, data.editors, data.viewers) flatMap (_ => {
+              assetEditorFactory(assetTypeId, assetId, Option(NewAssetForm.form.fill(data)), None, Option("Changes saved successfully"))
             }) recoverWith {
-              case e =>
+              case e: Throwable =>
                 logger.error(e.getMessage, e)
                 val newAssetForm = NewAssetForm.form.fill(data)
                 assetEditorFactory(assetTypeId, assetId, Option(newAssetForm), Option(e.getMessage))
@@ -230,7 +253,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         assetService.deleteAsset(assetId) map (_ =>
-          Redirect(routes.AssetController.getAssetsOfType(assetTypeId))
+          Redirect(routes.AssetController.getAssets(assetTypeId, 0))
           ) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
@@ -238,35 +261,6 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
         }
       }
     }
-
-  /**
-   * Helper function to build a 'new asset editor' view based on different configuration parameters.
-   *
-   * @param assetTypeId id of the AssetType
-   * @param form        NewAssetForm, which can be already filled
-   * @param errmsg      optional error message
-   * @param succmsg     optional positive message
-   * @param request     implicit request context
-   * @return new asset editor result future (view)
-   */
-  private def newAssetEditorFactory(assetTypeId: Long, form: Form[NewAssetForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
-                                   (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-    modelAssetService.getCompleteAssetType(assetTypeId) map (typeData => {
-      val (assetType, constraints) = typeData
-      if (assetType.isDefined) {
-        Ok(views.html.container.asset.new_asset_editor(assetType.get,
-          assetService.getAssetPropertyKeys(constraints),
-          assetService.getObligatoryPropertyKeys(constraints),
-          form, errmsg, succmsg))
-      } else {
-        Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type found or editable")
-      }
-    }) recoverWith {
-      case e =>
-        logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
-    }
-  }
 
   /**
    * Helper function to build a 'asset editor' view based on different configuration parameters.
@@ -278,30 +272,29 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * @param request     implicit request context
    * @return asset editor result future (view)
    */
-  private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[NewAssetForm.Data]], msg: Option[String] = None)
+  private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[NewAssetForm.Data]],
+                                 msg: Option[String] = None, successMsg: Option[String] =  None)
                                 (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-    assetService.getAssetComplex(assetTypeId) flatMap (assetComplex => {
-      val editedAssetData = assetComplex.children.find(_._1.id == assetId)
-      if (editedAssetData.isEmpty) throw new Exception("Edited Asset is not part of current selection")
-      if (assetComplex.parentAssetType.isDefined) {
-        modelAssetService.getCompleteAssetType(assetComplex.parentAssetType.get.id) map (typeData => {
-          val (_, constraints) = typeData
-          val editForm = if (form.isDefined) form.get else NewAssetForm.form.fill(NewAssetForm.Data(editedAssetData.get._2.map(_.value)))
-          Ok(views.html.container.asset.asset_overview_with_editor(assetComplex.parentAssetType.get,
-            assetComplex.allAssetTypes,
-            assetComplex.children,
-            assetId,
+    assetService.getAsset(assetId) flatMap (extendedAsset => {
+        modelAssetService.getCompleteAssetType(extendedAsset.asset.typeId) map (typeData => {
+          val (assetType, constraints) = typeData
+          val editForm = if (form.isDefined) form.get else NewAssetForm.form.fill(
+            NewAssetForm.Data(
+              extendedAsset.properties.map(_.value),
+              extendedAsset.viewers.maintainers.toSeq.map(_.name),
+              extendedAsset.viewers.editors.toSeq.map(_.name),
+              extendedAsset.viewers.viewers.toSeq.map(_.name)))
+
+          Ok(views.html.container.asset.asset_editor(assetType,
+            extendedAsset,
             assetService.getAssetPropertyKeys(constraints),
             assetService.getObligatoryPropertyKeys(constraints),
-            editForm, msg))
+            editForm, msg, successMsg))
         })
-      } else {
-        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type"))
-      }
     }) recoverWith {
       case e =>
         logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.getAssetsOfType(assetTypeId)).flashing("error" -> e.getMessage))
+        Future.successful(Redirect(routes.AssetController.getAssets(assetTypeId, 0)).flashing("error" -> e.getMessage))
     }
   }
 

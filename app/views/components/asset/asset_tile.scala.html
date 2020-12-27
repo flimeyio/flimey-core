@@ -1,0 +1,72 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import asset.model.ExtendedAsset
+@import auth.model.Ticket
+@(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@canEdit = @{
+    ticket.groups.exists(asset.viewers.editors.contains) || ticket.groups.exists(asset.viewers.maintainers.contains)
+}
+
+<div class="">
+    <div class="">
+        @if(asset.properties.nonEmpty) {
+            @for(i <- asset.properties.indices) {
+                <div class="">
+                    <div class="">
+                    @asset.properties(i).key
+                    </div>
+                    <div class="">
+                    @asset.properties(i).value
+                    </div>
+                </div>
+            }
+        }
+        <!--FIXME: the part with the groups should be hidden and open with a little extension arrow-->
+        <!--Group Names should be small and with these nice bubble tag names in different colors like a rainbow unicorn-->
+        <div>
+            <div>
+                Maintain:
+                @for(group <- asset.viewers.maintainers){
+                    @group.name
+                }
+            </div>
+            <div>
+            Edit:
+            @for(group <- asset.viewers.editors){
+                @group.name
+            }
+            </div>
+            <div>
+                View:
+                @for(group <- asset.viewers.viewers){
+                    @group.name
+                }
+            </div>
+        </div>
+    </div>
+    @if(canEdit) {
+        <div class="">
+            <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
+                <button class="">
+                    Edit
+                </button>
+            </a>
+        </div>
+    }
+</div>

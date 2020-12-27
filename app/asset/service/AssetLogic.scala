@@ -16,17 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.service
+package asset.service
 
-import assetmodel.model.{AssetConstraint, AssetProperty}
-import assetmodel.service.AssetConstraintHelper.ConstraintType
+import asset.model.{AssetConstraint, AssetProperty}
+import asset.service.AssetConstraintHelper.ConstraintType
 import util.messages.{ERR, OK, Status}
 
 /**
  * The AssetLogic object provides static functionality to process, verify and validate
  * constraints of the AssetType model.
  */
-object AssetLogic extends ConstraintProcessor with PropertyProcessor with StringProcessor {
+object AssetLogic extends ConstraintProcessor with PropertyProcessor with StringProcessor with ViewerProcessor {
 
   /**
    * Checks a given AssetType constraint model for semantic correctness.

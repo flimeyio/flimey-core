@@ -17,12 +17,15 @@
 * *@
 @import asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
-@import assetmodel.model.AssetType
+@import asset.model.AssetType
+@import auth.model.Ticket
+@import asset.model.ExtendedAsset
+@import views.html.forms.asset.delete_asset_form
 @(assetType: AssetType,
-        assetId: Long,
+        asset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
-        newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @key(index: Int) = @{
     val (key, _) = propertyKeys(index)
@@ -44,26 +47,131 @@
     }
 }
 
-@helper.form(action = routes.AssetController.postAsset(assetType.id, assetId)) {
+@canMaintain = @{
+    ticket.groups.exists(asset.viewers.maintainers.contains)
+}
+
+@sizeOfFormSeq(name: String) = @{
+    newAssetForm.data.keys.count(_.startsWith(name))
+}
+
+@helper.form(action = routes.AssetController.postAsset(assetType.id, asset.asset.id)) {
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
             <div class="">
-                    <div class="">
-                        <div class="">
-                            @key(i)
-                        </div>
-                        <div class="">
-                            <div class="">@datatype(i)</div>
-                        </div>
-                        <div class="">
-                            <input type="text" name="@{"values[" + i + "]"}" class="" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
-                        </div>
-                    </div>
+                @key(i)
             </div>
+            <div class="">
+                @datatype(i)
+            </div>
+            <input type="text" name="@{"values[" + i + "]"}" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
         }
+        <span>Maintainers:</span>
+        <div id="edit-asset-maintainers">
+        @for(i <- 0 to sizeOfFormSeq("maintainer")-1) {
+            <select name="@{"maintainers[" + i + "]"}">
+                <option>none</option>
+                @for(group <- ticket.groups) {
+                    <option @if(group.name == newAssetForm.data.get("maintainers[" + i + "]").get) {
+                        selected="selected"}>
+                    @group.name
+                    </option>
+                }
+            </select>
+        }
+        </div>
+        <span>Editors:</span>
+        <div id="edit-asset-editors">
+        @for(i <- 0 to sizeOfFormSeq("editors")-1) {
+            <select name="@{"editors[" + i + "]"}">
+                <option>none</option>
+                @for(group <- ticket.groups) {
+                    <option @if(group.name == newAssetForm.data.get("editors[" + i + "]").get) {
+                        selected="selected"}>
+                    @group.name
+                    </option>
+                }
+            </select>
+        }
+        </div>
+        <span>Viewers:</span>
+        <div id="edit-asset-viewers">
+        @for(i <- 0 to sizeOfFormSeq("viewer")-1) {
+            <select name="@{"viewers[" + i + "]"}">
+                <option>none</option>
+                @for(group <- ticket.groups) {
+                    <option @if(group.name == newAssetForm.data.get("viewers[" + i + "]").get) {
+                        selected="selected"}>
+                    @group.name
+                    </option>
+                }
+            </select>
+        }
+        </div>
         <div class="">
             <button class="">Save</button>
         </div>
     }
+}
+
+@if(canMaintain) {
+
+    <button id="edit-asset-maintainers-add">+Maintainer</button>
+    <button id="edit-asset-editors-add">+Editor</button>
+    <button id="edit-asset-viewers-add">+Viewer</button>
+
+    <ol hidden id="new-asset-group-options">
+        <li>none</li>
+        @for(group <- ticket.groups){
+            <li>@group.name</li>
+        }
+    </ol>
+
+    <script type="application/javascript">
+
+        let maintainerIndex = $("#edit-asset-maintainers").length;
+        let editorIndex = $("#edit-asset-editors").length;
+        let viewerIndex = $("#edit-asset-viewers").length;
+
+        let options = [];
+
+        $('#new-asset-group-options li').each(function (index, value) {
+            options.push($(value).text());
+        });
+
+        function buildOptions(selector) {
+            options.forEach(optionName => {
+                $("<option/>").attr({type: 'select', value: optionName}).text(optionName).appendTo(selector)
+            })
+        }
+
+        $("#edit-asset-maintainers-add").click(function () {
+            let name = "maintainers[" + maintainerIndex + "]";
+            maintainerIndex++;
+            let selector = $("<select/>").attr({name: name});
+            buildOptions(selector)
+            let _ = selector.appendTo("#edit-asset-maintainers").focus()
+        });
+
+        $("#edit-asset-editors-add").click(function () {
+            let name = "editors[" + editorIndex + "]";
+            editorIndex++;
+            let selector = $("<select/>").attr({name: name});
+            buildOptions(selector)
+            let _ = selector.appendTo("#edit-asset-editors").focus()
+        });
+
+        $("#edit-asset-viewers-add").click(function () {
+            let name = "viewers[" + viewerIndex + "]";
+            viewerIndex++;
+            let selector = $("<select/>").attr({name: name});
+            buildOptions(selector)
+            let _ = selector.appendTo("#edit-asset-viewers").focus()
+        });
+    </script>
+}
+
+@if(canMaintain){
+    @delete_asset_form(assetType.id, asset.asset.id)
 }

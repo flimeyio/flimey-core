@@ -16,15 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.model
+package asset.formdata
 
-/**
- * The AssetConstraint data class.
- *
- * @param id unique primary key (given by db interface)
- * @param c constraint rule key
- * @param v1 first rule argument
- * @param v2 second rule argument
- * @param typeId id of the associated AssetType
- */
-case class AssetConstraint(id: Long, c: String, v1: String, v2: String, typeId: Long)
+import play.api.data.Forms._
+import play.api.data._
+
+object
+EditAssetTypeForm {
+
+  case class Data(value: String, active: Boolean)
+
+  val form = Form(
+    mapping(
+      "value" -> nonEmptyText,
+      "active" -> boolean
+    )(Data.apply)(Data.unapply)
+  )
+
+}

@@ -15,16 +15,16 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.model.Asset
-@import assetmodel.model.AssetProperty
+@import asset.model.AssetType
 @import auth.model.Ticket
-@import views.html.components.asset.asset_view
 @import views.html.components.utils.{message_box_error, navbar_category_searchable}
 @import views.html.forms.asset.select_asset_type_form
-@import assetmodel.model.AssetType
+@import asset.model.ExtendedAsset
+@import views.html.components.asset.asset_block
 @(selectedType: Option[AssetType],
         assetTypes: Seq[AssetType],
-        assetData: Seq[(Asset, scala.Seq[AssetProperty])],
+        assetData: Seq[ExtendedAsset],
+        pageNumber: Int,
         selectedAsset: Option[Long],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
@@ -35,12 +35,12 @@
 @navbar_category_searchable(Seq("Assets"), routes.AssetController.searchAssets)
 @message_box_error(msg)
 @select_asset_type_form(selectedType, assetTypes)
-<div class="">
-@for(dataElement <- assetData) {
-    @asset_view(selectedType.get.id, dataElement._1.id, isSelected(dataElement._1.id), dataElement._2)
-}
-</div>
+@asset_block(assetData)
 @if(selectedType.isDefined) {
+    @if(pageNumber > 0){
+        <a href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber-1)">Last Page</a>
+    }
+    <a href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber+1)">Next Page</a>
     <div class="">
         <a href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">
             <button class="">New</button>

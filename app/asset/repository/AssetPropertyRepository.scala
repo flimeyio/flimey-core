@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package assetmodel.repository
+package asset.repository
 
-import assetmodel.model.AssetProperty
+import asset.model.AssetProperty
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -64,7 +64,7 @@ class AssetPropertyRepository @Inject()(protected val dbConfigProvider: Database
    *
    * @param assetId id of the Asset
    * @return future of Properties of the given Asset
-   * */
+   **/
   def getAssociated(assetId: Long): Future[Seq[AssetProperty]] = {
     db.run(assetProperties.filter(_.parentId === assetId).sortBy(_.id).result)
   }
@@ -76,6 +76,7 @@ class AssetPropertyRepository @Inject()(protected val dbConfigProvider: Database
    * @param properties to update
    * @return result future sequence
    */
+  @deprecated
   def update(properties: Seq[AssetProperty]): Future[Seq[Int]] = {
     val acc = DBIO.sequence(properties.map(update => {
       assetProperties.filter(_.id === update.id).map(_.value).update(update.value)
