@@ -18,4 +18,6 @@
 
 package asset.model
 
-case class ExtendedAsset (asset: Asset, properties: Seq[AssetProperty], viewers: AssetViewerCombinator)
+import user.model.ViewerCombinator
+
+case class ExtendedAsset (asset: Asset, properties: Seq[AssetProperty], viewers: ViewerCombinator)

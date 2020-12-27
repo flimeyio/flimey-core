@@ -26,11 +26,11 @@ package user.model
  * @param editors groups that can view and edit the content of the target
  * @param maintainers groups that can delete, administrate of migrate the target
  */
-case class GroupViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
+case class ViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
 
-object GroupViewerCombinator {
+object ViewerCombinator {
 
-  def fromRelations(relations: Seq[(Group, Viewer)]): GroupViewerCombinator = {
+  def fromRelations(relations: Seq[(Group, Viewer)]): ViewerCombinator = {
     var maintainers: Set[Group] = Set()
     var editors: Set[Group] = Set()
     var viewers: Set[Group] = Set()
@@ -44,7 +44,7 @@ object GroupViewerCombinator {
         viewers = viewers + group
       }
     })
-    GroupViewerCombinator(viewers, editors, maintainers)
+    ViewerCombinator(viewers, editors, maintainers)
   }
 
 }
