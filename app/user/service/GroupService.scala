@@ -19,10 +19,10 @@
 package user.service
 
 import auth.model.Ticket
+import auth.util.RoleAssertion
 import com.google.inject.Inject
 import user.model._
 import user.repository.{GroupMembershipRepository, GroupRepository, GroupViewerRepository, UserRepository}
-import util.assertions.RoleAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -119,7 +119,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
 
   /**
    * Add a new Group.<br />
-   * The provided name must be unique.<br />
+   * The provided name must be unique. The name is further handled in lower case.<br />
    * <p> This operation requires at least admin rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -131,7 +131,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
     try {
       assertAdmin
       //FIXME check name for length and empty (if unique is checked by the db)
-      groupRepository.add(Group(0, name))
+      groupRepository.add(Group(0, name.toLowerCase))
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -158,7 +158,9 @@ class GroupService @Inject()(groupRepository: GroupRepository,
       groupRepository.getById(groupId) flatMap (groupOption => {
         if (groupOption.isEmpty) throw new Exception("Invalid Group")
         val group = groupOption.get
-        if (group.name == "public" || group.name == "system") throw new Exception("The public and system groups can not be deleted.")
+        if (group.name == GroupStats.PUBLIC_GROUP || group.name == GroupStats.SYSTEM_GROUP){
+          throw new Exception("The public and system groups can not be deleted.")
+        }
         groupRepository.delete(groupId)
       })
     } catch {
@@ -223,7 +225,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
   }
 
   /**
-   * Get all Groups with their Rights (GroupViewerCombinator) which
+   * Get all Groups with their rights (GroupViewerCombinator) which
    * are DIRECT (first class) viewers of the target group.<br />
    * This is a safe implementation and can be used by controller classes.
    * <br />
@@ -233,11 +235,11 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    * @param ticket  implicit authentication ticket
    * @return Future[GroupViewerRelation]
    */
-  def getFirstClassGroupViewers(groupId: Long)(implicit ticket: Ticket): Future[GroupViewerCombinator] = {
+  def getFirstClassGroupViewers(groupId: Long)(implicit ticket: Ticket): Future[ViewerCombinator] = {
     try {
       assertWorker
       groupViewerRepository.getFirstClassViewers(groupId) map (relations => {
-        GroupViewerCombinator.fromRelations(relations)
+        ViewerCombinator.fromRelations(relations)
       })
     } catch {
       case e: Throwable => Future.failed(e)
@@ -258,7 +260,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
   def addRelation(targetId: Long, viewerName: String, viewerRole: String)(implicit ticket: Ticket): Future[Long] = {
     try {
       assertAdmin
-      val roleStatus = GroupLogic.parseViewerRole(viewerRole)
+      val roleStatus = ViewerRole.parseViewerRole(viewerRole)
       groupRepository.getByName(viewerName) flatMap (viewerOption => {
         if (viewerOption.isEmpty) throw new Exception("No such viewer group found")
         val viewerGroup = viewerOption.get

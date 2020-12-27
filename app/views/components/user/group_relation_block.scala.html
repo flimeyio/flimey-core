@@ -15,9 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import user.model.GroupViewerCombinator
+@import user.model.ViewerCombinator
 @import views.html.components.user.group_relation_tile
-@(groupViewerCombinator: GroupViewerCombinator, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(groupViewerCombinator: ViewerCombinator, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <h2>Maintainers</h2>
 @for(maintainer <- groupViewerCombinator.maintainers){
