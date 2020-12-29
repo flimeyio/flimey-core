@@ -124,7 +124,7 @@ a:hover{
 .scroll-container{
     scrollbar-width: thin;
     scroll-behavior: auto;
-    overflow-y: scroll;
+    overflow-y: auto;
     padding-top: 10px;
 }
 
