@@ -133,9 +133,10 @@ a:hover{
 }
 
 .navbar-layout{
-    padding: 6px;
+    padding: 4px;
     background-color: var(--color-prim-dark);
     color: white;
+    height: 50px;
 }
 
 .no-margin{
