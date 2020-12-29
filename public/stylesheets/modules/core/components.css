@@ -124,7 +124,7 @@ a:hover{
 .scroll-container{
     scrollbar-width: thin;
     scroll-behavior: auto;
-    overflow-y: scroll;
+    overflow-y: auto;
     padding-top: 10px;
 }
 
@@ -140,7 +140,7 @@ a:hover{
 }
 
 .no-margin{
-    margin: 0;
+    margin: 0 !important;
 }
 
 .button-small{
