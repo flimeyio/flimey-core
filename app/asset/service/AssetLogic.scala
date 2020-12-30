@@ -20,6 +20,7 @@ package asset.service
 
 import asset.model.{AssetConstraint, AssetProperty}
 import asset.service.AssetConstraintHelper.ConstraintType
+import user.service.ViewerProcessor
 import util.messages.{ERR, OK, Status}
 
 /**
