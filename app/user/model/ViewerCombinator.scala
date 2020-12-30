@@ -26,7 +26,18 @@ package user.model
  * @param editors groups that can view and edit the content of the target
  * @param maintainers groups that can delete, administrate of migrate the target
  */
-case class ViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group])
+case class ViewerCombinator(viewers: Set[Group], editors: Set[Group], maintainers: Set[Group]){
+
+  def getAllViewingGroups: Set[Group] = viewers ++ editors ++ maintainers
+  def getAllViewingGroupIds: Set[Long] = getAllViewingGroups.map(_.id)
+
+  def getAllEditingGroups: Set[Group] = editors ++ maintainers
+  def getAllEditingGroupIds: Set[Long] = getAllEditingGroups.map(_.id)
+
+  def getAllMaintainingGroups: Set[Group] = maintainers
+  def getAllMaintainingGroupIds: Set[Long] = getAllMaintainingGroups.map(_.id)
+
+}
 
 object ViewerCombinator {
 

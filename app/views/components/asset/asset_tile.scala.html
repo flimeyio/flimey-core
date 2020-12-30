@@ -17,11 +17,8 @@
 * *@
 @import asset.model.ExtendedAsset
 @import auth.model.Ticket
+@import user.util.ViewerAssertion
 @(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
-
-@canEdit = @{
-    ticket.groups.exists(asset.viewers.editors.contains) || ticket.groups.exists(asset.viewers.maintainers.contains)
-}
 
 <div class="">
     <div class="">
@@ -60,7 +57,7 @@
             </div>
         </div>
     </div>
-    @if(canEdit) {
+    @if(ViewerAssertion.canEdit(asset.viewers, ticket.accessRights)) {
         <div class="">
             <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
                 <button class="">
