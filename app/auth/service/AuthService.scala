@@ -40,7 +40,7 @@ import scala.concurrent.Future
 class AuthService @Inject()(userRepository: UserRepository,
                             sessionRepository: SessionRepository,
                             groupMembershipRepository: GroupMembershipRepository,
-                            groupService: GroupService) extends RoleAssertion {
+                            groupService: GroupService) {
 
   /**
    * Create a new Session for an existing User.<br />
@@ -129,14 +129,14 @@ class AuthService @Inject()(userRepository: UserRepository,
   def deleteSession(all: Option[Boolean], userId: Option[Long] = None)(implicit ticket: Ticket): Future[Unit] = {
     try {
       if(userId.isEmpty) {
-        assertWorker
+        RoleAssertion.assertWorker
         if (all.isDefined && all.get) {
           sessionRepository.deleteAll(ticket.authSession.userId)
         } else {
           sessionRepository.delete(ticket.authSession.id)
         }
       }else{
-        assertAdmin
+        RoleAssertion.assertAdmin
         if (all.isDefined && all.get) {
           sessionRepository.deleteAll(userId.get)
         } else {
