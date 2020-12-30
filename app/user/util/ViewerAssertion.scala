@@ -21,30 +21,84 @@ package user.util
 import auth.model.Ticket
 import user.model.ViewerCombinator
 
+/**
+ * Static functionality to check and compare ViewerCombinator rights.
+ * <p> Provides assert methods for the use in service classes.
+ */
 object ViewerAssertion {
 
-  private def canMaintain(groupViewerCombinator: ViewerCombinator)(implicit ticket: Ticket): Boolean = {
-    groupViewerCombinator.maintainers.exists(ticket.groups.contains)
+  /**
+   * Check if the rights provided by a ViewerCombinator are sufficient to maintain the entity represented by an
+   * other ViewerCombinator.
+   *
+   * @param groupViewerCombinator all possible accesses
+   * @param accessViewerCombinator available accesses
+   * @return Boolean - true if maintainer rights are available
+   */
+  def canMaintain(groupViewerCombinator: ViewerCombinator, accessViewerCombinator: ViewerCombinator): Boolean = {
+    groupViewerCombinator.maintainers.exists(accessViewerCombinator.maintainers.contains)
   }
 
-  private def canEdit(groupViewerCombinator: ViewerCombinator)(implicit ticket: Ticket): Boolean = {
-    canMaintain(groupViewerCombinator) || groupViewerCombinator.editors.exists(ticket.groups.contains)
+  /**
+   * Check if the rights provided by a ViewerCombinator are sufficient to edit the entity represented by an
+   * other ViewerCombinator.
+   *
+   * @param groupViewerCombinator all possible accesses
+   * @param accessViewerCombinator available accesses
+   * @return Boolean - true if editor rights are available
+   */
+  def canEdit(groupViewerCombinator: ViewerCombinator, accessViewerCombinator: ViewerCombinator): Boolean = {
+    canMaintain(groupViewerCombinator, accessViewerCombinator) ||
+      groupViewerCombinator.editors.exists(accessViewerCombinator.editors.contains)
   }
 
-  private def canView(groupViewerCombinator: ViewerCombinator)(implicit ticket: Ticket): Boolean = {
-    canEdit(groupViewerCombinator) || groupViewerCombinator.viewers.exists(ticket.groups.contains)
+  /**
+   * Check if the rights provided by a ViewerCombinator are sufficient to view the entity represented by an
+   * other ViewerCombinator.
+   *
+   * @param groupViewerCombinator all possible accesses
+   * @param accessViewerCombinator available accesses
+   * @return Boolean - true if viewer rights are available
+   */
+  def canView(groupViewerCombinator: ViewerCombinator, accessViewerCombinator: ViewerCombinator): Boolean = {
+    canEdit(groupViewerCombinator, accessViewerCombinator) ||
+      groupViewerCombinator.viewers.exists(accessViewerCombinator.viewers.contains)
   }
 
+  /**
+   * Check if the rights provided by a Ticket are sufficient to maintain the entity represented by an
+   * ViewerCombinator.
+   * <p> Throws an exception if rights re not sufficient.
+   *
+   * @param groupViewerCombinator all possible accesses of the entity
+   * @param ticket implicit authentication ticket with rights of the user
+   */
   def assertMaintain(groupViewerCombinator: ViewerCombinator)(implicit ticket: Ticket): Unit = {
-    if(!canMaintain(groupViewerCombinator)) throw new Exception("No maintainer rights")
+    if(!canMaintain(groupViewerCombinator, ticket.accessRights)) throw new Exception("No maintainer rights")
   }
 
+  /**
+   * Check if the rights provided by a Ticket are sufficient to edit the entity represented by an
+   * ViewerCombinator.
+   * <p> Throws an exception if rights re not sufficient.
+   *
+   * @param groupViewerCombinator all possible accesses of the entity
+   * @param ticket implicit authentication ticket with rights of the user
+   */
   def assertEdit(groupViewerCombinator: ViewerCombinator)(implicit ticket: Ticket): Unit = {
-    if(!canEdit(groupViewerCombinator)) throw new Exception("No editor rights")
+    if(!canEdit(groupViewerCombinator, ticket.accessRights)) throw new Exception("No editor rights")
   }
 
+  /**
+   * Check if the rights provided by a Ticket are sufficient to view the entity represented by an
+   * ViewerCombinator.
+   * <p> Throws an exception if rights re not sufficient.
+   *
+   * @param groupViewerCombinator all possible accesses of the entity
+   * @param ticket implicit authentication ticket with rights of the user
+   */
   def assertView(groupViewerCombinator: ViewerCombinator)(implicit ticket: Ticket): Unit = {
-    if(!canView(groupViewerCombinator)) throw new Exception("No viewer rights")
+    if(!canView(groupViewerCombinator, ticket.accessRights)) throw new Exception("No viewer rights")
   }
 
 }
