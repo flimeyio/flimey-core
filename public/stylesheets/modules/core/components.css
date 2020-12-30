@@ -103,22 +103,23 @@ a:hover{
     margin-bottom: 5%;
 }
 .main{
-    margin-top: 15px;
+    /*padding-top: 15px;*/
     display: flex;
     justify-content: center;
 }
 
-.margin-10{
-    margin: 10px;
+.margin-10-side{
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .view-container{
-    max-height: 78%!important;
+    max-height: 90%!important;
 }
 
 .full-height{
-    min-height: 100%;
-    max-height: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
 }
 
 .scroll-container{
@@ -150,4 +151,8 @@ a:hover{
 
 tbody tr:nth-child(even){
     background-color: var(--color-sec-light);
+}
+
+.margin-top-15{
+    margin-top: 15px;
 }
