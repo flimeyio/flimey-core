@@ -33,7 +33,7 @@ import scala.concurrent.Future
  *
  * @param userRepository injected db interface for User entities.
  */
-class UserService @Inject()(userRepository: UserRepository, groupMembershipRepository: GroupMembershipRepository) extends RoleAssertion {
+class UserService @Inject()(userRepository: UserRepository, groupMembershipRepository: GroupMembershipRepository) {
 
   /**
    * Create a new User (invitation).<br />
@@ -50,7 +50,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
   def createUser(userName: String, role: String)(implicit ticket: Ticket): Future[Long] = {
     try {
       //only admin users can create new accounts/send invitations
-      assertAdmin
+      RoleAssertion.assertAdmin
       val dataStatus = UserLogic.isValidInvitationData(userName, role)
       if (!dataStatus.valid) dataStatus.throwError
       val user = UserLogic.createInvitedUser(userName, role)
@@ -76,7 +76,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
     try {
       //only admin users or the User itself can delete an account.
       if (ticket.authSession.userId != userId) {
-        assertAdmin
+        RoleAssertion.assertAdmin
       }
       if (userId == 1) throw new Exception("The default SYSTEM user can not be deleted")
       userRepository.delete(userId)
@@ -126,7 +126,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
    */
   def getAllInvitedUsers()(implicit ticket: Ticket): Future[Seq[User]] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       userRepository.getAllWithPendingAuthentication
     } catch {
       case e: Throwable => Future.failed(e)
@@ -144,7 +144,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
    */
   def getAllAuthenticatedUsers()(implicit ticket: Ticket): Future[Seq[User]] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       userRepository.getAllAuthenticated
     } catch {
       case e: Throwable => Future.failed(e)
@@ -162,7 +162,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
    */
   def getAuthenticatedUser(userId: Long)(implicit ticket: Ticket): Future[User] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       userRepository.getById(userId) map (userOption => {
         if(userOption.isEmpty || userOption.get.key.isDefined) throw new Exception("No such user found")
         userOption.get
@@ -195,7 +195,7 @@ class UserService @Inject()(userRepository: UserRepository, groupMembershipRepos
    */
   def updateUserRole(userId: Long, roleUpdate: String)(implicit ticket: Ticket): Future[Int] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       val role = UserLogic.parseRole(roleUpdate)
       if (role == Role.SYSTEM) throw new Exception("Promotion to SYSTEM is not possible")
       userRepository.getById(userId) flatMap (userOption => {

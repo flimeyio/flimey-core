@@ -43,8 +43,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
                              assetRepository: AssetRepository,
                              assetPropertyRepository: AssetPropertyRepository,
                              modelAssetService: ModelAssetService,
-                             groupService: GroupService)
-  extends RoleAssertion {
+                             groupService: GroupService) {
 
   /**
    * Add a new Asset.<br />
@@ -65,7 +64,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
   def addAsset(typeId: Long, propertyData: Seq[String], maintainers: Seq[String], editors: Seq[String],
                viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       assetTypeRepository.getComplete(typeId) flatMap (typeData => {
         val (head, constraints) = typeData
         if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not defined or active")
@@ -104,7 +103,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
   def updateAsset(assetId: Long, propertyUpdateData: Seq[String], maintainers: Seq[String], editors: Seq[String],
                   viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       getAsset(assetId) flatMap (extendedAsset => {
 
         //Check if the User can edit this Asset
@@ -156,7 +155,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    */
   def getAsset(assetId: Long)(implicit ticket: Ticket): Future[ExtendedAsset] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
       assetRepository.get(assetId, accessedGroupIds) map (assetOption => {
         if (assetOption.isEmpty) throw new Exception("No such asset found")
@@ -186,7 +185,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
   def getAssets(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                (implicit ticket: Ticket): Future[Seq[ExtendedAsset]] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       var accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
       if (groupSelector.isDefined) {
         val selectedGroups = AssetLogic.splitNumericList(groupSelector.get)
@@ -218,7 +217,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
   def getAssetComplex(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                      (implicit ticket: Ticket): Future[AssetTypeCombination] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       modelAssetService.getAllAssetTypes flatMap (types => {
         val selectedAssetType = types.find(_.id == typeId)
         if (selectedAssetType.isDefined) {
@@ -248,7 +247,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    */
   def deleteAsset(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       getAsset(id) flatMap (extendedAsset => {
         ViewerAssertion.assertMaintain(extendedAsset.viewers)
         //FIXME validate Subjects
@@ -269,7 +268,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @return tuple2 seq (property key, data type)
    */
   def getAssetPropertyKeys(constraints: Seq[AssetConstraint])(implicit ticket: Ticket): Seq[(String, String)] = {
-    assertWorker
+    RoleAssertion.assertWorker
     AssetLogic.getAssetPropertyKeys(constraints)
   }
 
@@ -282,7 +281,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @return map of (property key -> default value)
    */
   def getObligatoryPropertyKeys(constraints: Seq[AssetConstraint])(implicit ticket: Ticket): Map[String, String] = {
-    assertWorker
+    RoleAssertion.assertWorker
     AssetLogic.getObligatoryPropertyKeys(constraints)
   }
 

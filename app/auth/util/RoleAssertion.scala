@@ -21,7 +21,7 @@ package auth.util
 import auth.model.Ticket
 import user.model.Role
 
-trait RoleAssertion {
+object RoleAssertion {
 
   def assertWorker(implicit ticket: Ticket): Unit = {
     if(!Role.isAtLeastWorker(ticket.authSession.role)) throw new Exception("No Rights!")
