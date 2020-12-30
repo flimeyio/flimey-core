@@ -225,7 +225,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
   }
 
   /**
-   * Get all Groups with their rights (GroupViewerCombinator) which
+   * Get all Groups with their rights (ViewerCombinator) which
    * are DIRECT (first class) viewers of the target group.<br />
    * This is a safe implementation and can be used by controller classes.
    * <br />
@@ -233,7 +233,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    *
    * @param groupId id of the target (viewed) group
    * @param ticket  implicit authentication ticket
-   * @return Future[GroupViewerRelation]
+   * @return Future[ViewerCombinator]
    */
   def getFirstClassGroupViewers(groupId: Long)(implicit ticket: Ticket): Future[ViewerCombinator] = {
     try {
@@ -244,6 +244,19 @@ class GroupService @Inject()(groupRepository: GroupRepository,
     } catch {
       case e: Throwable => Future.failed(e)
     }
+  }
+
+  /**
+   * Get all Groups (ViewerCombinator) that are viewing target of a given Group.
+   * <p> This operation needs no rights to execute, but should only used for session creation during login.
+   *
+   * @param groupId id of the viewing group
+   * @return Future[ViewerCombinator]
+   */
+  def getFirstClassTargets(groupId: Long): Future[ViewerCombinator] = {
+    groupViewerRepository.getFirstClassTargets(groupId) map (relations => {
+      ViewerCombinator.fromRelations(relations)
+    })
   }
 
   /**

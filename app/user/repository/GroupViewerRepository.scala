@@ -70,9 +70,23 @@ class GroupViewerRepository @Inject()(protected val dbConfigProvider: DatabaseCo
    */
   def getFirstClassViewers(groupId: Long): Future[Seq[(Group, Viewer)]] = {
     db.run((for {
-      (c, s) <- (groups.filter(_.id === groupId) join groupViewers on (_.id === _.targetId)) join groups on (_._2.viewerId === _.id)
+      (c, s) <- groups.filter(_.id === groupId) join (groupViewers join groups on (_.viewerId === _.id)) on (_.id === _._1.targetId)
     } yield (c, s)).result).map(res => {
-      res.map(data => (data._2, data._1._2))
+      res.map(data => (data._1, data._2._1))
+    })
+  }
+
+  /**
+   * Get all first class target Groups of a viewing Group.
+   *
+   * @param groupId id of the viewing Group
+   * @return Seq[(Target Group, Viewer Rights)]
+   */
+  def getFirstClassTargets(groupId: Long): Future[Seq[(Group, Viewer)]] = {
+    db.run((for {
+      (c, s) <- (groups join groupViewers on (_.id === _.targetId)) join groups.filter(_.id === groupId) on (_._2.viewerId === _.id)
+    } yield (c, s)).result).map(res => {
+      res.map(_._1)
     })
   }
 
