@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package asset.service
+package user.service
 
 import user.model.{Group, Viewer, ViewerCombinator, ViewerRole}
 
@@ -106,6 +106,28 @@ trait ViewerProcessor {
     val viewersToAdd = viewerObjects.map(v => Viewer(v.id, targetId, v.viewerId, v.role)).toSet
 
     (viewersToDelete, viewersToAdd)
+  }
+
+  /**
+   * Combines many ViewerCombinators into a single one.
+   * <p> For each Group, only the position of the highest role is maintained.
+   * Duplicates are removed.
+   *
+   * @param viewerCombinators ViewerCombinators to combine
+   * @return ViewerCombinator with all Viewer rights of the single combinators.
+   */
+  def unifyViewerCombinators(viewerCombinators: Seq[ViewerCombinator]): ViewerCombinator = {
+    var maintainers: Set[Group] = Set()
+    var editors: Set[Group] = Set()
+    var viewers: Set[Group] = Set()
+    viewerCombinators.foreach(viewerCombinator => {
+      maintainers = maintainers ++ viewerCombinator.maintainers
+      editors = editors ++ viewerCombinator.editors
+      viewers = viewers ++ viewerCombinator.viewers
+    })
+    viewers = viewers.diff(editors).diff(maintainers)
+    editors = editors.diff(maintainers)
+    ViewerCombinator(viewers, editors, maintainers)
   }
 
 }
