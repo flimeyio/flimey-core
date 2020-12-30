@@ -18,6 +18,8 @@
 
 package auth.model
 
+import user.model.ViewerRole
+
 /**
  * The Access data class.<br />
  * Represents a runtime oriented mapping of Group based rights associated to an active AuthSession.
@@ -27,4 +29,16 @@ package auth.model
  * @param groupId id of the associated Group
  * @param groupName name of the associated Group
  */
-case class Access(id: Long, sessionId: Long, groupId: Long, groupName: String)
+case class Access(id: Long, sessionId: Long, groupId: Long, groupName: String, role: ViewerRole.Role)
+
+object Access {
+
+  def applyRaw (id: Long, sessionId: Long, groupId: Long, groupName: String, role: String): Access =
+    Access(id, sessionId, groupId, groupName, ViewerRole.withName(role))
+
+  def unapplyToRaw(arg: Access): Option[(Long, Long, Long, String, String)] =
+    Option((arg.id, arg.sessionId, arg.groupId, arg.groupName, arg.role.toString))
+
+  val tupledRaw: ((Long, Long, Long, String, String)) => Access = (this.applyRaw _).tupled
+
+}

@@ -21,41 +21,48 @@ package auth.service
 import java.util.UUID.randomUUID
 
 import auth.model.{Access, AuthSession}
-import user.model.{Group, User}
-import user.service.PasswordProcessor
+import user.model.{Group, User, ViewerCombinator, ViewerRole}
+import user.service.{PasswordProcessor, ViewerProcessor}
 
 /**
  * The AuthLogic object provides static functionality to process, verify and validate
  * sessions and authentication related data.
  */
-object AuthLogic extends SessionProcessor with PasswordProcessor {
+object AuthLogic extends SessionProcessor with PasswordProcessor with ViewerProcessor {
 
   /**
    * Generate Session data from User data.<br />
    * Creates a random session key.
    *
    * @param user to create the session for
-   * @param groups access rights of the User
+   * @param viewerCombinator combined access rights of the User (extended with Group Viewer relations)
    * @return session data
    */
-  def createSession(user: User, groups: Seq[Group]): (AuthSession, Seq[Access]) = {
+  def createSession(user: User, viewerCombinator: ViewerCombinator): (AuthSession, Seq[Access]) = {
     //create random key (uuid is random enough)
     val sessionKey = randomUUID().toString
     //access id and session id (also foreign key) can be set to 0, the repository will replace them with actual values
     //the same goes for the timestamp, which is set by sql to NOW
     val session = AuthSession(0, sessionKey, user.role, status = true, user.id, null)
-    val accesses = groups.map(group => Access(0, 0, group.id, group.name))
-    (session, accesses)
+    val accesses: Set[Access] =
+      viewerCombinator.maintainers.map(group => Access(0,0,group.id, group.name, ViewerRole.MAINTAINER)) ++
+      viewerCombinator.editors.map(group => Access(0,0,group.id, group.name, ViewerRole.EDITOR)) ++
+      viewerCombinator.viewers.map(group => Access(0,0,group.id, group.name, ViewerRole.VIEWER))
+
+    (session, accesses.toSeq)
   }
 
   /**
-   * Map Access data to Group data.
+   * Map Access data to a ViewerCombinator
    *
    * @param accesses Accesses of a User
-   * @return Groups the User is member of
+   * @return ViewerCombinator of Groups the User is member of or has rights within
    */
-  def generateGroupsFromAccessRights(accesses: Seq[Access]): Seq[Group] = {
-    accesses.map(access => Group(access.groupId, access.groupName))
+  def generateViewerCombinatorFromAccessRights(accesses: Seq[Access]): ViewerCombinator = {
+    val maintainers = accesses.filter(_.role == ViewerRole.MAINTAINER).map(access => Group(access.groupId, access.groupName)).toSet
+    val editors = accesses.filter(_.role == ViewerRole.EDITOR).map(access => Group(access.groupId, access.groupName)).toSet
+    val viewers = accesses.filter(_.role == ViewerRole.VIEWER).map(access => Group(access.groupId, access.groupName)).toSet
+    ViewerCombinator(viewers, editors, maintainers)
   }
 
 }

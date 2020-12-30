@@ -21,9 +21,11 @@
 @import views.html.components.utils.message_box_success
 @import views.html.forms.asset.new_asset_form
 @import asset.model.AssetType
+@import user.model.Group
 @(selectedType: AssetType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
+        groups: Seq[Group],
         newAssetForm: Form[NewAssetForm.Data],
         errmsg: Option[String] = None,
         succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
@@ -32,5 +34,5 @@
     @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssets(selectedType.id, 0))
     @message_box_error(errmsg)
     @message_box_success(succmsg)
-    @new_asset_form(selectedType, propertyKeys, obligatoryKeys, newAssetForm)
+    @new_asset_form(selectedType, propertyKeys, obligatoryKeys, groups, newAssetForm)
 }()()

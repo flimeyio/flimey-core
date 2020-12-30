@@ -27,6 +27,7 @@ import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import user.service.GroupService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -38,10 +39,11 @@ import scala.concurrent.Future
  * @param assetService       injected AssetService for business logic
  * @param modelAssetService  injected ModelAssetService for business logic
  * @param withAuthentication injected AuthenticationFilter
+ * @param groupService       injected GroupService
  */
 @Singleton
 class AssetController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                assetService: AssetService, modelAssetService: ModelAssetService) extends
+                                assetService: AssetService, modelAssetService: ModelAssetService, groupService: GroupService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -110,8 +112,8 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * Endpoint to get a number of Assets based on multiple query parameters.<br />
    * In every case, only Assets which can be accessed based on the Ticket can be selected.<br />
    *
-   * @param assetTypeId id of the AssetType the Assets must have
-   * @param pageNumber number of the selection window - see AssetService.getAsset()
+   * @param assetTypeId   id of the AssetType the Assets must have
+   * @param pageNumber    number of the selection window - see AssetService.getAsset()
    * @param groupSelector string containing group ids which the Assets can have (filter) in form "id,id,..."
    * @return
    */
@@ -185,17 +187,21 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    */
   private def newAssetEditorFactory(assetTypeId: Long, form: Form[NewAssetForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
                                    (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-    modelAssetService.getCompleteAssetType(assetTypeId) map (typeData => {
+    for {
+      groups <- groupService.getAllGroups
+      typeData <- modelAssetService.getCompleteAssetType(assetTypeId)
+    } yield {
       val (assetType, constraints) = typeData
-        Ok(views.html.container.asset.new_asset_editor(assetType,
-          assetService.getAssetPropertyKeys(constraints),
-          assetService.getObligatoryPropertyKeys(constraints),
-          form, errmsg, succmsg))
-    }) recoverWith {
-      case e =>
-        logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
+      Ok(views.html.container.asset.new_asset_editor(assetType,
+        assetService.getAssetPropertyKeys(constraints),
+        assetService.getObligatoryPropertyKeys(constraints),
+        groups,
+        form, errmsg, succmsg))
     }
+  } recoverWith {
+    case e =>
+      logger.error(e.getMessage, e)
+      Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
   }
 
   /**
@@ -273,29 +279,32 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * @return asset editor result future (view)
    */
   private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[NewAssetForm.Data]],
-                                 msg: Option[String] = None, successMsg: Option[String] =  None)
+                                 msg: Option[String] = None, successMsg: Option[String] = None)
                                 (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-    assetService.getAsset(assetId) flatMap (extendedAsset => {
-        modelAssetService.getCompleteAssetType(extendedAsset.asset.typeId) map (typeData => {
-          val (assetType, constraints) = typeData
-          val editForm = if (form.isDefined) form.get else NewAssetForm.form.fill(
-            NewAssetForm.Data(
-              extendedAsset.properties.map(_.value),
-              extendedAsset.viewers.maintainers.toSeq.map(_.name),
-              extendedAsset.viewers.editors.toSeq.map(_.name),
-              extendedAsset.viewers.viewers.toSeq.map(_.name)))
+    for {
+      extendedAsset <- assetService.getAsset(assetId)
+      typeData <- modelAssetService.getCompleteAssetType(extendedAsset.asset.typeId)
+      groups <- groupService.getAllGroups
+    } yield {
+      val (assetType, constraints) = typeData
+      val editForm = if (form.isDefined) form.get else NewAssetForm.form.fill(
+        NewAssetForm.Data(
+          extendedAsset.properties.map(_.value),
+          extendedAsset.viewers.maintainers.toSeq.map(_.name),
+          extendedAsset.viewers.editors.toSeq.map(_.name),
+          extendedAsset.viewers.viewers.toSeq.map(_.name)))
 
-          Ok(views.html.container.asset.asset_editor(assetType,
-            extendedAsset,
-            assetService.getAssetPropertyKeys(constraints),
-            assetService.getObligatoryPropertyKeys(constraints),
-            editForm, msg, successMsg))
-        })
-    }) recoverWith {
-      case e =>
-        logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.getAssets(assetTypeId, 0)).flashing("error" -> e.getMessage))
+      Ok(views.html.container.asset.asset_editor(assetType,
+        extendedAsset,
+        assetService.getAssetPropertyKeys(constraints),
+        assetService.getObligatoryPropertyKeys(constraints),
+        groups,
+        editForm, msg, successMsg))
     }
+  } recoverWith {
+    case e =>
+      logger.error(e.getMessage, e)
+      Future.successful(Redirect(routes.AssetController.getAssets(assetTypeId, 0)).flashing("error" -> e.getMessage))
   }
 
 }

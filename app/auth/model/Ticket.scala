@@ -18,7 +18,7 @@
 
 package auth.model
 
-import user.model.Group
+import user.model.ViewerCombinator
 
 /**
  * The Ticket data class.<br />
@@ -26,6 +26,6 @@ import user.model.Group
  * a authenticated User.
  *
  * @param authSession AuthSession object of the Users current session
- * @param groups all Groups the User is Member.
+ * @param accessRights all Groups the User is Member with the specific member role (ViewerRole)
  */
-case class Ticket(authSession: AuthSession, groups: Seq[Group])
+case class Ticket(authSession: AuthSession, accessRights: ViewerCombinator)

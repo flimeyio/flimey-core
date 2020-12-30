@@ -22,7 +22,9 @@ import auth.model.Ticket
 import auth.repository.SessionRepository
 import auth.util.RoleAssertion
 import com.google.inject.Inject
+import user.model.ViewerCombinator
 import user.repository.{GroupMembershipRepository, UserRepository}
+import user.service.GroupService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -37,7 +39,8 @@ import scala.concurrent.Future
  */
 class AuthService @Inject()(userRepository: UserRepository,
                             sessionRepository: SessionRepository,
-                            groupMembershipRepository: GroupMembershipRepository) extends RoleAssertion {
+                            groupMembershipRepository: GroupMembershipRepository,
+                            groupService: GroupService) extends RoleAssertion {
 
   /**
    * Create a new Session for an existing User.<br />
@@ -59,11 +62,20 @@ class AuthService @Inject()(userRepository: UserRepository,
         val user = userRes.get
         if(!AuthLogic.checkPassword(user.password.get, password)) throw new Exception("Wrong Password")
         groupMembershipRepository.get(user.id) flatMap (groups => {
-          val (session, accesses) = AuthLogic.createSession(user, groups)
-          sessionRepository.add(session, accesses) map (sessionId => {
-            //the returned sessionKey (uuid) is combined with the session id to be able to extract both on request from
-            //the client. Because the session token is encrypted anyways, this introduces no security issues.
-            AuthLogic.createCompoundKey(session.session, sessionId)
+
+          Future.sequence(groups.map(group => groupService.getFirstClassTargets(group.id))) flatMap (targets => {
+            val unifiedViewerCombinator = AuthLogic.unifyViewerCombinators(targets)
+            val accessViewerCombinator = ViewerCombinator(
+              unifiedViewerCombinator.viewers,
+              unifiedViewerCombinator.editors,
+              unifiedViewerCombinator.maintainers ++ groups)
+
+            val (session, accesses) = AuthLogic.createSession(user, accessViewerCombinator)
+            sessionRepository.add(session, accesses) map (sessionId => {
+              //the returned sessionKey (uuid) is combined with the session id to be able to extract both on request from
+              //the client. Because the session token is encrypted anyways, this introduces no security issues.
+              AuthLogic.createCompoundKey(session.session, sessionId)
+            })
           })
         })
       })
@@ -89,8 +101,8 @@ class AuthService @Inject()(userRepository: UserRepository,
         if (authInfo.isEmpty) throw new Exception("No valid Login")
         val (authSession, accesses) = authInfo.get
         if (authSession.session != sessionKey) throw new Exception("Invalid Session")
-        val groups = AuthLogic.generateGroupsFromAccessRights(accesses)
-        Ticket(authSession, groups)
+        val accessViewerCombinator = AuthLogic.generateViewerCombinatorFromAccessRights(accesses)
+        Ticket(authSession, accessViewerCombinator)
       })
     } catch {
       case e: Throwable => Future.failed(e)

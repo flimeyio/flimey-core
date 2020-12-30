@@ -19,9 +19,11 @@
 @import views.html.helper.CSRF
 @import asset.model.AssetType
 @import auth.model.Ticket
+@import user.model.Group
 @(assetType: AssetType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
+        groups: Seq[Group],
         newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @key(index: Int) = @{
@@ -64,7 +66,7 @@
             @for(i <- 0 to sizeOfFormSeq("maintainer")-1) {
                 <select name="@{"maintainers[" + i + "]"}">
                     <option>none</option>
-                    @for(group <- ticket.groups) {
+                    @for(group <- groups) {
                         <option @if(group.name == newAssetForm.data.get("maintainers[" + i + "]").get) {
                             selected="selected"}>
                         @group.name
@@ -78,7 +80,7 @@
             @for(i <- 0 to sizeOfFormSeq("editors")-1) {
                 <select name="@{"editors[" + i + "]"}">
                     <option>none</option>
-                    @for(group <- ticket.groups) {
+                    @for(group <- groups) {
                         <option @if(group.name == newAssetForm.data.get("editors[" + i + "]").get) {
                             selected="selected"}>
                         @group.name
@@ -92,7 +94,7 @@
             @for(i <- 0 to sizeOfFormSeq("viewer")-1) {
                 <select name="@{"viewers[" + i + "]"}">
                     <option>none</option>
-                    @for(group <- ticket.groups) {
+                    @for(group <- groups) {
                         <option @if(group.name == newAssetForm.data.get("viewers[" + i + "]").get) {
                             selected="selected"}>
                         @group.name
@@ -113,7 +115,7 @@
 
 <ol hidden id="new-asset-group-options">
     <li>none</li>
-    @for(group <- ticket.groups){
+    @for(group <- groups){
         <li>@group.name</li>
     }
 </ol>

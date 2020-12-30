@@ -69,19 +69,4 @@ class AssetPropertyRepository @Inject()(protected val dbConfigProvider: Database
     db.run(assetProperties.filter(_.parentId === assetId).sortBy(_.id).result)
   }
 
-  /**
-   * Update a sequence of Properties at once.
-   * Only the 'value' field is updated.
-   *
-   * @param properties to update
-   * @return result future sequence
-   */
-  @deprecated
-  def update(properties: Seq[AssetProperty]): Future[Seq[Int]] = {
-    val acc = DBIO.sequence(properties.map(update => {
-      assetProperties.filter(_.id === update.id).map(_.value).update(update.value)
-    }))
-    db.run(acc)
-  }
-
 }

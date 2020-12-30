@@ -22,10 +22,12 @@
 @import views.html.forms.asset.edit_asset_form
 @import asset.model.ExtendedAsset
 @import views.html.components.utils.message_box_success
+@import user.model.Group
 @(selectedType: AssetType,
         selectedAsset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
+        groups: Seq[Group],
         newAssetForm: Form[NewAssetForm.Data],
         msg: Option[String] = None,
         successMsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
@@ -34,5 +36,5 @@
     @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssets(selectedType.id, 0))
     @message_box_error(msg)
     @message_box_success(successMsg)
-    @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, newAssetForm)
+    @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, groups, newAssetForm)
 }()()

@@ -101,23 +101,6 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   }
 
   /**
-   * Get the all Assets with Properties of a specific AssetType.<br />
-   * This operation is more performant then fetching the data by separate methods.
-   * <p> It can be expected that the Property seq contains either a single None Option or only defined Properties.
-   * <p> This method should no longer be used, because it does not check for rights and can return huge amounts of data.
-   *
-   * @return future of result Seq (Properties mapped to Asset)
-   */
-  @deprecated
-  def getAll(typeId: Long): Future[Seq[(Asset, Seq[Option[AssetProperty]])]] = {
-    db.run((for {
-      (c, s) <- assets.filter(_.typeId === typeId).sortBy(_.id) joinLeft assetProperties.sortBy(_.id) on (_.id === _.parentId)
-    } yield (c, s)).result).map(res => {
-      res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2))).values.toSeq.filter(_._1.isDefined).map(t => (t._1.get, t._2))
-    })
-  }
-
-  /**
    * Get an Asset with its Properties by ID.<br />
    * <p> Only Assets which are part of the specified Groups can be fetched.
    *
@@ -145,7 +128,7 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * Get a number of Assets by multiple query parameters.<br />
    * <p> Only Assets which are part of the specified Groups can be fetched.
    *
-   * @param groupIds ids of the Groups, which must have access to the Asset
+   * @param groupIds ids of the Groups, of which at least one must have access to the Asset
    * @param typeId   id of the AssetType, the Asset must have
    * @param limit    maximum number of retrieved Assets - recommended to keep as small as possible
    * @param offset   number of Assets to skip
@@ -165,7 +148,7 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
     db.run((for {
       (c, s) <- ((assets.filter(_.id in subQuery).sortBy(_.id.desc).drop(offset).take(limit) join
         assetProperties on (_.id === _.parentId)) join
-        assetViewers.filter(_.viewerId.inSet(groupIds)) on (_._1.id === _.targetId)) join
+        assetViewers on (_._1.id === _.targetId)) join
         groups on (_._2.viewerId === _.id)
     } yield (c, s)).result).map(res => {
       val assets = res.groupBy(_._1._1._1)
@@ -174,7 +157,6 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
         extendedAssetFromRaw(asset, parameters)
       }).toSeq.sortBy(-_.asset.id)
     })
-
   }
 
   /**
