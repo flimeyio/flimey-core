@@ -124,7 +124,7 @@ a:hover{
 .scroll-container{
     scrollbar-width: thin;
     scroll-behavior: auto;
-    overflow-y: scroll;
+    overflow-y: auto;
     padding-top: 10px;
 }
 
@@ -133,13 +133,14 @@ a:hover{
 }
 
 .navbar-layout{
-    padding: 6px;
+    padding: 4px;
     background-color: var(--color-prim-dark);
     color: white;
+    height: 50px;
 }
 
 .no-margin{
-    margin: 0;
+    margin: 0 !important;
 }
 
 .button-small{
