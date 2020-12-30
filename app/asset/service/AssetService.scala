@@ -157,7 +157,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
   def getAsset(assetId: Long)(implicit ticket: Ticket): Future[ExtendedAsset] = {
     try {
       assertWorker
-      val accessedGroupIds = ticket.groups.map(_.id).toSet
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
       assetRepository.get(assetId, accessedGroupIds) map (assetOption => {
         if (assetOption.isEmpty) throw new Exception("No such asset found")
         assetOption.get
@@ -187,7 +187,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
                (implicit ticket: Ticket): Future[Seq[ExtendedAsset]] = {
     try {
       assertWorker
-      var accessedGroupIds = ticket.groups.map(_.id)
+      var accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
       if (groupSelector.isDefined) {
         val selectedGroups = AssetLogic.splitNumericList(groupSelector.get)
         accessedGroupIds = accessedGroupIds.filter(!selectedGroups.contains(_))
