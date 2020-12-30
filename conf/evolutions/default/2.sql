@@ -32,6 +32,7 @@ create table `access` (
     `session_id` BIGINT NOT NULL,
     `group_id` BIGINT NOT NULL,
     `group_name` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
     FOREIGN KEY(session_id) REFERENCES auth_session(id)
 );
 

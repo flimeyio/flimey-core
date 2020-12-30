@@ -51,7 +51,7 @@ class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
   def add(session: AuthSession, rights: Seq[Access]): Future[Long] = {
     db.run((for {
       sessionId <- (sessions returning sessions.map(_.id)) += session
-      _ <- accesses ++= rights.map(p => Access(0, sessionId, p.groupId, p.groupName))
+      _ <- accesses ++= rights.map(p => Access(0, sessionId, p.groupId, p.groupName, p.role))
     } yield sessionId).transactionally)
   }
 

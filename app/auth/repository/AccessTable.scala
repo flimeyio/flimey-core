@@ -27,7 +27,8 @@ class AccessTable (tag: Tag) extends Table[Access](tag, "access") {
   def sessionId = column[Long]("session_id")
   def groupId = column[Long]("group_id")
   def groupName = column[String]("group_name")
+  def role = column[String]("role")
 
-  override def * = (id, sessionId, groupId, groupName) <> (Access.tupled, Access.unapply)
+  override def * = (id, sessionId, groupId, groupName, role) <> (Access.tupledRaw, Access.unapplyToRaw)
 
 }
