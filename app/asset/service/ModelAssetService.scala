@@ -20,6 +20,7 @@ package asset.service
 
 import asset.model.{AssetConstraint, AssetType}
 import asset.repository.{AssetConstraintRepository, AssetTypeRepository}
+import asset.service.AssetConstraintHelper.ConstraintType
 import auth.model.Ticket
 import auth.util.RoleAssertion
 import com.google.inject.Inject
@@ -146,7 +147,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
     try {
       RoleAssertion.assertModeler
       if (assetType.active) {
-        getConstraintsOfAsset(assetType.id) flatMap (constraints => {
+        getConstraintsOfAssetType(assetType.id) flatMap (constraints => {
           val status = AssetLogic.isAssetConstraintModel(constraints)
           if (!status.valid) status.throwError
           assetTypeRepository.update(assetType)
@@ -168,7 +169,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Seq[AssetConstraint]
    */
-  def getConstraintsOfAsset(id: Long)(implicit ticket: Ticket): Future[Seq[AssetConstraint]] = {
+  def getConstraintsOfAssetType(id: Long)(implicit ticket: Ticket): Future[Seq[AssetConstraint]] = {
     try {
       RoleAssertion.assertWorker
       assetConstraintRepository.getAssociated(id)
@@ -208,18 +209,24 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future[Int]
    */
-  def deleteConstraint(id: Long)(implicit ticket: Ticket): Future[Int] = {
+  def deleteConstraint(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
-      getConstraint(id) flatMap (constraint => {
-        if (constraint.isEmpty) throw new Exception("No such Constraint found")
-        getAssetType(constraint.get.typeId) flatMap (assetType => {
+      getConstraint(id) flatMap (constraintOption => {
+        if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
+        val constraint = constraintOption.get
+        getAssetType(constraint.typeId) flatMap (assetType => {
           if (assetType.isEmpty) throw new Exception("No corresponding AssetType found")
-          getConstraintsOfAsset(assetType.get.id) flatMap (constraints => {
+          getConstraintsOfAssetType(assetType.get.id) flatMap (constraints => {
+
             val status = AssetLogic.isAssetConstraintModel(constraints.filter(c => c.id != id))
             if (!status.valid) status.throwError
-            //FIXME alter Asset entities in transaction
-            assetConstraintRepository.delete(id)
+
+            if(constraint.c == ConstraintType.HasProperty.short){
+              assetConstraintRepository.deletePropertyConstraint(constraint)
+            }else{
+              assetConstraintRepository.deleteNonPropertyConstraint(constraint.id) map (_ => Future.unit)
+            }
           })
         })
       })
@@ -234,23 +241,26 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * the future will fail.
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
-   * //FIXME added has property constraint must add a new empty property to all assets of this type
    *
    * @param assetConstraint AssetConstraint to add (must already include the parent id)
    * @param ticket          implicit authentication ticket
    * @return Future[Long]
    */
-  def addConstraint(assetConstraint: AssetConstraint)(implicit ticket: Ticket): Future[Long] = {
+  def addConstraint(assetConstraint: AssetConstraint)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
       val processedConstrained = AssetLogic.preprocessConstraint(assetConstraint)
       val constraintStatus = AssetLogic.isValidConstraint(processedConstrained)
       if (!constraintStatus.valid) constraintStatus.throwError
-      getConstraintsOfAsset(assetConstraint.typeId) flatMap { i =>
+      getConstraintsOfAssetType(assetConstraint.typeId) flatMap { i =>
         val modelStatus = AssetLogic.isAssetConstraintModel(i :+ processedConstrained)
         if (!modelStatus.valid) modelStatus.throwError
-        //FIXME alter Asset entities in transaction
-        assetConstraintRepository.add(processedConstrained)
+
+        if(processedConstrained.c == ConstraintType.HasProperty.short){
+          assetConstraintRepository.addPropertyConstraint(processedConstrained)
+        }else{
+          assetConstraintRepository.addNonPropertyConstraint(processedConstrained) map (_ -> Future.unit)
+        }
       }
     } catch {
       case e: Throwable => Future.failed(e)
@@ -291,7 +301,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
       RoleAssertion.assertWorker
       (for {
         assetTypes <- getAllAssetTypes
-        constraints <- getConstraintsOfAsset(id)
+        constraints <- getConstraintsOfAssetType(id)
       } yield (assetTypes, constraints)) map (res => {
         (res._1, res._1.find(p => p.id == id), res._2)
       })

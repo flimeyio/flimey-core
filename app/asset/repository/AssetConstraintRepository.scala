@@ -18,7 +18,7 @@
 
 package asset.repository
 
-import asset.model.AssetConstraint
+import asset.model.{AssetConstraint, AssetProperty}
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -27,7 +27,7 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * DB Interface for (Asset)Constraints.
+ * DB Interface for AssetConstraints.
  * Provided methods are UNSAFE and must only be used by service classes!
  *
  * @param dbConfigProvider injected database config
@@ -37,30 +37,69 @@ class AssetConstraintRepository @Inject()(protected val dbConfigProvider: Databa
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val assetConstraints = TableQuery[AssetConstraintTable]
+  val assetProperties = TableQuery[AssetPropertyTable]
+  val assets = TableQuery[AssetTable]
 
   /**
-   * Add a new (Asset)Constraint to the db.
-   * The id must be set to 0 to enable auto increment.
+   * Add a new AssetConstraint to the db.
+   * <p> The id must be set to 0 to enable auto increment.
+   * <p> <strong> This method must only be used for Constraints that are NOT of HasProperty type. Otherwise this method
+   * will lead to the destruction of the database! - the please use [[addPropertyConstraint]] instead</strong>
    *
    * @param constraint new Constraint entity
-   * @return new id future
+   * @return Future[Long]
    */
-  def add(constraint: AssetConstraint): Future[Long] = {
+  def addNonPropertyConstraint(constraint: AssetConstraint): Future[Long] = {
     db.run((assetConstraints returning assetConstraints.map(_.id)) += constraint)
   }
 
   /**
-   * Delete a (Asset)Constraint.
+   * Add a new 'HasProperty' AssetConstraint to the db.
+   * <p> The id must be set to 0 to enable auto increment.
+   * <p> <strong> This method must only be used for Constraints that are of HasProperty type. Otherwise this method
+   * will lead to the destruction of the database!</strong>
+   *
+   * @param constraint new <strong>HasProperty</strong> AssetConstraint
+   * @return Future[Unit]
+   */
+  def addPropertyConstraint(constraint: AssetConstraint): Future[Unit] = {
+    db.run((for {
+      s <- assets.filter(_.typeId === constraint.typeId).map(_.id).result
+      _ <- (assetConstraints returning assetConstraints.map(_.id)) += constraint
+      _ <- assetProperties ++= s.map(assetId => AssetProperty(0, constraint.v1, "", assetId))
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete an AssetConstraint.
+   * <p> <strong> If the AssetConstraint is of HasProperty type, this method will lead to the destruction
+   * of the database! - then please use [[deletePropertyConstraint]] instead</strong>
    *
    * @param id of the Constraint
-   * @return result future
+   * @return Future[Int]
    */
-  def delete(id: Long): Future[Int] = {
+  def deleteNonPropertyConstraint(id: Long): Future[Int] = {
     db.run(assetConstraints.filter(_.id === id).delete)
   }
 
   /**
-   * Fetch a (Asset)Constraint or None if id not existent.
+   * Delete a AssetConstraint of the HasProperty type.
+   * <p> <strong> If the AssetConstraint is not of HasProperty type, this method will lead to the destruction
+   * of the database! </strong>
+   *
+   * @param constraint the <strong>HasProperty</strong> AssetConstraint to delete
+   * @return Future[Unit]
+   */
+  def deletePropertyConstraint(constraint: AssetConstraint): Future[Unit] = {
+    val assetsWithPropertyQuery = assets.filter(_.typeId === constraint.typeId).map(_.id)
+    db.run((for {
+      _ <- assetProperties.filter(_.parentId in assetsWithPropertyQuery).filter(_.key === constraint.v1).delete
+      _ <- assetConstraints.filter(_.id === constraint.id).delete
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Fetch a AssetConstraint or None if id not existent.
    *
    * @param id of the Constraint
    * @return future Constraint or None
@@ -77,15 +116,6 @@ class AssetConstraintRepository @Inject()(protected val dbConfigProvider: Databa
    */
   def getAssociated(assetTypeId: Long): Future[Seq[AssetConstraint]] = {
     db.run(assetConstraints.filter(_.typeId === assetTypeId).sortBy(_.id).result)
-  }
-
-  /**
-   * Get the sequence of all existing (Asset)Constraints
-   *
-   * @return sequence of all (Asset)Constraints
-   */
-  def getAll: Future[Seq[AssetConstraint]] = {
-    db.run(assetConstraints.result)
   }
 
 }
