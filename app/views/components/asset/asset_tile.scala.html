@@ -21,49 +21,50 @@
 @(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 <div class="">
-    <div class="">
+    <div class="card relative-container tile">
+        @if(ViewerAssertion.canEdit(asset.viewers, ticket.accessRights)) {
+            <div class="float-top-right">
+                <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
+                    <i class="material-icons">create</i>
+                </a>
+            </div>
         @if(asset.properties.nonEmpty) {
+            <table>
             @for(i <- asset.properties.indices) {
-                <div class="">
-                    <div class="">
-                    @asset.properties(i).key
-                    </div>
-                    <div class="">
+                <tr>
+                    <td>
+                    @asset.properties(i).key:
+                    </td>
+                    <td>
                     @asset.properties(i).value
-                    </div>
-                </div>
+                    </td>
+                </tr>
             }
+            </table>
         }
         <!--FIXME: the part with the groups should be hidden and open with a little extension arrow-->
         <!--Group Names should be small and with these nice bubble tag names in different colors like a rainbow unicorn-->
-        <div>
-            <div>
-                Maintain:
+
+        <div class="tag-box">
+            <div class="grid-x">
                 @for(group <- asset.viewers.maintainers){
+                    <div class="tag bg-maintain cell-small-1">
                     @group.name
+                    </div>
                 }
-            </div>
-            <div>
-            Edit:
             @for(group <- asset.viewers.editors){
+                <div class="tag bg-edit cell-small-1">
                 @group.name
+                </div>
             }
-            </div>
-            <div>
-                View:
                 @for(group <- asset.viewers.viewers){
+                    <div class="tag bg-view cell-small-1">
                     @group.name
+                    </div>
                 }
+                </div>
             </div>
         </div>
-    </div>
-    @if(ViewerAssertion.canEdit(asset.viewers, ticket.accessRights)) {
-        <div class="">
-            <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
-                <button class="">
-                    Edit
-                </button>
-            </a>
-        </div>
+
     }
 </div>
