@@ -15,9 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.model.ExtendedAsset
+@import modules.asset.model.ExtendedAsset
 @import views.html.components.asset.asset_tile
-@import auth.model.Ticket
+@import modules.auth.model.Ticket
 @(assets: Seq[ExtendedAsset])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @for(asset <- assets){

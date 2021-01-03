@@ -18,9 +18,9 @@
 
 package unit.services
 
-import asset.service.AssetConstraintHelper.ConstraintType
-import asset.model.AssetConstraint
-import asset.service.AssetLogic
+import modules.asset.service.AssetConstraintHelper.ConstraintType
+import modules.asset.model.AssetConstraint
+import modules.asset.service.AssetLogic
 import org.scalatestplus.play.PlaySpec
 
 class AssetLogicSpec extends PlaySpec {

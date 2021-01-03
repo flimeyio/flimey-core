@@ -18,9 +18,9 @@
 
 package controllers
 
-import asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
-import asset.model.{AssetConstraint, AssetType}
-import asset.service.ModelAssetService
+import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
+import modules.asset.model.{AssetConstraint, AssetType}
+import modules.asset.service.ModelAssetService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging

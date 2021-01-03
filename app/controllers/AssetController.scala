@@ -18,16 +18,16 @@
 
 package controllers
 
-import asset.formdata.{NewAssetForm, SelectAssetTypeForm}
-import asset.service.{AssetService, ModelAssetService}
-import auth.model.Ticket
+import modules.asset.formdata.{NewAssetForm, SelectAssetTypeForm}
+import modules.asset.service.{AssetService, ModelAssetService}
+import modules.auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.service.GroupService
+import modules.user.service.GroupService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

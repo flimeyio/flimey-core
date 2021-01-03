@@ -15,8 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import user.model.Group
 @import views.html.components.user.group_tile
+@import modules.user.model.Group
 @(groups: Seq[Group])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @for(group <- groups){

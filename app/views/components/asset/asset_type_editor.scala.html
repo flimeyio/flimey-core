@@ -21,9 +21,9 @@
 @import views.html.components.utils.message_box_hint
 @import views.html.forms.asset.new_asset_constraint_form
 @import views.html.helper.CSRF
-@import asset.model.AssetConstraint
-@import asset.model.AssetType
-@import asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
+@import modules.asset.model.AssetConstraint
+@import modules.asset.model.AssetType
+@import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
 @import views.html.forms.asset.edit_asset_type_form
 @(assetType: AssetType, assetConstraints: Seq[AssetConstraint],
         editAssetTypeForm: Form[EditAssetTypeForm.Data],

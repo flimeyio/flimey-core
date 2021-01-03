@@ -18,7 +18,7 @@
 
 package middleware
 
-import auth.model.Ticket
+import modules.auth.model.Ticket
 import play.api.mvc._
 
 /**

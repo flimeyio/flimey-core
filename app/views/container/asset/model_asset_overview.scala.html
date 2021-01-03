@@ -15,12 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import auth.model.Ticket
+@import modules.auth.model.Ticket
 @import views.html.components.utils.message_box_error
 @import views.html.forms.asset.new_asset_type_form
 @import views.html.components.asset.asset_type_multibox
 @import views.html.components.utils.navbar_category_searchable
-@import asset.model.AssetType
+@import modules.asset.model.AssetType
 @(assetTypes: Seq[AssetType],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
