@@ -271,7 +271,7 @@ class AssetService @Inject()(assetTypeRepository: TypeRepository,
    */
   def getAssetPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] = {
     RoleAssertion.assertWorker
-    AssetLogic.getAssetPropertyKeys(constraints)
+    AssetLogic.getPropertyKeys(constraints)
   }
 
   /**

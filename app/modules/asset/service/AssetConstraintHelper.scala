@@ -18,7 +18,7 @@
 
 package modules.asset.service
 
-import modules.core.model.PropertyType
+import modules.core.model.{ConstraintType, PropertyType}
 
 /**
  * Object with static helper functionality for Constraints used by AssetTypes.
@@ -35,4 +35,12 @@ object AssetConstraintHelper {
    */
   val hasPropertyTypes: Seq[String] = PropertyType.values.map(_.name).toSeq
 
+  /**
+   * Sequence of allowed constraint types of an asset
+   */
+  val allowedConstraintTypes: Seq[ConstraintType.Type] = Seq(
+    ConstraintType.MustBeDefined,
+    ConstraintType.HasProperty,
+    ConstraintType.DerivesFrom
+  )
 }

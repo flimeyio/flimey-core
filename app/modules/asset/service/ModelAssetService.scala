@@ -248,17 +248,16 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
   def addConstraint(assetConstraint: Constraint)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
-      val processedConstrained = AssetLogic.preprocessConstraint(assetConstraint)
-      val constraintStatus = AssetLogic.isValidConstraint(processedConstrained)
+      val constraintStatus = AssetLogic.isValidConstraint(assetConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
       getConstraintsOfAssetType(assetConstraint.typeId) flatMap { i =>
-        val modelStatus = AssetLogic.isAssetConstraintModel(i :+ processedConstrained)
+        val modelStatus = AssetLogic.isAssetConstraintModel(i :+ assetConstraint)
         if (!modelStatus.valid) modelStatus.throwError
 
-        if(processedConstrained.c == ConstraintType.HasProperty){
-          assetConstraintRepository.addPropertyConstraint(processedConstrained)
+        if(assetConstraint.c == ConstraintType.HasProperty){
+          assetConstraintRepository.addPropertyConstraint(assetConstraint)
         }else{
-          assetConstraintRepository.addNonPropertyConstraint(processedConstrained) map (_ -> Future.unit)
+          assetConstraintRepository.addNonPropertyConstraint(assetConstraint) map (_ -> Future.unit)
         }
       }
     } catch {

@@ -98,4 +98,34 @@ trait ConstraintProcessor {
     constraints.count(c => constraints.exists(sym => sym.id != c.id && sym.c == c.c && sym.v1 == c.v1)) == 0
   }
 
+  /**
+   * Checks a given AssetType constraint model for semantic correctness.
+   * It is checked that:
+   * 1) exactly one DerivesFrom rule exists
+   * 2) every MustBeDefined rule has a corresponding HasProperty rule
+   * 3) no rules are duplicates
+   *
+   * @param constraints model to check
+   * @return Status with optional error message
+   */
+  def isAssetConstraintModel(constraints: Seq[Constraint]): Status = {
+    //exactly one derives rule
+    val derivationCount = constraints.count(c => c.c == ConstraintType.DerivesFrom)
+    if(derivationCount < 1){
+      return ERR("Asset Type must have a 'Derives From' constraint")
+    } else if (derivationCount > 1) {
+      return ERR("Asset Type must have only one 'Derives From' constraint")
+    }
+    //must constrains only on existing properties
+    if(!hasMatchingProperties(constraints)){
+      return ERR("Every 'Must Be Defined' constraint needs a corresponding 'Has Property' constraint")
+    }
+    //no duplicates
+    if(!hasNoDuplicates(constraints)){
+      return ERR("Constraints must not have duplicates")
+    }
+    //everything ok
+    OK()
+  }
+
 }

@@ -16,17 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.service
+package modules.subject.service
 
-import modules.core.model.{Constraint, ConstraintType}
 import modules.core.data.ConstraintProcessor
+import modules.core.model.{Constraint, ConstraintType}
 import modules.util.messages.{ERR, Status}
 
 /**
  * Trait which provides functionality for parsing and processing constraints
  */
-trait AssetConstraintProcessor extends ConstraintProcessor {
-
+trait SubjectConstraintProcessor extends ConstraintProcessor {
+  
   /**
    * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
    * No semantic analysis is done!
@@ -34,10 +34,11 @@ trait AssetConstraintProcessor extends ConstraintProcessor {
    * @param constraint to check
    * @return Status with optional error message
    */
+    //FIXME adjust for subjects
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
-      case ConstraintType.DerivesFrom => isDerivesFromConstraint(constraint.v1, constraint.v2, AssetConstraintHelper.canDeriveFrom)
-      case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, AssetConstraintHelper.hasPropertyTypes)
+      case ConstraintType.DerivesFrom => isDerivesFromConstraint(constraint.v1, constraint.v2, SubjectConstraintHelper.canDeriveFrom)
+      case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, SubjectConstraintHelper.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case _ => ERR("Invalid Asset Constraint Rule")
     }

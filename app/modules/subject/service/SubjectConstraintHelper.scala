@@ -16,14 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.service
+package modules.subject.service
 
-import modules.core.data.PropertyProcessor
-import modules.user.service.ViewerProcessor
-import modules.util.data.StringProcessor
+import modules.core.model.{ConstraintType, PropertyType}
 
 /**
- * The AssetLogic object provides static functionality to process, verify and validate
- * constraints of the AssetType model.
+ * Object with static helper functionality for Constraints used by AssetTypes.
  */
-object AssetLogic extends AssetConstraintProcessor with PropertyProcessor with StringProcessor with ViewerProcessor {}
+//FIXME adjust for subjects
+object SubjectConstraintHelper {
+
+  /**
+   * Sequence of possible parent types.
+   */
+  val canDeriveFrom: Seq[String] = Seq[String]("asset")
+
+  /**
+   * Sequence of possible property data types.
+   */
+  val hasPropertyTypes: Seq[String] = PropertyType.values.map(_.name).toSeq
+
+  /**
+   * Sequence of allowed constraint types of an asset
+   */
+  val allowedConstraintTypes: Seq[ConstraintType.Type] = Seq(
+    ConstraintType.MustBeDefined,
+    ConstraintType.HasProperty,
+    ConstraintType.DerivesFrom
+  )
+}

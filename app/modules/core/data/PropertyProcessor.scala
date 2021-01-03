@@ -16,10 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.service
+package modules.core.data
 
-import modules.core.model.{Property, Constraint, ConstraintType, PropertyType}
+import modules.core.model.{Constraint, ConstraintType, Property, PropertyType}
 import modules.util.data.StringProcessor
+import modules.util.messages.{ERR, OK, Status}
 
 /**
  * Trait which provides functionality for parsing, processing and validation Properties
@@ -33,7 +34,7 @@ trait PropertyProcessor extends StringProcessor {
    * @param constraints model
    * @return Property keys with their datatype [(key, type)]
    */
-  def getAssetPropertyKeys(constraints: Seq[Constraint]): Seq[(String, String)] = {
+  def getPropertyKeys(constraints: Seq[Constraint]): Seq[(String, String)] = {
     constraints.filter(_.c == ConstraintType.HasProperty).map(c => (c.v1, c.v2))
   }
 
@@ -61,7 +62,7 @@ trait PropertyProcessor extends StringProcessor {
    * @return valid Property configuration
    */
   def derivePropertiesFromRawData(constraints: Seq[Constraint], propData: Seq[String]): Seq[Property] = {
-    val propKeys = getAssetPropertyKeys(constraints)
+    val propKeys = getPropertyKeys(constraints)
     if(propKeys.length != propData.length) return Seq()
     var res = Seq[Property]()
     for(i <- propKeys.indices){
@@ -102,6 +103,36 @@ trait PropertyProcessor extends StringProcessor {
       val (property, newValue) = c
       Property(property.id, property.key, newValue, property.parentId)
     })
+  }
+
+  /**
+   * Validates, if a given sequence of raw property data is a correct model configuration.<br />
+   * The passed property values must be in the same order as their corresponding keys from getAssetPropertyKeys().
+   *
+   * @param constraints model of the parent AssetType
+   * @param rawProps raw configuration Properties
+   * @return Status with optional error message
+   */
+  def isModelConfiguration(constraints: Seq[Constraint], rawProps: Seq[Property]): Status = {
+    val propKeys = getPropertyKeys(constraints)
+    val obligatoryKeys = getObligatoryPropertyKeys(constraints)
+
+    for(i <- propKeys.indices){
+
+      val (key, typeName) = propKeys(i)
+      val property = rawProps.find(_.key == key)
+
+      //check if the key has a property (basically true by architecture) just a defensive check
+      if(property.isEmpty) return ERR("Property "+key+" is missing")
+
+      //check if the property type is correct
+      if(!isOfType(property.get.value, typeName)) return ERR("Property "+key+" is of a wrong type")
+
+      //check if property has a non blank value, if it must be defined
+      if(obligatoryKeys.contains(key) && property.get.value.isBlank) return ERR("Property "+key+" is not defined")
+    }
+
+    OK()
   }
 
 }
