@@ -21,7 +21,8 @@ package modules.auth.service
 import java.util.UUID.randomUUID
 
 import modules.auth.model.{Access, AuthSession}
-import modules.user.model.{Group, User, ViewerCombinator, ViewerRole}
+import modules.core.model.ViewerRole
+import modules.user.model.{Group, User, ViewerCombinator}
 import modules.user.service.{PasswordProcessor, ViewerProcessor}
 
 /**

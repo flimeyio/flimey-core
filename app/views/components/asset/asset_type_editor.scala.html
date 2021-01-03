@@ -21,11 +21,11 @@
 @import views.html.components.utils.message_box_hint
 @import views.html.forms.asset.new_asset_constraint_form
 @import views.html.helper.CSRF
-@import modules.asset.model.AssetConstraint
-@import modules.asset.model.AssetType
 @import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
 @import views.html.forms.asset.edit_asset_type_form
-@(assetType: AssetType, assetConstraints: Seq[AssetConstraint],
+@import modules.core.model.EntityType
+@import modules.core.model.Constraint
+@(assetType: EntityType, assetConstraints: Seq[Constraint],
         editAssetTypeForm: Form[EditAssetTypeForm.Data],
         newAssetConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 

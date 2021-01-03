@@ -17,8 +17,8 @@
 * *@
 @import modules.asset.formdata.EditAssetTypeForm
 @import views.html.helper.CSRF
-@import modules.asset.model.AssetType
-@(assetType: AssetType, editAssetTypeForm: Form[EditAssetTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import modules.core.model.EntityType
+@(assetType: EntityType, editAssetTypeForm: Form[EditAssetTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.postAssetType(assetType.id)) {
     <div class="">

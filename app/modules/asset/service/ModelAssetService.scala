@@ -18,12 +18,11 @@
 
 package modules.asset.service
 
-import modules.asset.model.{AssetConstraint, AssetType}
-import modules.asset.repository.{AssetConstraintRepository, AssetTypeRepository}
-import modules.asset.service.AssetConstraintHelper.ConstraintType
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import com.google.inject.Inject
+import modules.core.model.{Constraint, ConstraintType, EntityType}
+import modules.core.repository.{ConstraintRepository, TypeRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -35,7 +34,7 @@ import scala.concurrent.Future
  * @param assetTypeRepository       injected db interface for AssetTypes
  * @param assetConstraintRepository injected db interface for (Asset)Constraints
  */
-class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, assetConstraintRepository: AssetConstraintRepository) {
+class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetConstraintRepository: ConstraintRepository) {
 
   /**
    * Add a new AssetType.
@@ -47,7 +46,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket    implicit authentication ticket
    * @return Future[Long]
    */
-  def addAssetType(assetType: AssetType)(implicit ticket: Ticket): Future[Long] = {
+  def addAssetType(assetType: EntityType)(implicit ticket: Ticket): Future[Long] = {
     try {
       RoleAssertion.assertModeler
       assetTypeRepository.add(assetType)
@@ -64,7 +63,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Seq[AssetType]
    */
-  def getAllAssetTypes(implicit ticket: Ticket): Future[Seq[AssetType]] = {
+  def getAllAssetTypes(implicit ticket: Ticket): Future[Seq[EntityType]] = {
     try {
       RoleAssertion.assertWorker
       assetTypeRepository.getAll
@@ -81,7 +80,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Option[AssetType]
    */
-  def getAssetType(id: Long)(implicit ticket: Ticket): Future[Option[AssetType]] = {
+  def getAssetType(id: Long)(implicit ticket: Ticket): Future[Option[EntityType]] = {
     try {
       RoleAssertion.assertWorker
       assetTypeRepository.get(id)
@@ -99,7 +98,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future (AssetType, Seq[AssetConstraint])
    */
-  def getCompleteAssetType(id: Long)(implicit ticket: Ticket): Future[(AssetType, Seq[AssetConstraint])] = {
+  def getCompleteAssetType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
     try {
       RoleAssertion.assertWorker
       assetTypeRepository.getComplete(id) map (assetTypeData => {
@@ -123,7 +122,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Option[AssetType]
    */
-  def getAssetTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[AssetType]] = {
+  def getAssetTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[EntityType]] = {
     try {
       RoleAssertion.assertWorker
       //FIXME this is not critical because there won't be many AssetTypes but filtering should be done in the repository.
@@ -143,7 +142,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket    implicit authentication ticket
    * @return Future[Int]
    */
-  def updateAssetType(assetType: AssetType)(implicit ticket: Ticket): Future[Int] = {
+  def updateAssetType(assetType: EntityType)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
       if (assetType.active) {
@@ -169,7 +168,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Seq[AssetConstraint]
    */
-  def getConstraintsOfAssetType(id: Long)(implicit ticket: Ticket): Future[Seq[AssetConstraint]] = {
+  def getConstraintsOfAssetType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
     try {
       RoleAssertion.assertWorker
       assetConstraintRepository.getAssociated(id)
@@ -187,7 +186,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Option[AssetConstraint]
    */
-  def getConstraint(id: Long)(implicit ticket: Ticket): Future[Option[AssetConstraint]] = {
+  def getConstraint(id: Long)(implicit ticket: Ticket): Future[Option[Constraint]] = {
     try {
       RoleAssertion.assertWorker
       assetConstraintRepository.get(id)
@@ -222,7 +221,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
             val status = AssetLogic.isAssetConstraintModel(constraints.filter(c => c.id != id))
             if (!status.valid) status.throwError
 
-            if(constraint.c == ConstraintType.HasProperty.short){
+            if(constraint.c == ConstraintType.HasProperty){
               assetConstraintRepository.deletePropertyConstraint(constraint)
             }else{
               assetConstraintRepository.deleteNonPropertyConstraint(constraint.id) map (_ => Future.unit)
@@ -246,7 +245,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket          implicit authentication ticket
    * @return Future[Long]
    */
-  def addConstraint(assetConstraint: AssetConstraint)(implicit ticket: Ticket): Future[Unit] = {
+  def addConstraint(assetConstraint: Constraint)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
       val processedConstrained = AssetLogic.preprocessConstraint(assetConstraint)
@@ -256,7 +255,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
         val modelStatus = AssetLogic.isAssetConstraintModel(i :+ processedConstrained)
         if (!modelStatus.valid) modelStatus.throwError
 
-        if(processedConstrained.c == ConstraintType.HasProperty.short){
+        if(processedConstrained.c == ConstraintType.HasProperty){
           assetConstraintRepository.addPropertyConstraint(processedConstrained)
         }else{
           assetConstraintRepository.addNonPropertyConstraint(processedConstrained) map (_ -> Future.unit)
@@ -296,7 +295,7 @@ class ModelAssetService @Inject()(assetTypeRepository: AssetTypeRepository, asse
    * @param ticket implicit authentication ticket
    * @return Future Tuple of all AssetTypes, a specific AssetType and its Constraints
    */
-  def getCombinedAssetEntity(id: Long)(implicit ticket: Ticket): Future[(Seq[AssetType], Option[AssetType], Seq[AssetConstraint])] = {
+  def getCombinedAssetEntity(id: Long)(implicit ticket: Ticket): Future[(Seq[EntityType], Option[EntityType], Seq[Constraint])] = {
     try {
       RoleAssertion.assertWorker
       (for {

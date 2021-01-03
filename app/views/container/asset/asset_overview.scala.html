@@ -15,12 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.model.{Asset, AssetProperty, AssetType}
 @import modules.auth.model.Ticket
 @import views.html.container.asset.asset_view_container
 @import modules.asset.model.ExtendedAsset
-@(selectedType: Option[AssetType],
-        assetTypes: Seq[AssetType],
+@import modules.core.model.EntityType
+@(selectedType: Option[EntityType],
+        assetTypes: Seq[EntityType],
         assetData: Seq[ExtendedAsset],
         pageNumber: Int,
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)

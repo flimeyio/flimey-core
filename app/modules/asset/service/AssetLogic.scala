@@ -18,16 +18,16 @@
 
 package modules.asset.service
 
-import modules.asset.model.{AssetConstraint, AssetProperty}
-import modules.asset.service.AssetConstraintHelper.ConstraintType
+import modules.core.model.{Constraint, ConstraintType, Property}
 import modules.util.messages.{ERR, OK, Status}
 import modules.user.service.ViewerProcessor
+import modules.util.data.StringProcessor
 
 /**
  * The AssetLogic object provides static functionality to process, verify and validate
  * constraints of the AssetType model.
  */
-object AssetLogic extends ConstraintProcessor with PropertyProcessor with StringProcessor with ViewerProcessor {
+object AssetLogic extends AssetConstraintProcessor with PropertyProcessor with StringProcessor with ViewerProcessor {
 
   /**
    * Checks a given AssetType constraint model for semantic correctness.
@@ -39,9 +39,9 @@ object AssetLogic extends ConstraintProcessor with PropertyProcessor with String
    * @param constraints model to check
    * @return Status with optional error message
    */
-  def isAssetConstraintModel(constraints: Seq[AssetConstraint]): Status = {
+  def isAssetConstraintModel(constraints: Seq[Constraint]): Status = {
     //exactly one derives rule
-    val derivationCount = constraints.count(c => c.c == ConstraintType.DerivesFrom.short)
+    val derivationCount = constraints.count(c => c.c == ConstraintType.DerivesFrom)
     if(derivationCount < 1){
       return ERR("Asset Type must have a 'Derives From' constraint")
     } else if (derivationCount > 1) {
@@ -67,7 +67,7 @@ object AssetLogic extends ConstraintProcessor with PropertyProcessor with String
    * @param rawProps raw configuration Properties
    * @return Status with optional error message
    */
-  def isModelConfiguration(constraints: Seq[AssetConstraint], rawProps: Seq[AssetProperty]): Status = {
+  def isModelConfiguration(constraints: Seq[Constraint], rawProps: Seq[Property]): Status = {
     val propKeys = getAssetPropertyKeys(constraints)
     val obligatoryKeys = getObligatoryPropertyKeys(constraints)
 

@@ -18,11 +18,13 @@
 
 package modules.asset.service
 
-import modules.asset.model.{Asset, AssetConstraint, AssetTypeCombination, ExtendedAsset}
-import modules.asset.repository.{AssetPropertyRepository, AssetRepository, AssetTypeRepository}
+import modules.asset.model.{Asset, AssetTypeCombination, ExtendedAsset}
+import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import com.google.inject.Inject
+import modules.core.model.Constraint
+import modules.core.repository.{PropertyRepository, TypeRepository}
 import modules.user.model.GroupStats
 import modules.user.service.GroupService
 import modules.user.util.ViewerAssertion
@@ -39,9 +41,9 @@ import scala.concurrent.Future
  * @param assetPropertyRepository injected db interface for (Asset)Properties
  * @param groupService            injected service class to access Group functionality
  */
-class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
+class AssetService @Inject()(assetTypeRepository: TypeRepository,
                              assetRepository: AssetRepository,
-                             assetPropertyRepository: AssetPropertyRepository,
+                             assetPropertyRepository: PropertyRepository,
                              modelAssetService: ModelAssetService,
                              groupService: GroupService) {
 
@@ -73,7 +75,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
         if (!configurationStatus.valid) configurationStatus.throwError
         groupService.getAllGroups map (allGroups => {
           val aViewers = AssetLogic.deriveViewersFromData(maintainers :+ GroupStats.SYSTEM_GROUP, editors, viewers, allGroups)
-          assetRepository.add(Asset(0, typeId), properties, aViewers)
+          assetRepository.add(Asset(0, 0, typeId), properties, aViewers)
         })
       })
     } catch {
@@ -251,7 +253,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
       getAsset(id) flatMap (extendedAsset => {
         ViewerAssertion.assertMaintain(extendedAsset.viewers)
         //FIXME validate Subjects
-        assetRepository.delete(id)
+        assetRepository.delete(extendedAsset.asset)
       })
     } catch {
       case e: Throwable => Future.failed(e)
@@ -267,7 +269,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param ticket      implicit authentication ticket
    * @return tuple2 seq (property key, data type)
    */
-  def getAssetPropertyKeys(constraints: Seq[AssetConstraint])(implicit ticket: Ticket): Seq[(String, String)] = {
+  def getAssetPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] = {
     RoleAssertion.assertWorker
     AssetLogic.getAssetPropertyKeys(constraints)
   }
@@ -280,7 +282,7 @@ class AssetService @Inject()(assetTypeRepository: AssetTypeRepository,
    * @param ticket      implicit authentication ticket
    * @return map of (property key -> default value)
    */
-  def getObligatoryPropertyKeys(constraints: Seq[AssetConstraint])(implicit ticket: Ticket): Map[String, String] = {
+  def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] = {
     RoleAssertion.assertWorker
     AssetLogic.getObligatoryPropertyKeys(constraints)
   }

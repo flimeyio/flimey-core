@@ -17,10 +17,10 @@
 * *@
 @import modules.asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
-@import modules.asset.model.AssetType
 @import modules.auth.model.Ticket
 @import modules.user.model.Group
-@(assetType: AssetType,
+@import modules.core.model.EntityType
+@(assetType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],

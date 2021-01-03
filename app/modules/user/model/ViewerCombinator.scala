@@ -18,6 +18,8 @@
 
 package modules.user.model
 
+import modules.core.model.{Viewer, ViewerRole}
+
 /**
  * Model class representing the viewer and editor group relations of a target group.
  * This class can be used to represent the first-class relations (only direct descendents) or the complete transitive closure.

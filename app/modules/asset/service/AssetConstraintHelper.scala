@@ -18,43 +18,18 @@
 
 package modules.asset.service
 
+import modules.core.model.PropertyType
+
 /**
  * Object with static helper functionality for Constraints used by AssetTypes.
  */
 object AssetConstraintHelper {
 
   /**
-   * Enum of available Constraint rules.
-   */
-  object ConstraintType extends Enumeration {
-
-    import scala.language.implicitConversions
-    protected case class Val(short: String, name: String) extends super.Val
-    implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
-
-    val DerivesFrom: Val = Val("DF", "Derives From")
-    val HasProperty: Val = Val("HP", "Has Property")
-    val MustBeDefined: Val = Val("MD", "Must Be Defined")
-
-  }
-
-  /**
    * Sequence of possible parent types.
    */
   val canDeriveFrom: Seq[String] = Seq[String]("asset")
 
-  /**
-   * Enum of available Property data types.
-   */
-  object PropertyType extends Enumeration {
-
-    import scala.language.implicitConversions
-    protected case class Val(name: String) extends super.Val
-    implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
-
-    val StringType: Val = Val("string")
-    val NumericType: Val = Val("number")
-  }
   /**
    * Sequence of possible property data types.
    */

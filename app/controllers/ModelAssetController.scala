@@ -19,10 +19,10 @@
 package controllers
 
 import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
-import modules.asset.model.{AssetConstraint, AssetType}
 import modules.asset.service.ModelAssetService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
+import modules.core.model.{Constraint, ConstraintType, EntityType}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -75,7 +75,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
             Future.successful(Redirect(routes.ModelAssetController.index()).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val assetType = AssetType(0, data.value, active = false);
+            val assetType = EntityType(0, data.value, active = false);
             modelService.addAssetType(assetType) map { _ =>
               Redirect(routes.ModelAssetController.index())
             } recoverWith {
@@ -123,8 +123,9 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       modelService.getCombinedAssetEntity(id) map (res =>
-        ((assetTypes: Seq[AssetType], assetType: Option[AssetType], constraints: Seq[AssetConstraint]) => {
+        ((assetTypes: Seq[EntityType], assetType: Option[EntityType], constraints: Seq[Constraint]) => {
           if (assetType.nonEmpty) {
+            //FIXME this is really strange code...
             val preparedAssetForm = EditAssetTypeForm.form.fill(EditAssetTypeForm.Data(assetType.get.value, assetType.get.active))
             var preparedConstraintForm = NewAssetConstraintForm.form.fill(NewAssetConstraintForm.Data("", "", ""))
             val c = request.flash.get("c")
@@ -172,7 +173,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
             Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(id)).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val assetType = AssetType(id, data.value, data.active)
+            val assetType = EntityType(id, data.value, data.active)
             modelService.updateAssetType(assetType) map { _ =>
               Redirect(routes.ModelAssetController.getAssetTypeEditor(id))
             } recoverWith {
@@ -200,7 +201,8 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
             Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId)).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val assetConstraint = AssetConstraint(0, data.c, data.v1, data.v2, assetTypeId)
+            //FIXME this line must be handled inside the ModelAssetService
+            val assetConstraint = Constraint(0, ConstraintType.find(data.c).get, data.v1, data.v2, assetTypeId)
             modelService.addConstraint(assetConstraint) map { id =>
               Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId))
             } recoverWith {

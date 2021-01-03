@@ -17,6 +17,7 @@
 * *@
 @import modules.asset.formdata.NewAssetConstraintForm
 @import modules.asset.service.AssetConstraintHelper
+@import modules.core.model.ConstraintType
 @(assetTypeId: Long, newConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.addAssetConstraint(assetTypeId)) {
@@ -25,7 +26,7 @@
             @CSRF.formField
             <select class="" name="c">
                 <option>Choose an option</option>
-                @for(ctype <- AssetConstraintHelper.ConstraintType.values){
+                @for(ctype <- ConstraintType.values){
                     <option @if(newConstraintForm.data("c") == ctype.name){selected="selected"}>@ctype.name</option>
                 }
             </select>

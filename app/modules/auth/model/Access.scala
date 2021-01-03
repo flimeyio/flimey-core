@@ -18,7 +18,7 @@
 
 package modules.auth.model
 
-import modules.user.model.ViewerRole
+import modules.core.model.ViewerRole
 
 /**
  * The Access data class.<br />

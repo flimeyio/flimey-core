@@ -18,13 +18,15 @@
 
 package modules.asset.repository
 
-import modules.asset.model.{Asset, AssetProperty, ExtendedAsset}
+import modules.asset.model.{Asset, ExtendedAsset}
 import com.google.inject.Inject
+import modules.core.model.{FlimeyEntity, Property, Viewer}
+import modules.core.repository.{FlimeyEntityTable, PropertyTable, TypeTable, ViewerTable}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
-import modules.user.model.{Group, Viewer, ViewerCombinator}
+import modules.user.model.{Group, ViewerCombinator}
 import modules.user.repository.GroupTable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,10 +41,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
+  val flimeyEntities = TableQuery[FlimeyEntityTable]
   val assets = TableQuery[AssetTable]
-  val assetTypes = TableQuery[AssetTypeTable]
-  val assetProperties = TableQuery[AssetPropertyTable]
-  val assetViewers = TableQuery[AssetViewerTable]
+  val types = TableQuery[TypeTable]
+  val properties = TableQuery[PropertyTable]
+  val viewers = TableQuery[ViewerTable]
   val groups = TableQuery[GroupTable]
 
   /**
@@ -51,15 +54,16 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * <p> Only valid Asset configurations should be added to the repository.
    *
    * @param asset      new Asset entity
-   * @param properties AssetProperties of the Asset.
-   * @param viewers    Viewers of the Asset.
+   * @param newProperties AssetProperties of the Asset.
+   * @param newViewers    Viewers of the Asset.
    * @return Future[Unit]
    */
-  def add(asset: Asset, properties: Seq[AssetProperty], viewers: Seq[Viewer]): Future[Unit] = {
+  def add(asset: Asset, newProperties: Seq[Property], newViewers: Seq[Viewer]): Future[Unit] = {
     db.run((for {
-      key <- (assets returning assets.map(_.id)) += asset
-      _ <- assetProperties ++= properties.map(p => AssetProperty(0, p.key, p.value, key))
-      _ <- assetViewers ++= viewers.map(v => Viewer(0, key, v.viewerId, v.role))
+      entityId <- (flimeyEntities returning flimeyEntities.map(_.id)) += FlimeyEntity(0)
+      _ <- (assets returning assets.map(_.id)) += Asset(0, entityId, asset.typeId)
+      _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
+      _ <- viewers ++= newViewers.map(v => Viewer(0, entityId, v.viewerId, v.role))
     } yield ()).transactionally)
   }
 
@@ -69,18 +73,18 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * <p> Deletes all given deleted Viewers.
    * <p> Inserts all given new Viewers. The new Viewer objects must be complete and must already contain the target id.
    *
-   * @param properties Properties to update the value field
+   * @param propertiesUpdate Properties to update the value field
    * @param deletedViewers Group ids of Viewers to delete
    * @param newViewers Viewers to add - id must be 0
    * @return Future[Unit]
    **/
-  def update(properties: Seq[AssetProperty], deletedViewers: Set[Long], newViewers: Set[Viewer]): Future[Unit] = {
+  def update(propertiesUpdate: Seq[Property], deletedViewers: Set[Long], newViewers: Set[Viewer]): Future[Unit] = {
     db.run((for {
-      _ <- DBIO.sequence(properties.map(update => {
-        assetProperties.filter(_.id === update.id).map(_.value).update(update.value)
+      _ <- DBIO.sequence(propertiesUpdate.map(update => {
+        properties.filter(_.id === update.id).map(_.value).update(update.value)
       }))
-      _ <- assetViewers.filter(_.viewerId.inSet(deletedViewers)).delete
-      _ <- assetViewers ++= newViewers
+      _ <- viewers.filter(_.viewerId.inSet(deletedViewers)).delete
+      _ <- viewers ++= newViewers
     } yield ()).transactionally)
   }
 
@@ -88,14 +92,15 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * Delete an Asset.<br />
    * This operation will also delete all Properties
    *
-   * @param id of the Asset to delete
+   * @param asset the Asset to delete
    * @return future
    */
-  def delete(id: Long): Future[Unit] = {
+  def delete(asset: Asset): Future[Unit] = {
     db.run((for {
-      _ <- assetProperties.filter(_.parentId === id).delete
-      _ <- assetViewers.filter(_.targetId === id).delete
-      _ <- assets.filter(_.id === id).delete
+      _ <- properties.filter(_.parentId === asset.entityId).delete
+      _ <- viewers.filter(_.targetId === asset.entityId).delete
+      _ <- assets.filter(_.id === asset.id).delete
+      _ <- flimeyEntities.filter(_.id === asset.entityId).delete
     } yield ()).transactionally)
   }
 
@@ -109,8 +114,8 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    */
   def get(id: Long, groupIds: Set[Long]): Future[Option[ExtendedAsset]] = {
     db.run((for {
-      (c, s) <- ((assets.filter(_.id === id) join assetProperties.sortBy(_.id) on (_.id === _.parentId)) join
-        assetViewers.filter(_.viewerId.inSet(groupIds)) on (_._1.id === _.targetId)) join
+      (c, s) <- ((assets.filter(_.id === id) join properties.sortBy(_.id) on (_.entityId === _.parentId)) join
+        viewers.filter(_.viewerId.inSet(groupIds)) on (_._1.entityId === _.targetId)) join
         groups on (_._2.viewerId === _.id)
     } yield (c, s)).result).map(res => {
       if (res.isEmpty) {
@@ -138,7 +143,7 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
     //the returned keys are limited to provide the defined number of results for the second query
     val subQuery = (for {
       (c, s) <- assets.filter(_.typeId === typeId) join
-        assetViewers.filter(_.viewerId.inSet(groupIds)) on (_.id === _.targetId)
+        viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
     } yield (c, s)).groupBy(_._1.id).map(_._1)
     //FIXME basically, the limit should be applied here and not in the main query...
     // but MYSQL is not able to support that and throws a runtime error. Maybe try with Postgres again.
@@ -146,8 +151,8 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
     //main query to fetch all data from the by the sub-query specified assets
     db.run((for {
       (c, s) <- ((assets.filter(_.id in subQuery).sortBy(_.id.desc).drop(offset).take(limit) join
-        assetProperties on (_.id === _.parentId)) join
-        assetViewers on (_._1.id === _.targetId)) join
+        properties on (_.entityId === _.parentId)) join
+        viewers on (_._1.entityId === _.targetId)) join
         groups on (_._2.viewerId === _.id)
     } yield (c, s)).result).map(res => {
       val assets = res.groupBy(_._1._1._1)
@@ -167,7 +172,7 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * @param parameters sequence of (partly redundant) table data after expected join operations
    * @return ExtendedAsset
    */
-  private def extendedAssetFromRaw(asset: Asset, parameters: Seq[(((Asset, AssetProperty), Viewer), Group)]): ExtendedAsset = {
+  private def extendedAssetFromRaw(asset: Asset, parameters: Seq[(((Asset, Property), Viewer), Group)]): ExtendedAsset = {
     val properties = parameters.groupBy(_._1._1._2).keySet.toSeq.sortBy(_.id)
     val viewers = parameters.map(param => (param._1._2, param._2)).groupBy(_._1).mapValues(pairs => pairs.map(_._2).head).toSeq
     val assetViewerCombinator = ViewerCombinator.fromRelations(viewers.map(_.swap))

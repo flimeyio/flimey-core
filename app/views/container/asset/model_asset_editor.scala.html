@@ -20,13 +20,13 @@
 @import views.html.components.utils.navbar_category_searchable
 @import views.html.components.utils.navbar_category_closeable
 @import views.html.components.asset.asset_type_editor
-@import modules.asset.model.AssetConstraint
 @import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
 @import modules.auth.model.Ticket
-@import modules.asset.model.AssetType
-@(assetTypes: Seq[AssetType],
-        assetType: AssetType,
-        assetConstraints: Seq[AssetConstraint],
+@import modules.core.model.EntityType
+@import modules.core.model.Constraint
+@(assetTypes: Seq[EntityType],
+        assetType: EntityType,
+        assetConstraints: Seq[Constraint],
         editAssetTypeForm: Form[EditAssetTypeForm.Data],
         newAssetConstraintForm: Form[NewAssetConstraintForm.Data],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)

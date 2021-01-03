@@ -18,6 +18,7 @@
 
 package modules.asset.model
 
+import modules.core.model.Property
 import modules.user.model.ViewerCombinator
 
-case class ExtendedAsset (asset: Asset, properties: Seq[AssetProperty], viewers: ViewerCombinator)
+case class ExtendedAsset (asset: Asset, properties: Seq[Property], viewers: ViewerCombinator)

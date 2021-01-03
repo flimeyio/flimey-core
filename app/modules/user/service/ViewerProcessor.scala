@@ -18,7 +18,8 @@
 
 package modules.user.service
 
-import modules.user.model.{Group, Viewer, ViewerCombinator, ViewerRole}
+import modules.core.model.{Viewer, ViewerRole}
+import modules.user.model.{Group, ViewerCombinator}
 
 /**
  * Trait which provides helper functionality for working with Viewers.

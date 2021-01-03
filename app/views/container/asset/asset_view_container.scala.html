@@ -15,14 +15,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.model.AssetType
 @import modules.auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_searchable}
 @import views.html.forms.asset.select_asset_type_form
 @import modules.asset.model.ExtendedAsset
 @import views.html.components.asset.asset_block
-@(selectedType: Option[AssetType],
-        assetTypes: Seq[AssetType],
+@import modules.core.model.EntityType
+@(selectedType: Option[EntityType],
+        assetTypes: Seq[EntityType],
         assetData: Seq[ExtendedAsset],
         pageNumber: Int,
         selectedAsset: Option[Long],

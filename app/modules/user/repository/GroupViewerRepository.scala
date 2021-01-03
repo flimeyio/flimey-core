@@ -19,11 +19,12 @@
 package modules.user.repository
 
 import com.google.inject.Inject
+import modules.core.model.Viewer
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.TableQuery
-import modules.user.model.{Group, Viewer}
+import modules.user.model.Group
 
 import scala.concurrent.{ExecutionContext, Future}
 

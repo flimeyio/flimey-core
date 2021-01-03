@@ -18,8 +18,8 @@
 
 package modules.asset.service
 
-import modules.asset.model.{AssetConstraint, AssetProperty}
-import modules.asset.service.AssetConstraintHelper.{ConstraintType, PropertyType}
+import modules.core.model.{Property, Constraint, ConstraintType, PropertyType}
+import modules.util.data.StringProcessor
 
 /**
  * Trait which provides functionality for parsing, processing and validation Properties
@@ -33,8 +33,8 @@ trait PropertyProcessor extends StringProcessor {
    * @param constraints model
    * @return Property keys with their datatype [(key, type)]
    */
-  def getAssetPropertyKeys(constraints: Seq[AssetConstraint]): Seq[(String, String)] = {
-    constraints.filter(_.c == ConstraintType.HasProperty.short).map(c => (c.v1, c.v2))
+  def getAssetPropertyKeys(constraints: Seq[Constraint]): Seq[(String, String)] = {
+    constraints.filter(_.c == ConstraintType.HasProperty).map(c => (c.v1, c.v2))
   }
 
   /**
@@ -44,8 +44,8 @@ trait PropertyProcessor extends StringProcessor {
    * @param constraints model
    * @return obligatory Property keys with default value 'key -> default'
    */
-  def getObligatoryPropertyKeys(constraints: Seq[AssetConstraint]): Map[String, String] = {
-    constraints.filter(_.c == ConstraintType.MustBeDefined.short).map(c => (c.v1, c.v2)).toMap
+  def getObligatoryPropertyKeys(constraints: Seq[Constraint]): Map[String, String] = {
+    constraints.filter(_.c == ConstraintType.MustBeDefined).map(c => (c.v1, c.v2)).toMap
   }
 
   /**
@@ -60,12 +60,12 @@ trait PropertyProcessor extends StringProcessor {
    * @param propData raw configuration data
    * @return valid Property configuration
    */
-  def derivePropertiesFromRawData(constraints: Seq[AssetConstraint], propData: Seq[String]): Seq[AssetProperty] = {
+  def derivePropertiesFromRawData(constraints: Seq[Constraint], propData: Seq[String]): Seq[Property] = {
     val propKeys = getAssetPropertyKeys(constraints)
     if(propKeys.length != propData.length) return Seq()
-    var res = Seq[AssetProperty]()
+    var res = Seq[Property]()
     for(i <- propKeys.indices){
-      res = res :+ AssetProperty(0, propKeys(i)._1, propData(i), 0)
+      res = res :+ Property(0, propKeys(i)._1, propData(i), 0)
     }
     res
   }
@@ -96,11 +96,11 @@ trait PropertyProcessor extends StringProcessor {
    * @param newConfiguration new raw configuration candidate
    * @return new configuration values mapped to existing properties
    */
-  def mapConfigurations(oldConfiguration: Seq[AssetProperty], newConfiguration: Seq[String]): Seq[AssetProperty] = {
+  def mapConfigurations(oldConfiguration: Seq[Property], newConfiguration: Seq[String]): Seq[Property] = {
     if(oldConfiguration.length != newConfiguration.length) return Seq()
     oldConfiguration.zip(newConfiguration).map(c => {
       val (property, newValue) = c
-      AssetProperty(property.id, property.key, newValue, property.parentId)
+      Property(property.id, property.key, newValue, property.parentId)
     })
   }
 

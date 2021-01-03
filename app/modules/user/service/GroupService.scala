@@ -21,6 +21,7 @@ package modules.user.service
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import com.google.inject.Inject
+import modules.core.model.{Viewer, ViewerRole}
 import modules.user.model._
 import modules.user.repository.{GroupMembershipRepository, GroupRepository, GroupViewerRepository, UserRepository}
 
