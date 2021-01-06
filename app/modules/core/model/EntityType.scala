@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,10 @@ package modules.core.model
 
 /**
  * The AssetType data class
- * @param id unique primary key (given by db interface)
- * @param value name of the AssetType
+ *
+ * @param id     unique primary key (given by db interface)
+ * @param value  name of the AssetType
+ * @param typeOf specifies for which kind of entity this type is applicable
  * @param active status if AssetType can be used to create new Assets and Assets of this type can be accessed
  */
-case class EntityType(id: Long, value: String, active: Boolean)
+case class EntityType(id: Long, value: String, typeOf: String, active: Boolean)

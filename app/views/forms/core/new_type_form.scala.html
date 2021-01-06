@@ -17,12 +17,29 @@
 * *@
 
 @import views.html.helper.CSRF
+@import modules.asset.service.AssetConstraintSpec
+@import modules.subject.service.CollectionConstraintSpec
+@import modules.subject.service.CollectibleConstraintSpec
 @()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@possibleParents = @{
+    Seq("Choose a Type") ++ AssetConstraintSpec.canDeriveFrom ++ CollectionConstraintSpec.canDeriveFrom ++ CollectibleConstraintSpec.canDeriveFrom
+}
+
     @helper.form(action = routes.ModelAssetController.addAssetType()) {
         <div class="">
             <div class="">
                 @CSRF.formField
                 <input type="text" name="value" id="input-nasf" class="" placeholder="unique name"/>
+                <select class="" name="typeOf">
+                    <option>Choose an option</option>
+                    @for(parent <- possibleParents) {
+                        <option @if(parent == "Choose a Type") {
+                            selected="selected"}>
+                        @parent
+                        </option>
+                    }
+                </select>
                 <button class="">New</button>
             </div>
         </div>

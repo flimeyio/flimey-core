@@ -18,11 +18,12 @@
 
 package controllers
 
-import modules.asset.formdata.{NewAssetForm, SelectAssetTypeForm}
+import modules.asset.formdata.NewAssetForm
 import modules.asset.service.{AssetService, ModelAssetService}
 import modules.auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
+import modules.core.formdata.SelectTypeForm
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
@@ -86,7 +87,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def changeAssetType: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        SelectAssetTypeForm.form.bindFromRequest fold(
+        SelectTypeForm.form.bindFromRequest fold(
           errorForm => {
             Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type found"))
           },

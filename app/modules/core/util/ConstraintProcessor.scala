@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.data
+package modules.core.util
 
 import modules.core.model.{Constraint, ConstraintType}
 import modules.util.messages.{ERR, OK, Status}

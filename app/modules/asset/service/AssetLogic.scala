@@ -18,7 +18,7 @@
 
 package modules.asset.service
 
-import modules.core.data.PropertyProcessor
+import modules.core.util.PropertyProcessor
 import modules.user.service.ViewerProcessor
 import modules.util.data.StringProcessor
 

@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,14 @@
 
 package modules.subject.service
 
-import modules.core.data.ConstraintProcessor
+import modules.core.util.ConstraintProcessor
 import modules.core.model.{Constraint, ConstraintType}
 import modules.util.messages.{ERR, Status}
 
 /**
  * Trait which provides functionality for parsing and processing constraints
  */
-trait SubjectConstraintProcessor extends ConstraintProcessor {
+trait CollectibleConstraintProcessor extends ConstraintProcessor {
   
   /**
    * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
@@ -34,11 +34,11 @@ trait SubjectConstraintProcessor extends ConstraintProcessor {
    * @param constraint to check
    * @return Status with optional error message
    */
-    //FIXME adjust for subjects
+    //FIXME adjust for collectible
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
-      case ConstraintType.DerivesFrom => isDerivesFromConstraint(constraint.v1, constraint.v2, SubjectConstraintHelper.canDeriveFrom)
-      case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, SubjectConstraintHelper.hasPropertyTypes)
+      case ConstraintType.DerivesFrom => isDerivesFromConstraint(constraint.v1, constraint.v2, CollectibleConstraintSpec.canDeriveFrom)
+      case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, CollectibleConstraintSpec.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case _ => ERR("Invalid Asset Constraint Rule")
     }

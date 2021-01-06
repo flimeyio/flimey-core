@@ -25,6 +25,7 @@ create table `flimey_entity` (
 create table `entity_type` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `value` VARCHAR(255) NOT NULL UNIQUE,
+    `type_of` VARCHAR(255) NOT NULL,
     `active` BOOL NOT NULL
 );
 
@@ -33,6 +34,7 @@ create table `constraint` (
     `c` VARCHAR(255) NOT NULL,
     `v1` VARCHAR(255) NOT NULL,
     `v2` VARCHAR(255) NOT NULL,
+    `by_plugin` VARCHAR(255),
     `type_id` BIGINT NOT NULL,
     FOREIGN KEY(type_id) REFERENCES entity_type(id)
 );

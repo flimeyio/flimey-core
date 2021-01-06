@@ -21,13 +21,14 @@
 @import views.html.components.utils.message_box_hint
 @import views.html.forms.asset.new_asset_constraint_form
 @import views.html.helper.CSRF
-@import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
-@import views.html.forms.asset.edit_asset_type_form
 @import modules.core.model.EntityType
 @import modules.core.model.Constraint
+@import modules.core.formdata.EditTypeForm
+@import modules.core.formdata.NewConstraintForm
+@import views.html.forms.core.edit_asset_type_form
 @(assetType: EntityType, assetConstraints: Seq[Constraint],
-        editAssetTypeForm: Form[EditAssetTypeForm.Data],
-        newAssetConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+        editAssetTypeForm: Form[EditTypeForm.Data],
+        newAssetConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="scroll-container">
     <div>

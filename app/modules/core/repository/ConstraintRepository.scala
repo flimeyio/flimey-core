@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 package modules.core.repository
 
 import com.google.inject.Inject
-import modules.asset.repository.AssetTable
-import modules.core.model.{Constraint, Property}
+import modules.core.model.Constraint
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
@@ -39,66 +38,31 @@ class ConstraintRepository @Inject()(protected val dbConfigProvider: DatabaseCon
 
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
-  val assets = TableQuery[AssetTable]
+  val entityTypes = TableQuery[TypeTable]
 
   /**
-   * Add a new AssetConstraint to the db.
+   * Add a new Constraint to the db.
    * <p> The id must be set to 0 to enable auto increment.
    * <p> <strong> This method must only be used for Constraints that are NOT of HasProperty type. Otherwise this method
-   * will lead to the destruction of the database! - the please use [[addPropertyConstraint]] instead</strong>
+   * will lead to the destruction of the database! - the please use Entity specific methods instead</strong>
    *
    * @param constraint new Constraint entity
    * @return Future[Long]
    */
-  def addNonPropertyConstraint(constraint: Constraint): Future[Long] = {
+  def addConstraint(constraint: Constraint): Future[Long] = {
     db.run((constraints returning constraints.map(_.id)) += constraint)
   }
 
   /**
-   * Add a new 'HasProperty' AssetConstraint to the db.
-   * <p> The id must be set to 0 to enable auto increment.
-   * <p> <strong> This method must only be used for Constraints that are of HasProperty type. Otherwise this method
-   * will lead to the destruction of the database!</strong>
-   *
-   * @param constraint new <strong>HasProperty</strong> AssetConstraint
-   * @return Future[Unit]
-   */
-    //FIXME move to asset repository
-  def addPropertyConstraint(constraint: Constraint): Future[Unit] = {
-    db.run((for {
-      s <- assets.filter(_.typeId === constraint.typeId).map(_.entityId).result
-      _ <- (constraints returning constraints.map(_.id)) += constraint
-      _ <- properties ++= s.map(entityId => Property(0, constraint.v1, "", entityId))
-    } yield ()).transactionally)
-  }
-
-  /**
    * Delete an Constraint.
-   * <p> <strong> If the AssetConstraint is of HasProperty type, this method will lead to the destruction
-   * of the database! - then please use [[deletePropertyConstraint]] instead</strong>
+   * <p> <strong> If the Constraint is of a type which requires further actions (for example HasProperty), this method
+   * will lead to the destruction of the database! - then please use Entity specific methods instead</strong>
    *
    * @param id of the Constraint
    * @return Future[Int]
    */
-  def deleteNonPropertyConstraint(id: Long): Future[Int] = {
+  def deleteConstraint(id: Long): Future[Int] = {
     db.run(constraints.filter(_.id === id).delete)
-  }
-
-  /**
-   * Delete a Constraint of the HasProperty type.
-   * <p> <strong> If the Constraint is not of HasProperty type, this method will lead to the destruction
-   * of the database! </strong>
-   *
-   * @param constraint the <strong>HasProperty</strong> AssetConstraint to delete
-   * @return Future[Unit]
-   */
-    //FIXME move to asset repository
-  def deletePropertyConstraint(constraint: Constraint): Future[Unit] = {
-    val assetsWithPropertyQuery = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
-    db.run((for {
-      _ <- properties.filter(_.parentId in assetsWithPropertyQuery).filter(_.key === constraint.v1).delete
-      _ <- constraints.filter(_.id === constraint.id).delete
-    } yield ()).transactionally)
   }
 
   /**
@@ -114,11 +78,18 @@ class ConstraintRepository @Inject()(protected val dbConfigProvider: DatabaseCon
   /**
    * Get the sequence of all Constraints associated to a particular Type.
    *
-   * @param typeId id of the Type
+   * @param typeId      id of the Type
+   * @param derivesFrom optional parent type specification
    * @return future of Constraints of the given Type
    */
-  def getAssociated(typeId: Long): Future[Seq[Constraint]] = {
-    db.run(constraints.filter(_.typeId === typeId).sortBy(_.id).result)
+  def getAssociated(typeId: Long, derivesFrom: Option[String] = None): Future[Seq[Constraint]] = {
+    if(derivesFrom.isEmpty) {
+      db.run(constraints.filter(_.typeId === typeId).sortBy(_.id).result)
+    }else{
+      db.run((for {
+        (c, s) <- constraints.filter(_.typeId === typeId).sortBy(_.id) join entityTypes.filter(_.typeOf === derivesFrom.get)
+      } yield (c, s)).result) map (res => res.map(_._1))
+    }
   }
 
 }

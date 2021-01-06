@@ -30,9 +30,10 @@ class TypeTable(tag: Tag) extends Table[EntityType](tag, "entity_type") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
   def value = column[String]("value")
+  def typeOf = column[String]("type_of")
   def active = column[Boolean]("active")
 
   override def * =
-    (id, value, active) <>(EntityType.tupled, EntityType.unapply)
+    (id, value, typeOf, active) <>(EntityType.tupled, EntityType.unapply)
 
 }

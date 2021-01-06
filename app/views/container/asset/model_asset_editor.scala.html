@@ -20,15 +20,16 @@
 @import views.html.components.utils.navbar_category_searchable
 @import views.html.components.utils.navbar_category_closeable
 @import views.html.components.asset.asset_type_editor
-@import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm}
 @import modules.auth.model.Ticket
 @import modules.core.model.EntityType
 @import modules.core.model.Constraint
+@import modules.core.formdata.NewConstraintForm
+@import modules.core.formdata.EditTypeForm
 @(assetTypes: Seq[EntityType],
         assetType: EntityType,
         assetConstraints: Seq[Constraint],
-        editAssetTypeForm: Form[EditAssetTypeForm.Data],
-        newAssetConstraintForm: Form[NewAssetConstraintForm.Data],
+        editAssetTypeForm: Form[EditTypeForm.Data],
+        newAssetConstraintForm: Form[NewConstraintForm.Data],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

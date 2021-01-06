@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.formdata
+package modules.core.formdata
 
-import play.api.data.Forms._
-import play.api.data._
+import play.api.data.Form
+import play.api.data.Forms.{mapping, nonEmptyText, text}
 
-object NewAssetConstraintForm {
+object NewConstraintForm {
 
   case class Data(c: String, v1: String, v2: String)
 

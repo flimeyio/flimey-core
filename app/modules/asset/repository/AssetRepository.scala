@@ -20,8 +20,8 @@ package modules.asset.repository
 
 import modules.asset.model.{Asset, ExtendedAsset}
 import com.google.inject.Inject
-import modules.core.model.{FlimeyEntity, Property, Viewer}
-import modules.core.repository.{FlimeyEntityTable, PropertyTable, TypeTable, ViewerTable}
+import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
+import modules.core.repository.{ConstraintTable, FlimeyEntityTable, PropertyTable, TypeTable, ViewerTable}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
@@ -47,6 +47,7 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   val properties = TableQuery[PropertyTable]
   val viewers = TableQuery[ViewerTable]
   val groups = TableQuery[GroupTable]
+  val constraints = TableQuery[ConstraintTable]
 
   /**
    * Add a new Asset with Properties to the db.<br />
@@ -101,6 +102,25 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
       _ <- viewers.filter(_.targetId === asset.entityId).delete
       _ <- assets.filter(_.id === asset.id).delete
       _ <- flimeyEntities.filter(_.id === asset.entityId).delete
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete an AssetType and all associated Constraints, Assets and their Properties.
+   * <p> <b>This is a highly destructive operation!</b>
+   *
+   * @param id of the type to delete
+   * @return Future[Unit]
+   */
+  def deleteAssetType(id: Long): Future[Unit] = {
+    val sub = assets.filter(_.typeId === id).map(_.entityId)
+    db.run((for {
+      _ <- properties.filter(_.parentId in sub).delete
+      _ <- viewers.filter(_.targetId in sub).delete
+      _ <- assets.filter(_.typeId === id).delete
+      _ <- flimeyEntities.filter(_.id in sub).delete
+      _ <- constraints.filter(_.typeId === id).delete
+      _ <- types.filter(_.id === id).delete
     } yield ()).transactionally)
   }
 
@@ -177,6 +197,39 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
     val viewers = parameters.map(param => (param._1._2, param._2)).groupBy(_._1).mapValues(pairs => pairs.map(_._2).head).toSeq
     val assetViewerCombinator = ViewerCombinator.fromRelations(viewers.map(_.swap))
     ExtendedAsset(asset, properties, assetViewerCombinator)
+  }
+
+  /**
+   * Add a new 'HasProperty' AssetConstraint to the db.
+   * <p> The id must be set to 0 to enable auto increment.
+   * <p> <strong> This method must only be used for Constraints that are of HasProperty type. Otherwise this method
+   * will lead to the destruction of the database!</strong>
+   *
+   * @param constraint new <strong>HasProperty</strong> AssetConstraint
+   * @return Future[Unit]
+   */
+  def addPropertyConstraint(constraint: Constraint): Future[Unit] = {
+    db.run((for {
+      s <- assets.filter(_.typeId === constraint.typeId).map(_.entityId).result
+      _ <- (constraints returning constraints.map(_.id)) += constraint
+      _ <- properties ++= s.map(entityId => Property(0, constraint.v1, "", entityId))
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete a Constraint of the HasProperty type.
+   * <p> <strong> If the Constraint is not of HasProperty type, this method will lead to the destruction
+   * of the database! </strong>
+   *
+   * @param constraint the <strong>HasProperty</strong> AssetConstraint to delete
+   * @return Future[Unit]
+   */
+  def deletePropertyConstraint(constraint: Constraint): Future[Unit] = {
+    val assetsWithPropertyQuery = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
+    db.run((for {
+      _ <- properties.filter(_.parentId in assetsWithPropertyQuery).filter(_.key === constraint.v1).delete
+      _ <- constraints.filter(_.id === constraint.id).delete
+    } yield ()).transactionally)
   }
 
 }

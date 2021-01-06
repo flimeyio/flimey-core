@@ -16,26 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.repository
+package modules.asset.service
 
-import modules.core.model.Constraint
-import slick.jdbc.MySQLProfile.api._
+import modules.core.model.{ConstraintType, PropertyType}
 
 /**
- * Slick framework db mapping for Asset associated Constraints.
- * see evolutions/default for schema creation.
- * @param tag for mysql
+ * Object with static helper functionality for Constraints used by Assets.
  */
-class ConstraintTable(tag: Tag) extends Table[Constraint](tag, "constraint") {
+object AssetConstraintSpec {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def c = column[String]("c")
-  def v1 = column[String]("v1")
-  def v2 = column[String]("v2")
-  def byPlugin = column[Option[String]]("by_plugin")
-  def typeId = column[Long]("type_id")
+  val ASSET: String = "asset"
+  /**
+   * Sequence of possible parent types.
+   */
+  val canDeriveFrom: Seq[String] = Seq[String](ASSET)
 
-  override def * =
-    (id, c, v1, v2, byPlugin, typeId) <>(Constraint.tupledRaw, Constraint.unapplyToRaw)
+  /**
+   * Sequence of possible property data types.
+   */
+  val hasPropertyTypes: Seq[String] = PropertyType.values.map(_.name).toSeq
 
+  /**
+   * Sequence of allowed constraint types of an asset
+   */
+  val allowedConstraintTypes: Seq[ConstraintType.Type] = Seq(
+    ConstraintType.MustBeDefined,
+    ConstraintType.HasProperty,
+    ConstraintType.DerivesFrom
+  )
 }

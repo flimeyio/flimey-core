@@ -15,10 +15,10 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.EditAssetTypeForm
+@import modules.core.formdata.EditTypeForm
 @import views.html.helper.CSRF
 @import modules.core.model.EntityType
-@(assetType: EntityType, editAssetTypeForm: Form[EditAssetTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(assetType: EntityType, editAssetTypeForm: Form[EditTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.postAssetType(assetType.id)) {
     <div class="">

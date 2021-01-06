@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.formdata
+package modules.core.formdata
 
+import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data._
 
-object NewAssetTypeForm {
+object NewTypeForm {
 
-  case class Data(value: String)
+  case class Data(value: String, typeOf: String)
 
   val form = Form(
     mapping(
-      "value" -> nonEmptyText
+      "value" -> nonEmptyText,
+      "typeOf" -> nonEmptyText
     )(Data.apply)(Data.unapply)
   )
 

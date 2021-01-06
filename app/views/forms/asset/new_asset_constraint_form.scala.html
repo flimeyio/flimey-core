@@ -15,10 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.NewAssetConstraintForm
-@import modules.asset.service.AssetConstraintHelper
+@import modules.core.formdata.NewConstraintForm
 @import modules.core.model.ConstraintType
-@(assetTypeId: Long, newConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(assetTypeId: Long, newConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.addAssetConstraint(assetTypeId)) {
     <div class="">

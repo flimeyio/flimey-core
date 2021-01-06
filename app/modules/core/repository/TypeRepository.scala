@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,24 +54,6 @@ class TypeRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   }
 
   /**
-   * Delete an EntityType and all associated Constraints, Assets and their Properties.
-   * <br /><br />
-   * <b>This is obviously a highly destructive operation!</b>
-   *
-   * @param id of the type to delete
-   * @return future
-   */
-    //FIXME Viewers etc. must also be deleted!! (maybe move to asset repository)
-  def delete(id: Long): Future[Unit] = {
-    db.run((for {
-      _ <- properties.filter(_.parentId in assets.filter(_.typeId === id).map(_.id)).delete
-      _ <- assets.filter(_.typeId === id).delete
-      _ <- constraints.filter(_.typeId === id).delete
-      _ <- types.filter(_.id === id).delete
-    } yield ()).transactionally)
-  }
-
-  /**
    * Update an existing EntityType
    *
    * @param entityType to update
@@ -84,36 +66,51 @@ class TypeRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   /**
    * Get an EntityType by its id.
    *
-   * @param id of the EntityType
+   * @param id          of the EntityType
+   * @param derivesFrom optional parent type specification
    * @return future of EntityType if found, else None
    */
-  def get(id: Long): Future[Option[EntityType]] = {
-    db.run(types.filter(_.id === id).result.headOption)
+  def get(id: Long, derivesFrom: Option[String] = None): Future[Option[EntityType]] = {
+    if (derivesFrom.isEmpty) {
+      db.run(types.filter(_.id === id).result.headOption)
+    } else {
+      db.run(types.filter(_.id === id).filter(_.typeOf === derivesFrom.get).result.headOption)
+    }
   }
 
   /**
    * Get all EntityTypes.
    *
+   * @param derivesFrom optional parent type specification
    * @return future of result
    */
-  def getAll: Future[Seq[EntityType]] = {
-    db.run(types.result)
+  def getAll(derivesFrom: Option[String] = None): Future[Seq[EntityType]] = {
+    if (derivesFrom.isEmpty) {
+      db.run(types.result)
+    } else {
+      db.run(types.filter(_.typeOf === derivesFrom.get).result)
+    }
   }
 
   /**
    * Get an EntityType with all its Constraints if it has an existing model.
    * This operation is more performant then fetching both separately.
    *
-   * @param id of the EntityType
+   * @param id          of the EntityType
+   * @param derivesFrom optional parent type specification
    * @return result future with pair of AssetType and Constraints
    */
-  def getComplete(id: Long): Future[(Option[EntityType], Seq[Constraint])] = {
+  def getComplete(id: Long, derivesFrom: Option[String] = None): Future[(Option[EntityType], Seq[Constraint])] = {
+    var query = types.filter(_.id === id) joinLeft constraints on (_.id === _.typeId)
+    if (derivesFrom.isDefined) {
+      query = types.filter(_.id === id).filter(_.typeOf === derivesFrom.get) joinLeft constraints on (_.id === _.typeId)
+    }
     db.run((for {
-      (c, s) <- types.filter(_.id === id) joinLeft constraints on (_.id === _.typeId)
+      (c, s) <- query
     } yield (c, s)).result) map (res => {
-      if(res.isEmpty){
+      if (res.isEmpty) {
         (None, Seq())
-      }else {
+      } else {
         val result = res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2))).values.head
         (result._1, result._2.filter(_.isDefined).map(_.get).sortBy(_.id))
       }

@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2021-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +21,24 @@ package modules.core.model
 /**
  * The AssetConstraint data class.
  *
- * @param id unique primary key (given by db interface)
- * @param c constraint rule key
- * @param v1 first rule argument
- * @param v2 second rule argument
- * @param typeId id of the associated AssetType
+ * @param id       unique primary key (given by db interface)
+ * @param c        constraint rule key
+ * @param v1       first rule argument
+ * @param v2       second rule argument
+ * @param byPlugin optional name of a parent plugin this Constraint is part of
+ * @param typeId   id of the associated AssetType
  */
-case class Constraint(id: Long, c: ConstraintType.Type, v1: String, v2: String, typeId: Long)
+case class Constraint(id: Long, c: ConstraintType.Type, v1: String, v2: String, byPlugin: Option[String], typeId: Long)
 
 object Constraint {
 
-  def applyRaw (id: Long, c: String, v1: String, v2: String, typeId: Long): Constraint = {
-    Constraint(id, ConstraintType.withName(c), v1, v2, typeId)
+  def applyRaw(id: Long, c: String, v1: String, v2: String, byPlugin: Option[String], typeId: Long): Constraint = {
+    Constraint(id, ConstraintType.withName(c), v1, v2, byPlugin, typeId)
   }
 
-  def unapplyToRaw(arg: Constraint): Option[(Long, String, String, String, Long)] =
-    Option((arg.id, arg.c.toString, arg.v1, arg.v2, arg.typeId))
+  def unapplyToRaw(arg: Constraint): Option[(Long, String, String, String, Option[String], Long)] =
+    Option((arg.id, arg.c.toString, arg.v1, arg.v2, arg.byPlugin, arg.typeId))
 
-  val tupledRaw: ((Long, String, String, String, Long)) => Constraint = (this.applyRaw _).tupled
+  val tupledRaw: ((Long, String, String, String, Option[String], Long)) => Constraint = (this.applyRaw _).tupled
 
 }

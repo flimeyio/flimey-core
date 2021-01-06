@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,13 @@
 
 package modules.asset.service
 
+import com.google.inject.Inject
+import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import com.google.inject.Inject
 import modules.core.model.{Constraint, ConstraintType, EntityType}
 import modules.core.repository.{ConstraintRepository, TypeRepository}
+import modules.core.service.EntityTypeService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -31,29 +33,15 @@ import scala.concurrent.Future
  * Service class to provide SAFE business logic for AssetTypes and their Constraints.
  * This class is normally used by dependency injection inside controller endpoints.
  *
- * @param assetTypeRepository       injected db interface for AssetTypes
- * @param assetConstraintRepository injected db interface for (Asset)Constraints
+ * @param typeRepository       injected db interface for EntityTypes
+ * @param constraintRepository injected db interface for Constraints
+ * @param assetRepository      injected db interface for Assets and Asset specific model operations
+ * @param entityTypeService    injected service to provide basic EntityType functionality
  */
-class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetConstraintRepository: ConstraintRepository) {
-
-  /**
-   * Add a new AssetType.
-   * <p> ID must be 0 and name must be unique (else the future will fail).
-   * <p> Fails without MODELER rights.
-   * <p> This is a safe implementation and can be used by controller classes.
-   *
-   * @param assetType new AssetType
-   * @param ticket    implicit authentication ticket
-   * @return Future[Long]
-   */
-  def addAssetType(assetType: EntityType)(implicit ticket: Ticket): Future[Long] = {
-    try {
-      RoleAssertion.assertModeler
-      assetTypeRepository.add(assetType)
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
-  }
+class ModelAssetService @Inject()(typeRepository: TypeRepository,
+                                  constraintRepository: ConstraintRepository,
+                                  assetRepository: AssetRepository,
+                                  entityTypeService: EntityTypeService) {
 
   /**
    * Get all AssetTypes.
@@ -63,13 +51,8 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * @param ticket implicit authentication ticket
    * @return Future Seq[AssetType]
    */
-  def getAllAssetTypes(implicit ticket: Ticket): Future[Seq[EntityType]] = {
-    try {
-      RoleAssertion.assertWorker
-      assetTypeRepository.getAll
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
+  def getAllAssetTypes()(implicit ticket: Ticket): Future[Seq[EntityType]] = {
+    entityTypeService.getAllTypes(Option(AssetConstraintSpec.ASSET))
   }
 
   /**
@@ -81,12 +64,7 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * @return Future Option[AssetType]
    */
   def getAssetType(id: Long)(implicit ticket: Ticket): Future[Option[EntityType]] = {
-    try {
-      RoleAssertion.assertWorker
-      assetTypeRepository.get(id)
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
+    entityTypeService.getType(id, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
@@ -99,37 +77,20 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * @return Future (AssetType, Seq[AssetConstraint])
    */
   def getCompleteAssetType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
-    try {
-      RoleAssertion.assertWorker
-      assetTypeRepository.getComplete(id) map (assetTypeData => {
-        val (assetType, constraints) = assetTypeData
-        if (assetType.isEmpty) throw new Exception("Invalid asset type")
-        (assetType.get, constraints)
-      })
-    } catch {
-      case e: Throwable => Future.failed(e)
-
-    }
+    entityTypeService.getCompleteType(id, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
    * Get an AssetType by its value (name) field.
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
-   * //TODO this can be extended to provide substring search results.
    *
    * @param value  value filed (name) of the searched AssetType
    * @param ticket implicit authentication ticket
    * @return Future Option[AssetType]
    */
   def getAssetTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[EntityType]] = {
-    try {
-      RoleAssertion.assertWorker
-      //FIXME this is not critical because there won't be many AssetTypes but filtering should be done in the repository.
-      getAllAssetTypes flatMap (types => Future.successful(types.find(_.value == value)))
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
+    entityTypeService.getEntityTypeByValue(value, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
@@ -138,21 +99,22 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param assetType to update hte 'value' and 'active' values
+   * @param id of the Type to update
    * @param ticket    implicit authentication ticket
    * @return Future[Int]
    */
-  def updateAssetType(assetType: EntityType)(implicit ticket: Ticket): Future[Int] = {
+  def updateAssetType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
-      if (assetType.active) {
-        getConstraintsOfAssetType(assetType.id) flatMap (constraints => {
+      //FIXME the name should also be validated here
+      if (active) {
+        getConstraintsOfAssetType(id) flatMap (constraints => {
           val status = AssetLogic.isAssetConstraintModel(constraints)
           if (!status.valid) status.throwError
-          assetTypeRepository.update(assetType)
+          typeRepository.update(EntityType(id, value, "", active))
         })
       } else {
-        assetTypeRepository.update(assetType)
+        typeRepository.update(EntityType(id, value, "", active))
       }
     } catch {
       case e: Throwable => Future.failed(e)
@@ -169,34 +131,11 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * @return Future Seq[AssetConstraint]
    */
   def getConstraintsOfAssetType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
-    try {
-      RoleAssertion.assertWorker
-      assetConstraintRepository.getAssociated(id)
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
+    entityTypeService.getConstraintsOfEntityType(id, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
-   * Get an (Asset)Constraint by its ID.
-   * <p> Fails without WORKER rights.
-   * <p> This is a safe implementation and can be used by controller classes.
-   *
-   * @param id     of the Constraint
-   * @param ticket implicit authentication ticket
-   * @return Future Option[AssetConstraint]
-   */
-  def getConstraint(id: Long)(implicit ticket: Ticket): Future[Option[Constraint]] = {
-    try {
-      RoleAssertion.assertWorker
-      assetConstraintRepository.get(id)
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
-  }
-
-  /**
-   * Delete an (Asset)Constraint by its ID.
+   * Delete an AssetConstraint by its ID.
    * <p> By deleting a Constraint, the associated AssetType model must stay valid.
    * If the removal of the Constraint will invalidate the model, the future will fail.
    * <p> <strong>The removal of a 'HasProperty' Constraint leads to the system wide removal of all corresponding
@@ -204,14 +143,14 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the (Asset)Constraint to delete
+   * @param id     of the AssetConstraint to delete
    * @param ticket implicit authentication ticket
    * @return Future[Int]
    */
   def deleteConstraint(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
-      getConstraint(id) flatMap (constraintOption => {
+      entityTypeService.getConstraint(id) flatMap (constraintOption => {
         if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
         val constraint = constraintOption.get
         getAssetType(constraint.typeId) flatMap (assetType => {
@@ -221,10 +160,10 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
             val status = AssetLogic.isAssetConstraintModel(constraints.filter(c => c.id != id))
             if (!status.valid) status.throwError
 
-            if(constraint.c == ConstraintType.HasProperty){
-              assetConstraintRepository.deletePropertyConstraint(constraint)
-            }else{
-              assetConstraintRepository.deleteNonPropertyConstraint(constraint.id) map (_ => Future.unit)
+            if (constraint.c == ConstraintType.HasProperty) {
+              assetRepository.deletePropertyConstraint(constraint)
+            } else {
+              constraintRepository.deleteConstraint(constraint.id) map (_ => Future.unit)
             }
           })
         })
@@ -235,29 +174,34 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
   }
 
   /**
-   * Add an (Asset)Constraint to an AssetType.
+   * Add an AssetConstraint to an AssetType.
    * <p> ID must be 0 (else the future will fail). If the addition of the Constraint will invalidate the model,
    * the future will fail.
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param assetConstraint AssetConstraint to add (must already include the parent id)
-   * @param ticket          implicit authentication ticket
+   * @param c      String value of the ConstraintType
+   * @param v1     first Constraint parameter
+   * @param v2     second Constraint parameter
+   * @param typeId id of the parent EntityType
+   * @param ticket implicit authentication ticket
    * @return Future[Long]
    */
-  def addConstraint(assetConstraint: Constraint)(implicit ticket: Ticket): Future[Unit] = {
+  def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
+      //FIXME the ConstraintType.find() needs a check before, the rulst can be empty and lead to a unspecified exception
+      val assetConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
       val constraintStatus = AssetLogic.isValidConstraint(assetConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
       getConstraintsOfAssetType(assetConstraint.typeId) flatMap { i =>
         val modelStatus = AssetLogic.isAssetConstraintModel(i :+ assetConstraint)
         if (!modelStatus.valid) modelStatus.throwError
 
-        if(assetConstraint.c == ConstraintType.HasProperty){
-          assetConstraintRepository.addPropertyConstraint(assetConstraint)
-        }else{
-          assetConstraintRepository.addNonPropertyConstraint(assetConstraint) map (_ -> Future.unit)
+        if (assetConstraint.c == ConstraintType.HasProperty) {
+          assetRepository.addPropertyConstraint(assetConstraint)
+        } else {
+          constraintRepository.addConstraint(assetConstraint) map (_ -> Future.unit)
         }
       }
     } catch {
@@ -278,7 +222,7 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
   def deleteAssetType(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
-      assetTypeRepository.delete(id)
+      assetRepository.deleteAssetType(id)
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -295,17 +239,7 @@ class ModelAssetService @Inject()(assetTypeRepository: TypeRepository, assetCons
    * @return Future Tuple of all AssetTypes, a specific AssetType and its Constraints
    */
   def getCombinedAssetEntity(id: Long)(implicit ticket: Ticket): Future[(Seq[EntityType], Option[EntityType], Seq[Constraint])] = {
-    try {
-      RoleAssertion.assertWorker
-      (for {
-        assetTypes <- getAllAssetTypes
-        constraints <- getConstraintsOfAssetType(id)
-      } yield (assetTypes, constraints)) map (res => {
-        (res._1, res._1.find(p => p.id == id), res._2)
-      })
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
+    entityTypeService.getCombinedEntity(id, Option(AssetConstraintSpec.ASSET))
   }
 
 }

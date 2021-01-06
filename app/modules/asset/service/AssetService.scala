@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,14 +36,14 @@ import scala.concurrent.Future
  * Service class to provide SAFE business logic for Assets and their Properties.
  * This class is normally used by dependency injection inside controller endpoints.
  *
- * @param assetTypeRepository     injected db interface for AssetTypes
+ * @param typeRepository     injected db interface for AssetTypes
  * @param assetRepository         injected db interface for Assets
- * @param assetPropertyRepository injected db interface for (Asset)Properties
+ * @param propertyRepository injected db interface for (Asset)Properties
  * @param groupService            injected service class to access Group functionality
  */
-class AssetService @Inject()(assetTypeRepository: TypeRepository,
+class AssetService @Inject()(typeRepository: TypeRepository,
                              assetRepository: AssetRepository,
-                             assetPropertyRepository: PropertyRepository,
+                             propertyRepository: PropertyRepository,
                              modelAssetService: ModelAssetService,
                              groupService: GroupService) {
 
@@ -67,7 +67,7 @@ class AssetService @Inject()(assetTypeRepository: TypeRepository,
                viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
-      assetTypeRepository.getComplete(typeId) flatMap (typeData => {
+      typeRepository.getComplete(typeId) flatMap (typeData => {
         val (head, constraints) = typeData
         if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not defined or active")
         val properties = AssetLogic.derivePropertiesFromRawData(constraints, propertyData)
@@ -117,7 +117,7 @@ class AssetService @Inject()(assetTypeRepository: TypeRepository,
         val newConfig = AssetLogic.mapConfigurations(oldConfig, propertyUpdateData)
 
         //check if the AssetType of the Asset is active (else it can not be edited)
-        assetTypeRepository.getComplete(extendedAsset.asset.typeId) flatMap (typeData => {
+        typeRepository.getComplete(extendedAsset.asset.typeId) flatMap (typeData => {
           val (head, constraints) = typeData
           if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not active")
           val configurationStatus = AssetLogic.isModelConfiguration(constraints, newConfig)

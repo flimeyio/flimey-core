@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2021  Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,15 +21,16 @@ package modules.subject.service
 import modules.core.model.{ConstraintType, PropertyType}
 
 /**
- * Object with static helper functionality for Constraints used by AssetTypes.
+ * Object with static helper functionality for Constraints used by Collectibles.
  */
-//FIXME adjust for subjects
-object SubjectConstraintHelper {
+object CollectibleConstraintSpec {
+
+  val COLLECTIBLE: String = "collectible"
 
   /**
    * Sequence of possible parent types.
    */
-  val canDeriveFrom: Seq[String] = Seq[String]("asset")
+  val canDeriveFrom: Seq[String] = Seq[String](COLLECTIBLE)
 
   /**
    * Sequence of possible property data types.
@@ -42,6 +43,7 @@ object SubjectConstraintHelper {
   val allowedConstraintTypes: Seq[ConstraintType.Type] = Seq(
     ConstraintType.MustBeDefined,
     ConstraintType.HasProperty,
-    ConstraintType.DerivesFrom
+    ConstraintType.DerivesFrom,
+    ConstraintType.UsesPlugin
   )
 }

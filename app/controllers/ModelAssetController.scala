@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021  Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,12 @@
 
 package controllers
 
-import modules.asset.formdata.{EditAssetTypeForm, NewAssetConstraintForm, NewAssetTypeForm}
-import modules.asset.service.ModelAssetService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
-import modules.core.model.{Constraint, ConstraintType, EntityType}
+import modules.asset.service.ModelAssetService
+import modules.core.formdata.{EditTypeForm, NewConstraintForm, NewTypeForm}
+import modules.core.model.{Constraint, EntityType}
+import modules.core.service.EntityTypeService
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -38,7 +39,8 @@ import scala.concurrent.Future
  * @param modelService       injected ModelService for business logic
  */
 @Singleton
-class ModelAssetController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter, modelService: ModelAssetService)
+class ModelAssetController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
+                                     modelService: ModelAssetService, entityTypeService: EntityTypeService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -70,13 +72,12 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
   def addAssetType: Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        NewAssetTypeForm.form.bindFromRequest fold(
+        NewTypeForm.form.bindFromRequest fold(
           errorForm => {
             Future.successful(Redirect(routes.ModelAssetController.index()).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val assetType = EntityType(0, data.value, active = false);
-            modelService.addAssetType(assetType) map { _ =>
+            entityTypeService.addType(data.value, data.typeOf) map { _ =>
               Redirect(routes.ModelAssetController.index())
             } recoverWith {
               case e => {
@@ -126,13 +127,13 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
         ((assetTypes: Seq[EntityType], assetType: Option[EntityType], constraints: Seq[Constraint]) => {
           if (assetType.nonEmpty) {
             //FIXME this is really strange code...
-            val preparedAssetForm = EditAssetTypeForm.form.fill(EditAssetTypeForm.Data(assetType.get.value, assetType.get.active))
-            var preparedConstraintForm = NewAssetConstraintForm.form.fill(NewAssetConstraintForm.Data("", "", ""))
+            val preparedAssetForm = EditTypeForm.form.fill(EditTypeForm.Data(assetType.get.value, assetType.get.active))
+            var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
             val c = request.flash.get("c")
             val v1 = request.flash.get("v1")
             val v2 = request.flash.get("v2")
             if (c.isDefined && v1.isDefined && v2.isDefined) {
-              preparedConstraintForm = NewAssetConstraintForm.form.fill(NewAssetConstraintForm.Data(c.get, v1.get, v2.get))
+              preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data(c.get, v1.get, v2.get))
             }
             val error = request.flash.get("error")
             Ok(views.html.container.asset.model_asset_editor(assetTypes, assetType.get, constraints, preparedAssetForm, preparedConstraintForm, error))
@@ -167,14 +168,13 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
   def postAssetType(id: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        EditAssetTypeForm.form.bindFromRequest fold(
+        EditTypeForm.form.bindFromRequest fold(
           errorForm => {
             //ignore form input here, just show an error message, maybe a future FIXME
             Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(id)).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val assetType = EntityType(id, data.value, data.active)
-            modelService.updateAssetType(assetType) map { _ =>
+            modelService.updateAssetType(id, data.value, data.active) map { _ =>
               Redirect(routes.ModelAssetController.getAssetTypeEditor(id))
             } recoverWith {
               case e => {
@@ -195,15 +195,14 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
   def addAssetConstraint(assetTypeId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        NewAssetConstraintForm.form.bindFromRequest fold(
+        NewConstraintForm.form.bindFromRequest fold(
           errorForm => {
             //ignore form input here, just show an error message, maybe a future FIXME
             Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId)).flashing("error" -> "Invalid form data!"))
           },
           data => {
             //FIXME this line must be handled inside the ModelAssetService
-            val assetConstraint = Constraint(0, ConstraintType.find(data.c).get, data.v1, data.v2, assetTypeId)
-            modelService.addConstraint(assetConstraint) map { id =>
+            modelService.addConstraint(data.c, data.v1, data.v2, assetTypeId) map { id =>
               Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId))
             } recoverWith {
               case e => {
