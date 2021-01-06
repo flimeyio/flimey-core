@@ -26,7 +26,6 @@ object ConstraintType extends Enumeration {
     protected case class Val(name: String) extends super.Val
     implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
 
-    val DerivesFrom: Val = Val("Derives From")
     val HasProperty: Val = Val("Has Property")
     val MustBeDefined: Val = Val("Must Be Defined")
     val CanContain: Val = Val("Can Contain")

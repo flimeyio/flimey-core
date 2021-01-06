@@ -16,10 +16,9 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 
+@import modules.asset.model.AssetConstraintSpec
+@import modules.subject.model.{CollectibleConstraintSpec, CollectionConstraintSpec}
 @import views.html.helper.CSRF
-@import modules.asset.service.AssetConstraintSpec
-@import modules.subject.service.CollectionConstraintSpec
-@import modules.subject.service.CollectibleConstraintSpec
 @()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @possibleParents = @{

@@ -20,6 +20,7 @@ package modules.subject.service
 
 import modules.core.util.ConstraintProcessor
 import modules.core.model.{Constraint, ConstraintType}
+import modules.subject.model.CollectibleConstraintSpec
 import modules.util.messages.{ERR, Status}
 
 /**

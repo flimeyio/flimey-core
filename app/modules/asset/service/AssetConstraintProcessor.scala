@@ -18,6 +18,7 @@
 
 package modules.asset.service
 
+import modules.asset.model.AssetConstraintSpec
 import modules.core.model.{Constraint, ConstraintType}
 import modules.core.util.ConstraintProcessor
 import modules.util.messages.{ERR, Status}

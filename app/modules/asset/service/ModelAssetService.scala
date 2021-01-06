@@ -19,6 +19,7 @@
 package modules.asset.service
 
 import com.google.inject.Inject
+import modules.asset.model.AssetConstraintSpec
 import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
