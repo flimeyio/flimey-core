@@ -54,7 +54,7 @@
                     <td><div>@constraint.v1</div></td>
                     <td><div>@constraint.v2</div></td>
                     <td>
-                        <form role="form" action='@routes.ModelAssetController.deleteAssetConstraint(assetType.id, constraint.id)' method="post">
+                        <form role="form" action='@routes.ModelController.deleteAssetConstraint(assetType.id, constraint.id)' method="post">
                             @CSRF.formField
                             <button type="submit" class="">X</button>
                         </form>

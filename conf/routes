@@ -33,19 +33,19 @@ POST    /auth                                               controllers.AuthCont
 GET     /account                                            controllers.AccountController.index()
 GET     /account/overview                                   controllers.AccountController.getAccountOverview()
 
-GET     /model                                              controllers.ModelAssetController.index()
+GET     /model                                              controllers.ModelController.index()
 
-POST    /model/asset                                        controllers.ModelAssetController.addAssetType
-POST    /model/asset/delete/:id                             controllers.ModelAssetController.deleteAssetType(id: Long)
+POST    /model/asset                                        controllers.ModelController.addAssetType
+POST    /model/asset/delete/:id                             controllers.ModelController.deleteAssetType(id: Long)
 
 # search for and open asset type editor
 # FIXME
-POST    /model/asset/search                                 controllers.ModelAssetController.searchAssetType
+POST    /model/asset/search                                 controllers.ModelController.searchAssetType
 
-GET     /model/asset/editor/:id                             controllers.ModelAssetController.getAssetTypeEditor(id: Long)
-POST    /model/asset/editor/asset/:id                       controllers.ModelAssetController.postAssetType(id: Long)
-POST    /model/asset/editor/:id/constraint                  controllers.ModelAssetController.addAssetConstraint(id: Long)
-POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelAssetController.deleteAssetConstraint(id: Long, cid: Long)
+GET     /model/asset/editor/:id                             controllers.ModelController.getAssetTypeEditor(id: Long)
+POST    /model/asset/editor/asset/:id                       controllers.ModelController.postAssetType(id: Long)
+POST    /model/asset/editor/:id/constraint                  controllers.ModelController.addAssetConstraint(id: Long)
+POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelController.deleteAssetConstraint(id: Long, cid: Long)
 
 GET     /asset                                              controllers.AssetController.index()
 POST    /asset/type                                         controllers.AssetController.changeAssetType

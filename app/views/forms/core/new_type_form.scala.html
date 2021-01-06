@@ -25,7 +25,7 @@
     Seq("Choose a Type") ++ AssetConstraintSpec.canDeriveFrom ++ CollectionConstraintSpec.canDeriveFrom ++ CollectibleConstraintSpec.canDeriveFrom
 }
 
-    @helper.form(action = routes.ModelAssetController.addAssetType()) {
+    @helper.form(action = routes.ModelController.addAssetType()) {
         <div class="">
             <div class="">
                 @CSRF.formField

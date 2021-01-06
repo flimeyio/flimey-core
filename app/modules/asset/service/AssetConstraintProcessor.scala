@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +37,12 @@ trait AssetConstraintProcessor extends ConstraintProcessor {
    */
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
-      case ConstraintType.DerivesFrom => isDerivesFromConstraint(constraint.v1, constraint.v2, AssetConstraintSpec.canDeriveFrom)
       case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, AssetConstraintSpec.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case _ => ERR("Invalid Asset Constraint Rule")
     }
   }
+
+  override def isConstraintModel(constraints: Seq[Constraint]): Status = super.isConstraintModel(constraints)
 
 }

@@ -25,7 +25,7 @@
     <a href="@routes.AssetController.index()" class=""><div class="">Assets</div></a>
 
     @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-        <a href="@routes.ModelAssetController.index()" class=""><div class="">Model</div></a>
+        <a href="@routes.ModelController.index()" class=""><div class="">Model</div></a>
     }
 
     @if(Role.isAtLeastAdmin(ticket.authSession.role)) {

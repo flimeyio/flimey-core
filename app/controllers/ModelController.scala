@@ -39,8 +39,8 @@ import scala.concurrent.Future
  * @param modelService       injected ModelService for business logic
  */
 @Singleton
-class ModelAssetController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                     modelService: ModelAssetService, entityTypeService: EntityTypeService)
+class ModelController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
+                                modelService: ModelAssetService, entityTypeService: EntityTypeService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -74,15 +74,15 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
       withTicket { implicit ticket =>
         NewTypeForm.form.bindFromRequest fold(
           errorForm => {
-            Future.successful(Redirect(routes.ModelAssetController.index()).flashing("error" -> "Invalid form data!"))
+            Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Invalid form data!"))
           },
           data => {
             entityTypeService.addType(data.value, data.typeOf) map { _ =>
-              Redirect(routes.ModelAssetController.index())
+              Redirect(routes.ModelController.index())
             } recoverWith {
               case e => {
                 logger.error(e.getMessage, e)
-                Future.successful(Redirect(routes.ModelAssetController.index()).flashing("error" -> e.getMessage))
+                Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
               }
             }
           })
@@ -100,11 +100,11 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         modelService.deleteAssetType(id) map {
-          _ => Redirect(routes.ModelAssetController.index())
+          _ => Redirect(routes.ModelController.index())
         } recoverWith {
           case e => {
             logger.error(e.getMessage, e)
-            Future.successful(Redirect(routes.ModelAssetController.index()).flashing("error" -> e.getMessage))
+            Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
           }
         }
       }
@@ -138,12 +138,12 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
             val error = request.flash.get("error")
             Ok(views.html.container.asset.model_asset_editor(assetTypes, assetType.get, constraints, preparedAssetForm, preparedConstraintForm, error))
           } else {
-            Redirect(routes.ModelAssetController.index()).flashing("error" -> "Asset Type not found")
+            Redirect(routes.ModelController.index()).flashing("error" -> "Asset Type not found")
           }
         }).tupled(res)) recoverWith {
         case e: Throwable => {
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(id)).flashing(("error" -> e.getMessage)))
+          Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(id)).flashing(("error" -> e.getMessage)))
         }
       }
     }
@@ -154,7 +154,7 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         //FIXME
-        Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(0)))
+        Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(0)))
       }
   }
 
@@ -171,15 +171,15 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
         EditTypeForm.form.bindFromRequest fold(
           errorForm => {
             //ignore form input here, just show an error message, maybe a future FIXME
-            Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(id)).flashing("error" -> "Invalid form data!"))
+            Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(id)).flashing("error" -> "Invalid form data!"))
           },
           data => {
             modelService.updateAssetType(id, data.value, data.active) map { _ =>
-              Redirect(routes.ModelAssetController.getAssetTypeEditor(id))
+              Redirect(routes.ModelController.getAssetTypeEditor(id))
             } recoverWith {
               case e => {
                 logger.error(e.getMessage, e)
-                Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(id)).flashing("error" -> e.getMessage))
+                Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(id)).flashing("error" -> e.getMessage))
               }
             }
           })
@@ -198,17 +198,17 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
         NewConstraintForm.form.bindFromRequest fold(
           errorForm => {
             //ignore form input here, just show an error message, maybe a future FIXME
-            Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId)).flashing("error" -> "Invalid form data!"))
+            Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId)).flashing("error" -> "Invalid form data!"))
           },
           data => {
             //FIXME this line must be handled inside the ModelAssetService
             modelService.addConstraint(data.c, data.v1, data.v2, assetTypeId) map { id =>
-              Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId))
+              Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId))
             } recoverWith {
               case e => {
                 logger.error(e.getMessage, e)
                 //This should be done more elegantly... FIXME
-                Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId)).flashing(
+                Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId)).flashing(
                   "error" -> e.getMessage, "c" -> data.c, "v1" -> data.v1, "v2" -> data.v2))
               }
             }
@@ -227,11 +227,11 @@ class ModelAssetController @Inject()(cc: ControllerComponents, withAuthenticatio
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         modelService.deleteConstraint(constraintId) map {
-          _ => Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId))
+          _ => Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId))
         } recoverWith {
           case e => {
             logger.error(e.getMessage, e)
-            Future.successful(Redirect(routes.ModelAssetController.getAssetTypeEditor(assetTypeId)).flashing(("error" -> e.getMessage)))
+            Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId)).flashing(("error" -> e.getMessage)))
           }
         }
       }

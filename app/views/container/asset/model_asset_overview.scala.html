@@ -25,7 +25,7 @@
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Asset Types"), routes.ModelAssetController.searchAssetType)
+    @navbar_category_searchable(Seq("Asset Types"), routes.ModelController.searchAssetType)
     @message_box_error(msg)
     @new_type_form()
     @asset_type_multibox(assetTypes)

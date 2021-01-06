@@ -110,7 +110,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
       //FIXME the name should also be validated here
       if (active) {
         getConstraintsOfAssetType(id) flatMap (constraints => {
-          val status = AssetLogic.isAssetConstraintModel(constraints)
+          val status = AssetLogic.isConstraintModel(constraints)
           if (!status.valid) status.throwError
           typeRepository.update(EntityType(id, value, "", active))
         })
@@ -158,7 +158,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
           if (assetType.isEmpty) throw new Exception("No corresponding AssetType found")
           getConstraintsOfAssetType(assetType.get.id) flatMap (constraints => {
 
-            val status = AssetLogic.isAssetConstraintModel(constraints.filter(c => c.id != id))
+            val status = AssetLogic.isConstraintModel(constraints.filter(c => c.id != id))
             if (!status.valid) status.throwError
 
             if (constraint.c == ConstraintType.HasProperty) {
@@ -196,7 +196,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
       val constraintStatus = AssetLogic.isValidConstraint(assetConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
       getConstraintsOfAssetType(assetConstraint.typeId) flatMap { i =>
-        val modelStatus = AssetLogic.isAssetConstraintModel(i :+ assetConstraint)
+        val modelStatus = AssetLogic.isConstraintModel(i :+ assetConstraint)
         if (!modelStatus.valid) modelStatus.throwError
 
         if (assetConstraint.c == ConstraintType.HasProperty) {

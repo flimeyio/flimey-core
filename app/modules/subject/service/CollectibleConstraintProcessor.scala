@@ -38,7 +38,6 @@ trait CollectibleConstraintProcessor extends ConstraintProcessor {
     //FIXME adjust for collectible
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
-      case ConstraintType.DerivesFrom => isDerivesFromConstraint(constraint.v1, constraint.v2, CollectibleConstraintSpec.canDeriveFrom)
       case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, CollectibleConstraintSpec.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case _ => ERR("Invalid Asset Constraint Rule")

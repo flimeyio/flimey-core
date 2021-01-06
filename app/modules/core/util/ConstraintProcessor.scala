@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,20 +25,6 @@ import modules.util.messages.{ERR, OK, Status}
  * Trait which provides functionality for parsing and processing constraints
  */
 trait ConstraintProcessor {
-
-  /**
-   * Checks if a given constraint is a syntactically correct DerivesFrom constraint.
-   * No semantic analysis is performed!
-   *
-   * @param v1 first constraint parameter
-   * @param v2 second constraint parameter
-   * @param options seq of possible supertypes
-   * @return validation status with optional error message
-   */
-  def isDerivesFromConstraint(v1: String, v2: String, options: Seq[String]): Status = {
-    if(options.contains(v1) && v2.length == 0) return OK()
-    ERR("Invalid 'Derives From' Configuration")
-  }
 
   /**
    * Checks if a given constraint is a syntactically correct HasProperty constraint.
@@ -99,23 +85,17 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks a given AssetType constraint model for semantic correctness.
+   * Checks a given EntityType constraint model for semantic correctness.
    * It is checked that:
-   * 1) exactly one DerivesFrom rule exists
-   * 2) every MustBeDefined rule has a corresponding HasProperty rule
-   * 3) no rules are duplicates
+   * <p> 1) every MustBeDefined rule has a corresponding HasProperty rule
+   * <p> 2) no rules are duplicates
+   *
+   * <p> This method may be overwritten by entity specif processors.
    *
    * @param constraints model to check
    * @return Status with optional error message
    */
-  def isAssetConstraintModel(constraints: Seq[Constraint]): Status = {
-    //exactly one derives rule
-    val derivationCount = constraints.count(c => c.c == ConstraintType.DerivesFrom)
-    if(derivationCount < 1){
-      return ERR("Asset Type must have a 'Derives From' constraint")
-    } else if (derivationCount > 1) {
-      return ERR("Asset Type must have only one 'Derives From' constraint")
-    }
+  def isConstraintModel(constraints: Seq[Constraint]): Status = {
     //must constrains only on existing properties
     if(!hasMatchingProperties(constraints)){
       return ERR("Every 'Must Be Defined' constraint needs a corresponding 'Has Property' constraint")
