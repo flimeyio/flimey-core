@@ -20,7 +20,7 @@
 @(assetTypeId: Long, newConstraintForm: Form[NewAssetConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelAssetController.addAssetConstraint(assetTypeId)) {
-    <div class="">
+    <div>
         <div class="">
             @CSRF.formField
             <select class="" name="c">

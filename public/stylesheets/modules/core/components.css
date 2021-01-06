@@ -66,6 +66,7 @@
 
 a{
     color: var(--color-prim);
+    padding: 0 !important;
 }
 
 a:hover{
@@ -114,7 +115,7 @@ a:hover{
 }
 
 .view-container{
-    max-height: 90%!important;
+    max-height: 92%!important;
 }
 
 .full-height{
@@ -196,4 +197,55 @@ tbody tr:nth-child(even){
     font-size: small;
 }
 
+.select-bar{
+    margin: 10px;
+    width: 100%;
+}
 
+.select-bar .input-group{
+    width: 300px;
+}
+
+.border-button{
+    background-color: white;
+    border-color: var(--color-prim);
+    color: var(--color-prim);
+    position: relative;
+}
+
+.border-button:hover{
+    background-color: var(--color-prim-dark);
+    border-color: var(--color-prim-dark);
+}
+
+.padding-left-right{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 5px;
+    padding-right:5px;
+}
+
+
+.border-button i{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 60%;
+    transform: translate(-50%, -50%);
+}
+
+.right{
+    position: absolute;
+    right: 20px;
+    top:10px;
+}
+
+.bit-right{
+    position: absolute;
+    right: 80px;
+    top:10px;
+}
+
+.big-icon{
+    font-size: 30px;
+}
