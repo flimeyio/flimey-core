@@ -18,33 +18,41 @@
 
 -- !Ups
 
-create table `asset_type` (
+create table `flimey_entity` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
+
+create table `entity_type` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `value` VARCHAR(255) NOT NULL UNIQUE,
+    `type_of` VARCHAR(255) NOT NULL,
     `active` BOOL NOT NULL
 );
 
-create table `asset_constraint` (
+create table `constraint` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `c` VARCHAR(255) NOT NULL,
     `v1` VARCHAR(255) NOT NULL,
     `v2` VARCHAR(255) NOT NULL,
+    `by_plugin` VARCHAR(255),
     `type_id` BIGINT NOT NULL,
-    FOREIGN KEY(type_id) REFERENCES asset_type(id)
+    FOREIGN KEY(type_id) REFERENCES entity_type(id)
 );
 
 create table `asset` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `entity_id` BIGINT NOT NULL,
     `type_id` BIGINT NOT NULL,
-    FOREIGN KEY(type_id) REFERENCES asset_type(id)
+    FOREIGN KEY(entity_id) REFERENCES flimey_entity(id),
+    FOREIGN KEY(type_id) REFERENCES entity_type(id)
 );
 
-create table `asset_property` (
+create table `property` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `key` VARCHAR(255) NOT NULL,
     `value` VARCHAR(255) NOT NULL,
     `parent_id` BIGINT NOT NULL,
-    FOREIGN KEY(parent_id) REFERENCES asset(id)
+    FOREIGN KEY(parent_id) REFERENCES flimey_entity(id)
 );
 
 create table `user` (
@@ -63,12 +71,12 @@ create table `u_group` (
     `name` VARCHAR(255) NOT NULL UNIQUE
 );
 
-create table `asset_viewer` (
+create table `entity_viewer` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `target_id` BIGINT NOT NULL,
     `viewer_id` BIGINT NOT NULL,
     `role` VARCHAR(255) NOT NULL,
-    FOREIGN KEY(target_id) REFERENCES asset(id),
+    FOREIGN KEY(target_id) REFERENCES flimey_entity(id),
     FOREIGN KEY(viewer_id) REFERENCES u_group(id),
     UNIQUE KEY (`target_id`, `viewer_id`)
 );
@@ -101,11 +109,12 @@ INSERT INTO group_membership(id, group_id, user_id) VALUES (1, 2, 1);
 -- !Downs
 
 drop table `group_membership`;
-drop table `asset_viewer`;
+drop table `entity_viewer`;
 drop table `group_viewer`;
 drop table `u_group`;
 drop table `user`;
-drop table `asset_property`;
-drop table `asset_constraint`;
+drop table `property`;
+drop table `constraint`;
 drop table `asset`;
-drop table `asset_type`;
+drop table `entity_type`;
+drop table `flimey_entity`;

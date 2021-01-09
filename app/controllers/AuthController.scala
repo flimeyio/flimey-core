@@ -18,14 +18,14 @@
 
 package controllers
 
-import auth.formdata.{AuthenticateForm, LoginForm}
-import auth.service.AuthService
+import modules.auth.formdata.{AuthenticateForm, LoginForm}
+import modules.auth.service.AuthService
 import com.google.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.service.UserService
+import modules.user.service.UserService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

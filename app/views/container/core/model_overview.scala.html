@@ -1,0 +1,32 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2020-2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.auth.model.Ticket
+@import views.html.components.utils.message_box_error
+@import views.html.components.utils.navbar_category_searchable
+@import modules.core.model.EntityType
+@import views.html.forms.core.new_type_form
+@import views.html.components.core.type_block
+@(allTypes: Seq[EntityType],
+        msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@app {
+    @navbar_category_searchable(Seq("Model Types"), routes.ModelController.searchEntityType)
+    @message_box_error(msg)
+    @new_type_form()
+    @type_block(allTypes)
+}()()

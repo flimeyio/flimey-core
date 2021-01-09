@@ -15,15 +15,15 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.formdata.NewAssetForm
-@import asset.model.AssetType
-@import auth.model.Ticket
+@import modules.asset.formdata.NewAssetForm
+@import modules.auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
 @import views.html.forms.asset.edit_asset_form
-@import asset.model.ExtendedAsset
+@import modules.asset.model.ExtendedAsset
 @import views.html.components.utils.message_box_success
-@import user.model.Group
-@(selectedType: AssetType,
+@import modules.user.model.Group
+@import modules.core.model.EntityType
+@(selectedType: EntityType,
         selectedAsset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],

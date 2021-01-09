@@ -17,7 +17,7 @@
 * *@
 @import views.html.helper.CSRF
 @import views.html.components.utils.message_box_error
-@import user.formdata.NewGroupViewerForm
+@import modules.user.formdata.NewGroupViewerForm
 @(groupId: Long, newGroupViewerForm: Form[NewGroupViewerForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ManagementController.postNewGroupRelation(groupId)) {

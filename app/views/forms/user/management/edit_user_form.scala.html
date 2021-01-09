@@ -16,7 +16,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import views.html.helper.CSRF
-@import user.formdata.EditUserForm
+@import modules.user.formdata.EditUserForm
 @(userId: Long, editUserForm: Form[EditUserForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ManagementController.postUser(userId)) {

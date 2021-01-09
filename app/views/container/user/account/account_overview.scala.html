@@ -15,12 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import auth.model.Ticket
+@import modules.auth.model.Ticket
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.user.group_grid
 @import views.html.forms.user.account.log_out_form
-@import user.model.Group
+@import modules.user.model.Group
 @(groups: Seq[Group], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

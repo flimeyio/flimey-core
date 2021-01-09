@@ -15,12 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.formdata.NewAssetForm
+@import modules.asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
-@import asset.model.AssetType
-@import auth.model.Ticket
-@import user.model.Group
-@(assetType: AssetType,
+@import modules.auth.model.Ticket
+@import modules.user.model.Group
+@import modules.core.model.EntityType
+@(assetType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
