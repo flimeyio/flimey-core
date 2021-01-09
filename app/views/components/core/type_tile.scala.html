@@ -1,0 +1,34 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.core.model.EntityType
+@(entityType: EntityType)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+<div class="card relative-container tile">
+    <div class="float-top-right">
+        <a href="@routes.ModelController.getTypeEditor(entityType.id)">
+            <i class="material-icons">create</i>
+        </a>
+    </div>
+    <p>name: @entityType.value</p>
+    <p>active @entityType.active</p>
+    <div class="tag-box">
+        <div class="tag bg-maintain cell-small-1">
+        @entityType.typeOf
+        </div>
+    </div>
+</div>

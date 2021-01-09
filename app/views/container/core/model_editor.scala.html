@@ -16,7 +16,6 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import views.html.components.utils.message_box_error
-@import views.html.components.asset.asset_type_multibox
 @import views.html.components.utils.navbar_category_searchable
 @import views.html.components.utils.navbar_category_closeable
 @import modules.auth.model.Ticket
@@ -25,19 +24,20 @@
 @import modules.core.formdata.NewConstraintForm
 @import modules.core.formdata.EditTypeForm
 @import views.html.components.core.type_editor
-@(assetTypes: Seq[EntityType],
-        assetType: EntityType,
+@import views.html.components.core.type_block
+@(allTypes: Seq[EntityType],
+        editedType: EntityType,
         assetConstraints: Seq[Constraint],
         editAssetTypeForm: Form[EditTypeForm.Data],
         newAssetConstraintForm: Form[NewConstraintForm.Data],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Asset Types"), routes.ModelController.searchEntityType)
-    @asset_type_multibox(assetTypes)
+    @navbar_category_searchable(Seq("Model Types"), routes.ModelController.searchEntityType)
+    @type_block(allTypes)
 } {
-            @navbar_category_closeable(Seq("Asset Model Editor"), routes.ModelController.index())
+            @navbar_category_closeable(Seq("Type Model Editor"), routes.ModelController.index())
             @message_box_error(msg)
-            @type_editor(assetType, assetConstraints, editAssetTypeForm, newAssetConstraintForm)
+            @type_editor(editedType, assetConstraints, editAssetTypeForm, newAssetConstraintForm)
 }()
 

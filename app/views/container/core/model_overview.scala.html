@@ -17,16 +17,16 @@
 * *@
 @import modules.auth.model.Ticket
 @import views.html.components.utils.message_box_error
-@import views.html.components.asset.asset_type_multibox
 @import views.html.components.utils.navbar_category_searchable
 @import modules.core.model.EntityType
 @import views.html.forms.core.new_type_form
-@(assetTypes: Seq[EntityType],
+@import views.html.components.core.type_block
+@(allTypes: Seq[EntityType],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Asset Types"), routes.ModelController.searchEntityType)
+    @navbar_category_searchable(Seq("Model Types"), routes.ModelController.searchEntityType)
     @message_box_error(msg)
     @new_type_form()
-    @asset_type_multibox(assetTypes)
+    @type_block(allTypes)
 }()()
