@@ -19,10 +19,9 @@
 @(selectedType: Option[EntityType], assetTypes: Seq[EntityType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
     @helper.form(action = routes.AssetController.changeAssetType()) {
-        <div class="">
-            <div class="">
+            <div class="input-group no-margin">
                 @CSRF.formField
-                <select class="" name="value">
+                <select class="input-group-field no-margin" name="value">
                     <option>Choose an option</option>
                     @for(assetType <- assetTypes) {
                         <option @if(selectedType.isDefined && selectedType.get.id == assetType.id) {
@@ -31,7 +30,7 @@
                         </option>
                     }
                 </select>
-                <button class="">Select</button>
+                <button class="button button-small no-margin">Select</button>
             </div>
-        </div>
+
     } @import views.html.helper.CSRF

@@ -30,6 +30,10 @@
     --color-warn: #fbc02d;
     --color-error: #b71c1c;
 
+    --color-maintain: #d66947;
+    --color-edit: #ff8a65;
+    --color-view: #ffbb93;
+
 }
 
 .fc-prim {
@@ -112,3 +116,14 @@
     background-color: var(--color-error);
 }
 
+.bg-maintain {
+    background-color: var(--color-maintain);
+}
+
+.bg-edit {
+    background-color: var(--color-edit);
+}
+
+.bg-view {
+    background-color: var(--color-view);
+}

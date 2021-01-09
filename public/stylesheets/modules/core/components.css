@@ -66,6 +66,7 @@
 
 a{
     color: var(--color-prim);
+    padding: 0 !important;
 }
 
 a:hover{
@@ -103,22 +104,23 @@ a:hover{
     margin-bottom: 5%;
 }
 .main{
-    margin-top: 15px;
+    /*padding-top: 15px;*/
     display: flex;
     justify-content: center;
 }
 
-.margin-10{
-    margin: 10px;
+.margin-10-side{
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .view-container{
-    max-height: 78%!important;
+    max-height: 92%!important;
 }
 
 .full-height{
-    min-height: 100%;
-    max-height: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
 }
 
 .scroll-container{
@@ -150,4 +152,100 @@ a:hover{
 
 tbody tr:nth-child(even){
     background-color: var(--color-sec-light);
+}
+
+.margin-top-15{
+    margin-top: 15px;
+}
+
+.relative-container {
+    position: relative;
+}
+
+.float-top-right {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.tile{
+    margin: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2), 0 2px 8px 0 rgba(0, 0, 0, 0.01);
+}
+
+.tile table th, td {
+    padding: 1px !important;
+    background-color: white;
+}
+
+.tile table{
+    width: 350px;
+    margin-bottom: 0.5rem;
+}
+
+.tile table, tr, td, th{
+    border: hidden !important;
+}
+
+.tag{
+    border-radius: 6px;
+    width: max-content;
+    padding: 2px 4px 2px 4px;
+    margin: 2px;
+    color:white;
+    font-size: small;
+}
+
+.select-bar{
+    margin: 10px;
+    width: 100%;
+}
+
+.select-bar .input-group{
+    width: 300px;
+}
+
+.border-button{
+    background-color: white;
+    border-color: var(--color-prim);
+    color: var(--color-prim);
+    position: relative;
+}
+
+.border-button:hover{
+    background-color: var(--color-prim-dark);
+    border-color: var(--color-prim-dark);
+}
+
+.padding-left-right{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 5px;
+    padding-right:5px;
+}
+
+
+.border-button i{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 60%;
+    transform: translate(-50%, -50%);
+}
+
+.right{
+    position: absolute;
+    right: 20px;
+    top:10px;
+}
+
+.bit-right{
+    position: absolute;
+    right: 80px;
+    top:10px;
+}
+
+.big-icon{
+    font-size: 30px;
 }
