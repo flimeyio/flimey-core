@@ -20,7 +20,8 @@
 @import './modules/core/index.css';
 /* more imports can be added here */
 html, body {
-    height: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
     margin: 0;
     overflow: hidden;
 }

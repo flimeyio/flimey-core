@@ -36,5 +36,7 @@
     @navbar_category_closeable(Seq("Asset Editor"), routes.AssetController.getAssets(selectedType.id, 0))
     @message_box_error(msg)
     @message_box_success(successMsg)
-    @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, groups, newAssetForm)
+    <div class="scroll-container">
+        @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, groups, newAssetForm)
+    </div>
 }()()

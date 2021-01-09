@@ -20,10 +20,8 @@
 @import auth.model.Ticket
 @(assets: Seq[ExtendedAsset])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
+<div class="scroll-container">
 @for(asset <- assets){
-    <div>
-        <hr>
         @asset_tile(asset)
-        <hr>
-    </div>
 }
+</div>

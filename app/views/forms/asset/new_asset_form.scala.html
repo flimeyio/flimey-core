@@ -51,7 +51,7 @@
 }
 
 @helper.form(action = routes.AssetController.addNewAsset(assetType.id)) {
-    <div class="">
+    <div>
         @CSRF.formField
         @if(propertyKeys.nonEmpty) {
             @for(i <- propertyKeys.indices) {
