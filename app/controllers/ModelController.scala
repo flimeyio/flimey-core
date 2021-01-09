@@ -139,7 +139,7 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
               preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data(c.get, v1.get, v2.get))
             }
             val error = request.flash.get("error")
-            Ok(views.html.container.asset.model_asset_editor(allTypes, editedType.get, constraints, preparedEditForm, preparedConstraintForm, error))
+            Ok(views.html.container.core.model_editor(allTypes, editedType.get, constraints, preparedEditForm, preparedConstraintForm, error))
           } else {
             Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
           }
