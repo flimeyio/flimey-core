@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * *@
-
-@import views.html.forms.asset.delete_asset_type_form
 @import views.html.components.utils.message_box_hint
-@import views.html.forms.asset.new_asset_constraint_form
 @import views.html.helper.CSRF
 @import modules.core.model.EntityType
 @import modules.core.model.Constraint
 @import modules.core.formdata.EditTypeForm
 @import modules.core.formdata.NewConstraintForm
 @import views.html.forms.core.edit_type_form
+@import views.html.forms.core.new_constraint_form
+@import views.html.forms.core.delete_type_form
 @(assetType: EntityType, assetConstraints: Seq[Constraint],
         editAssetTypeForm: Form[EditTypeForm.Data],
         newAssetConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
@@ -39,7 +38,7 @@
     </div>
     <div>
         <div class="">
-            @new_asset_constraint_form(assetType.id, newAssetConstraintForm)
+            @new_constraint_form(assetType.id, newAssetConstraintForm)
         </div>
         <table class="">
                 <tr>
@@ -64,6 +63,6 @@
         </table>
     </div>
     <div>
-        @delete_asset_type_form(assetType.id)
+        @delete_type_form(assetType.id)
     </div>
 </div>
