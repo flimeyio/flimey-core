@@ -39,8 +39,7 @@ import scala.concurrent.Future
 class GroupService @Inject()(groupRepository: GroupRepository,
                              groupMembershipRepository: GroupMembershipRepository,
                              userRepository: UserRepository,
-                             groupViewerRepository: GroupViewerRepository)
-  extends RoleAssertion {
+                             groupViewerRepository: GroupViewerRepository) {
 
   /**
    * Get all existing Groups<br />
@@ -53,7 +52,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def getAllGroups(implicit ticket: Ticket): Future[Seq[Group]] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       groupRepository.getAll
     } catch {
       case e: Throwable => Future.failed(e)
@@ -71,7 +70,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def getGroup(groupId: Long)(implicit ticket: Ticket): Future[Group] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       groupRepository.getById(groupId) map (groupOption => {
         if (groupOption.isEmpty) throw new Exception("No such Group found")
         groupOption.get
@@ -92,7 +91,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def getGroupsOfUser(implicit ticket: Ticket): Future[Seq[Group]] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       groupRepository.getAllOfUser(ticket.authSession.userId)
     } catch {
       case e: Throwable => Future.failed(e)
@@ -110,7 +109,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def getUsersOfGroup(groupId: Long)(implicit ticket: Ticket): Future[Seq[User]] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       groupMembershipRepository.getMembersOfGroup(groupId)
     } catch {
       case e: Throwable => Future.failed(e)
@@ -129,7 +128,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def addGroup(name: String)(implicit ticket: Ticket): Future[Long] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       //FIXME check name for length and empty (if unique is checked by the db)
       groupRepository.add(Group(0, name.toLowerCase))
     } catch {
@@ -154,7 +153,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def deleteGroup(groupId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       groupRepository.getById(groupId) flatMap (groupOption => {
         if (groupOption.isEmpty) throw new Exception("Invalid Group")
         val group = groupOption.get
@@ -180,7 +179,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def addMembership(groupId: Long, email: String)(implicit ticket: Ticket): Future[Long] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       userRepository.getByEMail(email) flatMap (userOption => {
         if (userOption.isEmpty) throw new Exception("No such User found")
         val user = userOption.get
@@ -205,7 +204,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def deleteMembership(groupId: Long, userId: Long)(implicit ticket: Ticket): Future[Int] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       groupRepository.getById(groupId) flatMap (groupOption => {
         if (groupOption.isEmpty) throw new Exception("Invalid Group")
         val group = groupOption.get
@@ -237,7 +236,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def getFirstClassGroupViewers(groupId: Long)(implicit ticket: Ticket): Future[ViewerCombinator] = {
     try {
-      assertWorker
+      RoleAssertion.assertWorker
       groupViewerRepository.getFirstClassViewers(groupId) map (relations => {
         ViewerCombinator.fromRelations(relations)
       })
@@ -272,7 +271,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def addRelation(targetId: Long, viewerName: String, viewerRole: String)(implicit ticket: Ticket): Future[Long] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       val roleStatus = ViewerRole.parseViewerRole(viewerRole)
       groupRepository.getByName(viewerName) flatMap (viewerOption => {
         if (viewerOption.isEmpty) throw new Exception("No such viewer group found")
@@ -297,7 +296,7 @@ class GroupService @Inject()(groupRepository: GroupRepository,
    */
   def removeRelation(targetId: Long, viewerId: Long)(implicit ticket: Ticket): Future[Int] = {
     try {
-      assertAdmin
+      RoleAssertion.assertAdmin
       groupViewerRepository.delete(targetId, viewerId)
     } catch {
       case e: Throwable => Future.failed(e)

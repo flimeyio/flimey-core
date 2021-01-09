@@ -41,7 +41,6 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
 
   val assets = TableQuery[AssetTable]
   val assetTypes = TableQuery[AssetTypeTable]
-  val assetConstraints = TableQuery[AssetConstraintTable]
   val assetProperties = TableQuery[AssetPropertyTable]
   val assetViewers = TableQuery[AssetViewerTable]
   val groups = TableQuery[GroupTable]
