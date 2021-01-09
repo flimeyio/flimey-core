@@ -35,17 +35,17 @@ GET     /account/overview                                   controllers.AccountC
 
 GET     /model                                              controllers.ModelController.index()
 
-POST    /model/asset                                        controllers.ModelController.addAssetType
-POST    /model/asset/delete/:id                             controllers.ModelController.deleteAssetType(id: Long)
+POST    /model/asset                                        controllers.ModelController.addType
+POST    /model/asset/delete/:id                             controllers.ModelController.deleteType(id: Long)
 
 # search for and open asset type editor
 # FIXME
-POST    /model/asset/search                                 controllers.ModelController.searchAssetType
+POST    /model/asset/search                                 controllers.ModelController.searchEntityType
 
-GET     /model/asset/editor/:id                             controllers.ModelController.getAssetTypeEditor(id: Long)
-POST    /model/asset/editor/asset/:id                       controllers.ModelController.postAssetType(id: Long)
-POST    /model/asset/editor/:id/constraint                  controllers.ModelController.addAssetConstraint(id: Long)
-POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelController.deleteAssetConstraint(id: Long, cid: Long)
+GET     /model/asset/editor/:id                             controllers.ModelController.getTypeEditor(id: Long)
+POST    /model/asset/editor/asset/:id                       controllers.ModelController.postEntityType(id: Long)
+POST    /model/asset/editor/:id/constraint                  controllers.ModelController.addConstraint(id: Long)
+POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelController.deleteConstraint(id: Long, cid: Long)
 
 GET     /asset                                              controllers.AssetController.index()
 POST    /asset/type                                         controllers.AssetController.changeAssetType

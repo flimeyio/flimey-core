@@ -20,7 +20,7 @@
 @import modules.core.model.EntityType
 @(assetType: EntityType, editAssetTypeForm: Form[EditTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@helper.form(action = routes.ModelController.postAssetType(assetType.id)) {
+@helper.form(action = routes.ModelController.postEntityType(assetType.id)) {
     <div class="">
         @CSRF.formField
         <input type="text" name="value" class="" placeholder="unique name" value="@editAssetTypeForm.data.get("value")"/>

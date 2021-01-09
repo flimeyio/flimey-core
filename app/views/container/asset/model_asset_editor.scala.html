@@ -33,7 +33,7 @@
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Asset Types"), routes.ModelController.searchAssetType)
+    @navbar_category_searchable(Seq("Asset Types"), routes.ModelController.searchEntityType)
     @asset_type_multibox(assetTypes)
 } {
             @navbar_category_closeable(Seq("Asset Model Editor"), routes.ModelController.index())

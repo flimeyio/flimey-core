@@ -19,7 +19,7 @@
 @import modules.core.model.ConstraintType
 @(assetTypeId: Long, newConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@helper.form(action = routes.ModelController.addAssetConstraint(assetTypeId)) {
+@helper.form(action = routes.ModelController.addConstraint(assetTypeId)) {
     <div class="">
         <div class="">
             @CSRF.formField

@@ -20,6 +20,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
+import modules.asset.model.AssetConstraintSpec
 import modules.asset.service.ModelAssetService
 import modules.core.formdata.{EditTypeForm, NewConstraintForm, NewTypeForm}
 import modules.core.model.{Constraint, EntityType}
@@ -36,11 +37,11 @@ import scala.concurrent.Future
  *
  * @param cc                 injected ControllerComponents
  * @param withAuthentication injected AuthenticationAction
- * @param modelService       injected ModelService for business logic
+ * @param modelAssetService  injected ModelService for business logic
  */
 @Singleton
 class ModelController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                modelService: ModelAssetService, entityTypeService: EntityTypeService)
+                                modelAssetService: ModelAssetService, entityTypeService: EntityTypeService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
@@ -51,8 +52,9 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def index: Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelService.getAllAssetTypes map (types => {
+        entityTypeService.getAllTypes() map (types => {
           val error = request.flash.get("error")
+          //FIXME thats just a model overview, remove asset naming
           Ok(views.html.container.asset.model_asset_overview(types, error))
         }) recoverWith {
           case e => {
@@ -64,12 +66,11 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
   }
 
   /**
-   * Endpoint to add a new asset type to the model.
-   * Only the Modeler role is able to perform this action.
+   * Endpoint to add a new EntityType to the model.
    *
    * @return model overview page with optional error message
    */
-  def addAssetType: Action[AnyContent] = withAuthentication.async {
+  def addType: Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         NewTypeForm.form.bindFromRequest fold(
@@ -90,17 +91,20 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
   }
 
   /**
-   * Endpoint to delete an asset type from the model.
-   * Only the Modeler role is able to perform this action.
+   * Endpoint to delete an EntityType from the model.
+   * <p> Further actions depend on the specific EntityType
    *
-   * @param id id of the asset type to delete
+   * @param id id of the type to delete
    * @return model overview page with optional error message
    */
-  def deleteAssetType(id: Long): Action[AnyContent] = withAuthentication.async {
+  def deleteType(id: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelService.deleteAssetType(id) map {
-          _ => Redirect(routes.ModelController.index())
+        entityTypeService.getType(id) flatMap {
+          case t if t.isEmpty => throw new Exception()
+          case t if t.get.typeOf == AssetConstraintSpec.ASSET => modelAssetService.deleteAssetType(id) map {
+            _ => Redirect(routes.ModelController.index())
+          }
         } recoverWith {
           case e => {
             logger.error(e.getMessage, e)
@@ -111,23 +115,22 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
   }
 
   /**
-   * Endpoint to get the model overview with open asset editor.
-   * Only the Modeler role is able to perform this action.
+   * Endpoint to get the model overview with open constraint editor.
    *
-   * @param id  of the asset type which shall be edited
+   * @param id of the EntityType which shall be edited
    * @return model overview page with open editor and optional error message
    *
    */
-    //FIXME the problem is, that the editor must also always render the whole left side types.
-    //FIXME unless this is somehow changed or outsourced, the weired form param flashes wont't go away..
-  def getAssetTypeEditor(id: Long):
+  //FIXME the problem is, that the editor must also always render the whole left side types.
+  //FIXME unless this is somehow changed or outsourced, the weired form param flashes wont't go away..
+  def getTypeEditor(id: Long):
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      modelService.getCombinedAssetEntity(id) map (res =>
-        ((assetTypes: Seq[EntityType], assetType: Option[EntityType], constraints: Seq[Constraint]) => {
-          if (assetType.nonEmpty) {
+      entityTypeService.getCombinedEntity(id) map (res =>
+        ((allTypes: Seq[EntityType], editedType: Option[EntityType], constraints: Seq[Constraint]) => {
+          if (editedType.nonEmpty) {
             //FIXME this is really strange code...
-            val preparedAssetForm = EditTypeForm.form.fill(EditTypeForm.Data(assetType.get.value, assetType.get.active))
+            val preparedEditForm = EditTypeForm.form.fill(EditTypeForm.Data(editedType.get.value, editedType.get.active))
             var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
             val c = request.flash.get("c")
             val v1 = request.flash.get("v1")
@@ -136,51 +139,56 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
               preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data(c.get, v1.get, v2.get))
             }
             val error = request.flash.get("error")
-            Ok(views.html.container.asset.model_asset_editor(assetTypes, assetType.get, constraints, preparedAssetForm, preparedConstraintForm, error))
+            Ok(views.html.container.asset.model_asset_editor(allTypes, editedType.get, constraints, preparedEditForm, preparedConstraintForm, error))
           } else {
-            Redirect(routes.ModelController.index()).flashing("error" -> "Asset Type not found")
+            Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
           }
         }).tupled(res)) recoverWith {
         case e: Throwable => {
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(id)).flashing(("error" -> e.getMessage)))
+          Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing(("error" -> e.getMessage)))
         }
       }
     }
   }
 
   //TODO
-  def searchAssetType(): Action[AnyContent] = withAuthentication.async {
+  def searchEntityType(): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         //FIXME
-        Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(0)))
+        Future.successful(Redirect(routes.ModelController.getTypeEditor(0)))
       }
   }
 
   /**
-   * Endpoint to change an asset type (update activation or value).
-   * Only the Modeler role is able to perform this action.
+   * Endpoint to change an EntityType (update activation or value).
+   * <p> Further actions depend on the specific EntityType
    *
-   * @param id of the asset type to change (is not transmitted by the form)
+   * @param id of the EntityType to change (is not transmitted by the form)
    * @return model page with open asset type editor
    */
-  def postAssetType(id: Long): Action[AnyContent] = withAuthentication.async {
+  def postEntityType(id: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         EditTypeForm.form.bindFromRequest fold(
           errorForm => {
             //ignore form input here, just show an error message, maybe a future FIXME
-            Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(id)).flashing("error" -> "Invalid form data!"))
+            Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            modelService.updateAssetType(id, data.value, data.active) map { _ =>
-              Redirect(routes.ModelController.getAssetTypeEditor(id))
-            } recoverWith {
-              case e => {
-                logger.error(e.getMessage, e)
-                Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(id)).flashing("error" -> e.getMessage))
-              }
+            entityTypeService.getType(id) flatMap {
+              case t if t.isEmpty => throw new Exception()
+              case t if t.get.typeOf == AssetConstraintSpec.ASSET =>
+                modelAssetService.updateAssetType(id, data.value, data.active) map { _ =>
+                  Redirect(routes.ModelController.getTypeEditor(id))
+                }
+              case _ => Future.successful(Redirect(routes.ModelController.index()))
+            }
+          } recoverWith {
+            case e => {
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> e.getMessage))
             }
           })
       }
@@ -188,52 +196,64 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
 
   /**
    * Endpoint to add a new AssetConstraint to the specified AssetType
+   * <p> Further actions depend on the specific EntityType
    *
-   * @param assetTypeId id of the parent AssetType
-   * @return redirects to getAssetTypeEditor with optional form presets and error message
+   * @param typeId id of the parent EntityType
+   * @return redirects to type editor with optional form presets and error message
    */
-  def addAssetConstraint(assetTypeId: Long): Action[AnyContent] = withAuthentication.async {
+  def addConstraint(typeId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        NewConstraintForm.form.bindFromRequest fold(
-          errorForm => {
-            //ignore form input here, just show an error message, maybe a future FIXME
-            Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId)).flashing("error" -> "Invalid form data!"))
-          },
-          data => {
-            //FIXME this line must be handled inside the ModelAssetService
-            modelService.addConstraint(data.c, data.v1, data.v2, assetTypeId) map { id =>
-              Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId))
-            } recoverWith {
-              case e => {
-                logger.error(e.getMessage, e)
-                //This should be done more elegantly... FIXME
-                Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId)).flashing(
-                  "error" -> e.getMessage, "c" -> data.c, "v1" -> data.v1, "v2" -> data.v2))
+      withTicket {
+        implicit ticket =>
+          NewConstraintForm.form.bindFromRequest fold(
+            errorForm => {
+              //ignore form input here, just show an error message, maybe a future FIXME
+              Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing("error" -> "Invalid form data!"))
+            },
+            data => {
+              entityTypeService.getType(typeId) flatMap {
+                case t if t.isEmpty => throw new Exception()
+                case t if t.get.typeOf == AssetConstraintSpec.ASSET =>
+                  modelAssetService.addConstraint(data.c, data.v1, data.v2, typeId) map { id =>
+                    Redirect(routes.ModelController.getTypeEditor(typeId))
+                  }
+                 case _ => Future.successful(Redirect(routes.ModelController.index()))
+              } recoverWith {
+                case e => {
+                  logger.error(e.getMessage, e)
+                  //This should be done more elegantly... FIXME
+                  Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(
+                    "error" -> e.getMessage, "c" -> data.c, "v1" -> data.v1, "v2" -> data.v2))
+                }
               }
-            }
-          })
+            })
       }
   }
 
   /**
-   * Endpoint to delete an AssetConstraint
+   * Endpoint to delete an Constraint
    *
-   * @param assetTypeId  id of the parent AssetType
-   * @param constraintId id of the AssetConstraint to delete
-   * @return redirects to getAssetTypeEditor with optional error message
+   * @param typeId       id of the parent EntityType
+   * @param constraintId id of the Constraint to delete
+   * @return redirects to getTypeEditor with optional error message
    */
-  def deleteAssetConstraint(assetTypeId: Long, constraintId: Long): Action[AnyContent] = withAuthentication.async {
+  def deleteConstraint(typeId: Long, constraintId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        modelService.deleteConstraint(constraintId) map {
-          _ => Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId))
-        } recoverWith {
-          case e => {
-            logger.error(e.getMessage, e)
-            Future.successful(Redirect(routes.ModelController.getAssetTypeEditor(assetTypeId)).flashing(("error" -> e.getMessage)))
+      withTicket {
+        implicit ticket =>
+          entityTypeService.getType(typeId) flatMap {
+            case t if t.isEmpty => throw new Exception()
+            case t if t.get.typeOf == AssetConstraintSpec.ASSET =>
+              modelAssetService.deleteConstraint(constraintId) map {
+                _ => Redirect(routes.ModelController.getTypeEditor(typeId))
+              }
+            case _ => Future.successful(Redirect(routes.ModelController.index()))
+          } recoverWith {
+            case e => {
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(("error" -> e.getMessage)))
+            }
           }
-        }
       }
   }
 

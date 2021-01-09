@@ -20,7 +20,7 @@
 
 @(id: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<form role="form" action='@routes.ModelController.deleteAssetType(id)' method="post">
+<form role="form" action='@routes.ModelController.deleteType(id)' method="post">
     @CSRF.formField
     <button type="submit" class="">Delete</button>
 </form>
