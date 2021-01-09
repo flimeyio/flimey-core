@@ -1,7 +1,7 @@
 @*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
-* Copyright (C) 2020  Julia Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
+ * Copyright (C) 2020 Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,14 +25,14 @@
 @import modules.core.model.Constraint
 @import modules.core.formdata.EditTypeForm
 @import modules.core.formdata.NewConstraintForm
-@import views.html.forms.core.edit_asset_type_form
+@import views.html.forms.core.edit_type_form
 @(assetType: EntityType, assetConstraints: Seq[Constraint],
         editAssetTypeForm: Form[EditTypeForm.Data],
         newAssetConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="scroll-container">
     <div>
-        @edit_asset_type_form(assetType, editAssetTypeForm)
+        @edit_type_form(assetType, editAssetTypeForm)
         @if(assetType.active){
             @message_box_hint(Option("While editing constraints, it is recommended to disable the Asset Type."))
         }
