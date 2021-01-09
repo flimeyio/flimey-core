@@ -55,11 +55,11 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
         entityTypeService.getAllTypes() map (types => {
           val error = request.flash.get("error")
           //FIXME thats just a model overview, remove asset naming
-          Ok(views.html.container.asset.model_asset_overview(types, error))
+          Ok(views.html.container.core.model_overview(types, error))
         }) recoverWith {
           case e => {
             logger.error(e.getMessage, e)
-            Future.successful(Ok(views.html.container.asset.model_asset_overview(Seq(), Option(e.getMessage))))
+            Future.successful(Ok(views.html.container.core.model_overview(Seq(), Option(e.getMessage))))
           }
         }
       }
