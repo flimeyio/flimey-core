@@ -30,6 +30,14 @@ import modules.subject.repository.CollectionRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+/**
+ * FIXME
+ *
+ * @param typeRepository
+ * @param constraintRepository
+ * @param collectionRepository
+ * @param entityTypeService
+ */
 class ModelCollectionService @Inject()(typeRepository: TypeRepository,
                                        constraintRepository: ConstraintRepository,
                                        collectionRepository: CollectionRepository,
@@ -98,12 +106,11 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
   override def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
-      //FIXME the name should also be validated here
+      if(!CollectionLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
       if (active) {
         getConstraintsOfType(id) flatMap (constraints => {
-          //FIXME
-          //val status = AssetLogic.isConstraintModel(constraints)
-          //if (!status.valid) status.throwError
+          val status = CollectionLogic.isConstraintModel(constraints)
+          if (!status.valid) status.throwError
           typeRepository.update(EntityType(id, value, "", active))
         })
       } else {
