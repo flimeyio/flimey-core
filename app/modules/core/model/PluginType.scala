@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021  Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.model
+package modules.core.model
 
 /**
- * Enumeration representing the possible Plugin types of a [[Subject]]
+ * Enumeration representing the possible Plugin types of a [[modules.subject.model.Subject]]
  */
-object SubjectPluginType extends Enumeration {
+object PluginType extends Enumeration {
 
   type Type = Value
 
   import scala.language.implicitConversions
+
   protected case class Val(name: String) extends super.Val
+
   implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
 
   val TimedInterval: Val = Val("Timed Interval")
@@ -35,4 +37,5 @@ object SubjectPluginType extends Enumeration {
   val CostAccumulation: Val = Val("Cost Accumulation")
   val WithPriority: Val = Val("Prioritizing")
 
+  def find(name: String): Option[PluginType.Type] = values find (t => t.name == name)
 }
