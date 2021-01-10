@@ -18,6 +18,9 @@
 
 package modules.subject.service
 
-object CollectionLogic {
+import modules.core.util.PropertyProcessor
+import modules.user.service.ViewerProcessor
+
+object CollectionLogic extends CollectionConstraintProcessor with PropertyProcessor with ViewerProcessor {
 
 }
