@@ -18,19 +18,25 @@
 
 package modules.core.model
 
+/**
+ * The ConstraintType enum provides naming definitions for all possible Constraint types.
+ * <p> Note that every concrete entity subclass can define its own subset of these Constraint types.
+ */
 object ConstraintType extends Enumeration {
 
-    type Type = Value
+  type Type = Value
 
-    import scala.language.implicitConversions
-    protected case class Val(name: String) extends super.Val
-    implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
+  import scala.language.implicitConversions
 
-    val HasProperty: Val = Val("Has Property")
-    val MustBeDefined: Val = Val("Must Be Defined")
-    val CanContain: Val = Val("Can Contain")
-    val UsesPlugin: Val = Val("Uses Plugin")
+  protected case class Val(name: String) extends super.Val
 
-    def find(name: String): Option[ConstraintType.Type] = values find (t => t.name == name)
+  implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
+
+  val HasProperty: Val = Val("Has Property")
+  val MustBeDefined: Val = Val("Must Be Defined")
+  val CanContain: Val = Val("Can Contain")
+  val UsesPlugin: Val = Val("Uses Plugin")
+
+  def find(name: String): Option[ConstraintType.Type] = values find (t => t.name == name)
 
 }

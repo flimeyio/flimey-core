@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 package modules.core.model
 
 /**
- * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
+ * Enumeration to represent the rights a Group has in a [[Viewer]] relation to another Group or [[FlimeyEntity]].
+ * @see [[Viewer]]
  */
 object ViewerRole extends Enumeration {
 
@@ -43,7 +44,7 @@ object ViewerRole extends Enumeration {
     try{
       ViewerRole.withName(viewerRole)
     }catch {
-      case e: Throwable => throw new Exception("Invalid viewer role")
+      case _: Throwable => throw new Exception("Invalid viewer role")
     }
   }
 

@@ -28,7 +28,7 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * DB interface for AssetTypes.
+ * DB interface for EntityTypes.
  * Provided methods are UNSAFE and must only be used by service classes!
  *
  * @param dbConfigProvider injected db config

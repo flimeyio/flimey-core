@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,11 @@
 package modules.core.model
 
 /**
- * The AssetProperty data class.
+ * The Property data class is used to store objectified attributes of a [[FlimeyEntity]]. The combination of all
+ * Properties (basically a multi-bridge pattern) of a FlimeyEntity is called "configuration".
+ * <p> What valid Properties values are is not given by the scala or sql model! This must always be validated by the
+ * application logic!
+ * <p> Has a repository representation.
  *
  * @param id unique identifier
  * @param key of the property

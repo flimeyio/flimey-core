@@ -19,14 +19,18 @@
 package modules.core.model
 
 /**
- * The AssetConstraint data class.
+ * The Constraint meta model class to represent model rules.
+ * Constraints are used by the [[EntityType]] here associated by the typeId.
+ * <p> Note that the validity of a Constraint is not guaranteed by the scala or sql model but needs always to be checked
+ * by the application logic!
+ * <p> Has a repository representation.
  *
  * @param id       unique primary key (given by db interface)
- * @param c        constraint rule key
+ * @param c        constraint rule type
  * @param v1       first rule argument
  * @param v2       second rule argument
  * @param byPlugin optional name of a parent plugin this Constraint is part of
- * @param typeId   id of the associated AssetType
+ * @param typeId   id of the associated EntityType
  */
 case class Constraint(id: Long, c: ConstraintType.Type, v1: String, v2: String, byPlugin: Option[String], typeId: Long)
 

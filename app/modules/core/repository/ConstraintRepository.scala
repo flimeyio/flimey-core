@@ -27,8 +27,10 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * DB Interface for AssetConstraints.
+ * DB Interface for Constraints.
  * Provided methods are UNSAFE and must only be used by service classes!
+ * <p> Note: some Constraint operations are sensitive to their actual usage/environment. So for specific add and delete
+ * operations, a custom implementation or extension of the ConstraintRepository is needed!
  *
  * @param dbConfigProvider injected database config
  * @param executionContext future execution context

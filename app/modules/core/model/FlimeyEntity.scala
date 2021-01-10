@@ -18,4 +18,12 @@
 
 package modules.core.model
 
+/**
+ * The FlimeyEntity is the base class for all other given or modeled entities.
+ * <p> Child classes must hold a reference (or foreign id) to this class.
+ * <p> The FlimeyEntity serves as model join to apply [[Viewer]], [[Property]] and [[EntityType]] relations to its subclasses.
+ * <p> Has a repository representation.
+ *
+ * @param id unique primary key
+ */
 case class FlimeyEntity(id: Long)
