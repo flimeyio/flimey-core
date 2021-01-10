@@ -18,7 +18,7 @@
 
 package modules.core.util
 
-import modules.core.model.{Constraint, ConstraintType}
+import modules.core.model.{Constraint, ConstraintType, PluginType}
 import modules.util.messages.{ERR, OK, Status}
 
 /**
@@ -30,13 +30,13 @@ trait ConstraintProcessor {
    * Checks if a given constraint is a syntactically correct HasProperty constraint.
    * No semantic analysis is performed!
    *
-   * @param v1 first constraint parameter
-   * @param v2 second constraint parameter
+   * @param v1      first constraint parameter
+   * @param v2      second constraint parameter
    * @param options seq of possible (data)types
    * @return validation status with optional error message
    */
   def isHasPropertyConstraint(v1: String, v2: String, options: Seq[String]): Status = {
-    if(v1.length > 0 && options.contains(v2)) return OK()
+    if (v1.length > 0 && options.contains(v2)) return OK()
     ERR("Invalid 'Has Property' Configuration")
   }
 
@@ -49,12 +49,38 @@ trait ConstraintProcessor {
    * @return validation status with optional error message
    */
   def isMustBeDefinedConstraint(v1: String, v2: String): Status = {
-    if(v1.length > 0 && v2.length > 0) return OK()
+    if (v1.length > 0 && v2.length > 0) return OK()
     ERR("Invalid 'Must Be Defined' Configuration")
   }
 
   /**
-   * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
+   * Checks if a given constraint is a syntactically correct CanContain constraint.
+   * No semantic analysis is performed!
+   *
+   * @param v1 first constraint parameter
+   * @param v2 second constraint parameter
+   * @return validation status with optional error message
+   */
+  def isCanContainConstraint(v1: String, v2: String): Status = {
+    if (v1.length > 0 && v2.length == 0) return OK()
+    ERR("Invalid 'Can Contain' Configuration")
+  }
+
+  /**
+   * Checks if a given constraint is a syntactically correct UsesPlugin constraint.
+   * No semantic analysis is performed!
+   *
+   * @param v1 first constraint parameter
+   * @param v2 second constraint parameter
+   * @return validation status with optional error message
+   */
+  def isUsesPluginConstraint(v1: String, v2: String): Status = {
+    if (PluginType.find(v1).isDefined && v2.length == 0) return OK()
+    ERR("Invalid 'Uses Plugin' Configuration")
+  }
+
+  /**
+   * Checks if a given Constraint is a syntactically correct Constraint of an EntityTypes specific subtype.
    * No semantic analysis is done!
    *
    * @param constraint to check
@@ -97,11 +123,11 @@ trait ConstraintProcessor {
    */
   def isConstraintModel(constraints: Seq[Constraint]): Status = {
     //must constrains only on existing properties
-    if(!hasMatchingProperties(constraints)){
+    if (!hasMatchingProperties(constraints)) {
       return ERR("Every 'Must Be Defined' constraint needs a corresponding 'Has Property' constraint")
     }
     //no duplicates
-    if(!hasNoDuplicates(constraints)){
+    if (!hasNoDuplicates(constraints)) {
       return ERR("Constraints must not have duplicates")
     }
     //everything ok
