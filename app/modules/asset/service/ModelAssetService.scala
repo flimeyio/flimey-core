@@ -107,7 +107,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
   override def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
-      //FIXME the name should also be validated here
+      if(!AssetLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
       if (active) {
         getConstraintsOfType(id) flatMap (constraints => {
           val status = AssetLogic.isConstraintModel(constraints)

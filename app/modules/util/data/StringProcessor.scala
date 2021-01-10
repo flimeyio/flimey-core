@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,23 +35,38 @@ trait StringProcessor {
 
   /**
    * Checks if a given string contains a numeric value.
-   * For more flexibility, this function does not make a difference between '.' (dot) and ',' (colon).
+   * <p> For more flexibility, this function does not make a difference between '.' (dot) and ',' (colon).
+   * <p> <strong>Empty strings (length == 0) are accepted as numeric.</strong>
    *
    * @param value to check
    * @return result
    */
   def isNumericString(value: String): Boolean = {
+    value.isEmpty ||
     value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
   }
 
   /**
    * Splits a string containing of an Int list into single Int values.<br />
    * The string must have the form "v1,v2,v3,..."
-   * @param value
-   * @return
+   *
+   * @param value numeric list string to split - expects correct format
+   * @return Seq[Int]
    */
   def splitNumericList(value: String): Seq[Int] = {
     value.split(",").map(_.toInt)
+  }
+
+  /**
+   * Checks if a string fulfills the requirements to be an identifier.
+   * This method does not perform any processing or formatting of the given input.
+   * <p> 1. the string must not be blank.
+   *
+   * @param value string identifier to check
+   * @return Boolean if string can be used
+   */
+  def isStringIdentifier(value: String): Boolean = {
+    !value.isBlank
   }
 
 }
