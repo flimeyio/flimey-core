@@ -32,16 +32,25 @@ package modules.core.model
  * @param byPlugin optional name of a parent plugin this Constraint is part of
  * @param typeId   id of the associated EntityType
  */
-case class Constraint(id: Long, c: ConstraintType.Type, v1: String, v2: String, byPlugin: Option[String], typeId: Long)
+case class Constraint(id: Long, c: ConstraintType.Type, v1: String, v2: String, byPlugin: Option[PluginType.Type], typeId: Long)
 
 object Constraint {
 
   def applyRaw(id: Long, c: String, v1: String, v2: String, byPlugin: Option[String], typeId: Long): Constraint = {
-    Constraint(id, ConstraintType.withName(c), v1, v2, byPlugin, typeId)
+    if(byPlugin.isDefined) {
+      Constraint(id, ConstraintType.withName(c), v1, v2, Option(PluginType.withName(byPlugin.get)), typeId)
+    }else{
+      Constraint(id, ConstraintType.withName(c), v1, v2, None, typeId)
+    }
   }
 
-  def unapplyToRaw(arg: Constraint): Option[(Long, String, String, String, Option[String], Long)] =
-    Option((arg.id, arg.c.toString, arg.v1, arg.v2, arg.byPlugin, arg.typeId))
+  def unapplyToRaw(arg: Constraint): Option[(Long, String, String, String, Option[String], Long)] = {
+    if(arg.byPlugin.isDefined) {
+      Option((arg.id, arg.c.toString, arg.v1, arg.v2, Option(arg.byPlugin.toString), arg.typeId))
+    }else{
+      Option((arg.id, arg.c.toString, arg.v1, arg.v2, None, arg.typeId))
+    }
+  }
 
   val tupledRaw: ((Long, String, String, String, Option[String], Long)) => Constraint = (this.applyRaw _).tupled
 

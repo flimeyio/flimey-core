@@ -32,4 +32,5 @@ object PropertyType extends Enumeration {
 
   val StringType: Val = Val("string")
   val NumericType: Val = Val("number")
+  val DateTimeType: Val = Val("datetime")
 }

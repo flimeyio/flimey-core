@@ -18,7 +18,7 @@
 
 package modules.core.util
 
-import modules.core.model.{Constraint, ConstraintType, PluginType}
+import modules.core.model.{Constraint, ConstraintType, PluginSpec, PluginType, PropertyType}
 import modules.util.messages.{ERR, OK, Status}
 
 /**
@@ -108,6 +108,24 @@ trait ConstraintProcessor {
    */
   def hasNoDuplicates(constraints: Seq[Constraint]): Boolean = {
     constraints.count(c => constraints.exists(sym => sym.id != c.id && sym.c == c.c && sym.v1 == c.v1)) == 0
+  }
+
+  /**
+   * Checks if a Constraint model contains all HasProperty Constraints with correct keys and PropertyTypes to fullfill
+   * the requirements of all defined UsesPlugin Constraints.
+   *
+   * @param constraints complete Constraint model
+   * @return Boolean - false as soon as one missing Property is found
+   */
+  def hasCompletePlugins(constraints: Seq[Constraint]): Boolean = {
+    constraints.filter(_.c == ConstraintType.UsesPlugin).map(pluginConstraint => {
+      val pluginType = PluginType.withName(pluginConstraint.v1)
+      val requiredProperties = PluginSpec.getSpecFromType(pluginType)
+      requiredProperties.map(propertySpec => {
+        val (key: String, propertyType: PropertyType.Value) = propertySpec
+        constraints.exists(c => c.c == ConstraintType.HasProperty && c.v1 == key && c.v2 == propertyType.toString)
+      }).reduce((a, b) => a & b)
+    }).reduce((a, b) => a & b)
   }
 
   /**

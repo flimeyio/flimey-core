@@ -21,7 +21,7 @@ package modules.subject.service
 import modules.core.model.{Constraint, ConstraintType}
 import modules.core.util.ConstraintProcessor
 import modules.subject.model.CollectionConstraintSpec
-import modules.util.messages.{ERR, Status}
+import modules.util.messages.{ERR, OK, Status}
 
 /**
  * Trait which provides functionality for parsing and processing constraints
@@ -45,4 +45,22 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
     }
   }
 
+  /**
+   * Checks if a Constraint model is valid to model a Collection.
+   * <p> Checks if HasProperty(s) and MustBeDefined(s) are matching
+   * <p> Checks if no duplicate Constraints are present
+   * <p> Checks if the configuration serves its UsesPlugin(s)
+   * <p> Checks NOT for invalid Constraints without effect, use [[isValidConstraint]]
+   *
+   * @param constraints model to check
+   * @return Status with optional error message
+   */
+  override def isConstraintModel(constraints: Seq[Constraint]): Status = {
+    //check HasProperty, MustBeDefined Constraints and duplicates.
+    val checkBaseModelStatus = super.isConstraintModel(constraints)
+
+    if (!checkBaseModelStatus.valid) return checkBaseModelStatus
+    if (!hasCompletePlugins(constraints)) return ERR("Model requires properties to serve its plugins")
+    OK()
+  }
 }
