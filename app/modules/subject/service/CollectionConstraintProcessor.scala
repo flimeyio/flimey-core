@@ -18,8 +18,8 @@
 
 package modules.subject.service
 
-import modules.core.util.ConstraintProcessor
 import modules.core.model.{Constraint, ConstraintType}
+import modules.core.util.ConstraintProcessor
 import modules.subject.model.CollectionConstraintSpec
 import modules.util.messages.{ERR, Status}
 
@@ -27,7 +27,7 @@ import modules.util.messages.{ERR, Status}
  * Trait which provides functionality for parsing and processing constraints
  */
 trait CollectionConstraintProcessor extends ConstraintProcessor {
-  
+
   /**
    * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
    * No semantic analysis is done!
@@ -35,11 +35,12 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
    * @param constraint to check
    * @return Status with optional error message
    */
-    //FIXME adjust for collections
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
       case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, CollectionConstraintSpec.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
+      case ConstraintType.UsesPlugin => isUsesPluginConstraint(constraint.v1, constraint.v2)
+      case ConstraintType.CanContain => isCanContainConstraint(constraint.v1, constraint.v2)
       case _ => ERR("Invalid Asset Constraint Rule")
     }
   }
