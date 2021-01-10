@@ -18,6 +18,6 @@
 
 package modules.subject.service
 
-class ModelSubjectService {
+object CollectionLogic {
 
 }

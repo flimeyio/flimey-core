@@ -22,9 +22,12 @@ import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import modules.asset.model.AssetConstraintSpec
 import modules.asset.service.ModelAssetService
+import modules.auth.model.Ticket
 import modules.core.formdata.{EditTypeForm, NewConstraintForm, NewTypeForm}
 import modules.core.model.{Constraint, EntityType}
-import modules.core.service.EntityTypeService
+import modules.core.service.{EntityTypeService, ModelEntityService}
+import modules.subject.model.CollectionConstraintSpec
+import modules.subject.service.ModelCollectionService
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -40,9 +43,21 @@ import scala.concurrent.Future
  * @param modelAssetService  injected ModelService for business logic
  */
 @Singleton
-class ModelController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                modelAssetService: ModelAssetService, entityTypeService: EntityTypeService)
+class ModelController @Inject()(cc: ControllerComponents,
+                                withAuthentication: AuthenticationFilter,
+                                modelAssetService: ModelAssetService,
+                                modelCollectionService: ModelCollectionService,
+                                entityTypeService: EntityTypeService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
+
+  private def getService(typeId: Long)(implicit ticket: Ticket): Future[ModelEntityService] = {
+    entityTypeService.getType(typeId) map {
+      case t if t.isEmpty => throw new Exception("No such EntityType found")
+      case t if t.get.typeOf == AssetConstraintSpec.ASSET => modelAssetService
+      case t if t.get.typeOf == CollectionConstraintSpec.COLLECTION => modelCollectionService
+      case _ => throw new Exception("Unknown error fetching EntityType")
+    }
+  }
 
   /**
    * Endpoint to show the model overview page
@@ -100,16 +115,11 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def deleteType(id: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        entityTypeService.getType(id) flatMap {
-          case t if t.isEmpty => throw new Exception()
-          case t if t.get.typeOf == AssetConstraintSpec.ASSET => modelAssetService.deleteAssetType(id) map {
-            _ => Redirect(routes.ModelController.index())
-          }
-        } recoverWith {
-          case e => {
-            logger.error(e.getMessage, e)
-            Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
-          }
+        getService(id) flatMap (_.deleteType(id) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e => {
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
         }
       }
   }
@@ -124,40 +134,43 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
   //FIXME the problem is, that the editor must also always render the whole left side types.
   //FIXME unless this is somehow changed or outsourced, the weired form param flashes wont't go away..
   def getTypeEditor(id: Long):
-  Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-    withTicket { implicit ticket =>
-      entityTypeService.getCombinedEntity(id) map (res =>
-        ((allTypes: Seq[EntityType], editedType: Option[EntityType], constraints: Seq[Constraint]) => {
-          if (editedType.nonEmpty) {
-            //FIXME this is really strange code...
-            val preparedEditForm = EditTypeForm.form.fill(EditTypeForm.Data(editedType.get.value, editedType.get.active))
-            var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
-            val c = request.flash.get("c")
-            val v1 = request.flash.get("v1")
-            val v2 = request.flash.get("v2")
-            if (c.isDefined && v1.isDefined && v2.isDefined) {
-              preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data(c.get, v1.get, v2.get))
+  Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket {
+        implicit ticket =>
+          entityTypeService.getCombinedEntity(id) map (res =>
+            ((allTypes: Seq[EntityType], editedType: Option[EntityType], constraints: Seq[Constraint]) => {
+              if (editedType.nonEmpty) {
+                //FIXME this is really strange code...
+                val preparedEditForm = EditTypeForm.form.fill(EditTypeForm.Data(editedType.get.value, editedType.get.active))
+                var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
+                val c = request.flash.get("c")
+                val v1 = request.flash.get("v1")
+                val v2 = request.flash.get("v2")
+                if (c.isDefined && v1.isDefined && v2.isDefined) {
+                  preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data(c.get, v1.get, v2.get))
+                }
+                val error = request.flash.get("error")
+                Ok(views.html.container.core.model_editor(allTypes, editedType.get, constraints, preparedEditForm, preparedConstraintForm, error))
+              } else {
+                Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
+              }
+            }).tupled(res)) recoverWith {
+            case e: Throwable => {
+              logger.error(e.getMessage, e)
+              Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing(("error" -> e.getMessage)))
             }
-            val error = request.flash.get("error")
-            Ok(views.html.container.core.model_editor(allTypes, editedType.get, constraints, preparedEditForm, preparedConstraintForm, error))
-          } else {
-            Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
           }
-        }).tupled(res)) recoverWith {
-        case e: Throwable => {
-          logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing(("error" -> e.getMessage)))
-        }
       }
-    }
   }
 
   //TODO
   def searchEntityType(): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        //FIXME
-        Future.successful(Redirect(routes.ModelController.getTypeEditor(0)))
+      withTicket {
+        implicit ticket =>
+          //FIXME
+          Future.successful(Redirect(routes.ModelController.getTypeEditor(0)))
       }
   }
 
@@ -170,27 +183,23 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
    */
   def postEntityType(id: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        EditTypeForm.form.bindFromRequest fold(
-          errorForm => {
-            //ignore form input here, just show an error message, maybe a future FIXME
-            Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> "Invalid form data!"))
-          },
-          data => {
-            entityTypeService.getType(id) flatMap {
-              case t if t.isEmpty => throw new Exception()
-              case t if t.get.typeOf == AssetConstraintSpec.ASSET =>
-                modelAssetService.updateAssetType(id, data.value, data.active) map { _ =>
-                  Redirect(routes.ModelController.getTypeEditor(id))
-                }
-              case _ => Future.successful(Redirect(routes.ModelController.index()))
-            }
-          } recoverWith {
+      withTicket {
+        implicit ticket =>
+          EditTypeForm.form.bindFromRequest fold(
+            errorForm => {
+              //ignore form input here, just show an error message, maybe a future FIXME
+              Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> "Invalid form data!"))
+            },
+            data => {
+              getService(id) flatMap (_.updateType(id, data.value, data.active) map { _ =>
+                Redirect(routes.ModelController.getTypeEditor(id))
+              })
+            }) recoverWith {
             case e => {
               logger.error(e.getMessage, e)
               Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> e.getMessage))
             }
-          })
+          }
       }
   }
 
@@ -211,20 +220,15 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
               Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing("error" -> "Invalid form data!"))
             },
             data => {
-              entityTypeService.getType(typeId) flatMap {
-                case t if t.isEmpty => throw new Exception()
-                case t if t.get.typeOf == AssetConstraintSpec.ASSET =>
-                  modelAssetService.addConstraint(data.c, data.v1, data.v2, typeId) map { id =>
-                    Redirect(routes.ModelController.getTypeEditor(typeId))
-                  }
-                 case _ => Future.successful(Redirect(routes.ModelController.index()))
-              } recoverWith {
-                case e => {
-                  logger.error(e.getMessage, e)
-                  //This should be done more elegantly... FIXME
-                  Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(
-                    "error" -> e.getMessage, "c" -> data.c, "v1" -> data.v1, "v2" -> data.v2))
-                }
+              getService(typeId) flatMap (_.addConstraint(data.c, data.v1, data.v2, typeId) map { id =>
+                Redirect(routes.ModelController.getTypeEditor(typeId))
+              })
+            } recoverWith {
+              case e => {
+                logger.error(e.getMessage, e)
+                //This should be done more elegantly... FIXME
+                Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(
+                  "error" -> e.getMessage, "c" -> data.c, "v1" -> data.v1, "v2" -> data.v2))
               }
             })
       }
@@ -241,14 +245,9 @@ class ModelController @Inject()(cc: ControllerComponents, withAuthentication: Au
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket {
         implicit ticket =>
-          entityTypeService.getType(typeId) flatMap {
-            case t if t.isEmpty => throw new Exception()
-            case t if t.get.typeOf == AssetConstraintSpec.ASSET =>
-              modelAssetService.deleteConstraint(constraintId) map {
-                _ => Redirect(routes.ModelController.getTypeEditor(typeId))
-              }
-            case _ => Future.successful(Redirect(routes.ModelController.index()))
-          } recoverWith {
+          getService(typeId) flatMap (_.deleteConstraint(constraintId) map { _ =>
+            Redirect(routes.ModelController.getTypeEditor(typeId))
+          }) recoverWith {
             case e => {
               logger.error(e.getMessage, e)
               Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(("error" -> e.getMessage)))
