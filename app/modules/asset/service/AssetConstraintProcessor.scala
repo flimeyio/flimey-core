@@ -24,12 +24,13 @@ import modules.core.util.ConstraintProcessor
 import modules.util.messages.{ERR, Status}
 
 /**
- * Trait which provides functionality for parsing and processing constraints
+ * Trait which provides functionality for parsing and processing [[modules.core.model.Constraint Constraints]] of
+ * [[modules.asset.model.Asset Assets]].
  */
 trait AssetConstraintProcessor extends ConstraintProcessor {
 
   /**
-   * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an AssetType.
    * No semantic analysis is done!
    *
    * @param constraint to check
@@ -45,4 +46,8 @@ trait AssetConstraintProcessor extends ConstraintProcessor {
 
   override def isConstraintModel(constraints: Seq[Constraint]): Status = super.isConstraintModel(constraints)
 
+  override def applyConstraint(newConstraint: Constraint): Seq[Constraint] = Seq(newConstraint)
+
+  override def removeConstraint(removedConstraint: Constraint, constraints: Seq[Constraint]): Seq[Constraint] =
+    Seq(removedConstraint)
 }

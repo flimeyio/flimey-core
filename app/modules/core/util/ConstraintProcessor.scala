@@ -35,7 +35,7 @@ trait ConstraintProcessor {
    * @param options seq of possible (data)types
    * @return validation status with optional error message
    */
-  def isHasPropertyConstraint(v1: String, v2: String, options: Seq[String]): Status = {
+  protected def isHasPropertyConstraint(v1: String, v2: String, options: Seq[String]): Status = {
     if (v1.length > 0 && options.contains(v2)) return OK()
     ERR("Invalid 'Has Property' Configuration")
   }
@@ -48,7 +48,7 @@ trait ConstraintProcessor {
    * @param v2 second constraint parameter
    * @return validation status with optional error message
    */
-  def isMustBeDefinedConstraint(v1: String, v2: String): Status = {
+  protected def isMustBeDefinedConstraint(v1: String, v2: String): Status = {
     if (v1.length > 0 && v2.length > 0) return OK()
     ERR("Invalid 'Must Be Defined' Configuration")
   }
@@ -61,7 +61,7 @@ trait ConstraintProcessor {
    * @param v2 second constraint parameter
    * @return validation status with optional error message
    */
-  def isCanContainConstraint(v1: String, v2: String): Status = {
+  protected def isCanContainConstraint(v1: String, v2: String): Status = {
     if (v1.length > 0 && v2.length == 0) return OK()
     ERR("Invalid 'Can Contain' Configuration")
   }
@@ -74,7 +74,7 @@ trait ConstraintProcessor {
    * @param v2 second constraint parameter
    * @return validation status with optional error message
    */
-  def isUsesPluginConstraint(v1: String, v2: String): Status = {
+  protected def isUsesPluginConstraint(v1: String, v2: String): Status = {
     if (PluginType.find(v1).isDefined && v2.length == 0) return OK()
     ERR("Invalid 'Uses Plugin' Configuration")
   }
@@ -94,7 +94,7 @@ trait ConstraintProcessor {
    * @param constraints model
    * @return result
    */
-  def hasMatchingProperties(constraints: Seq[Constraint]): Boolean = {
+  protected def hasMatchingProperties(constraints: Seq[Constraint]): Boolean = {
     val mdConstraints = constraints.filter(c => c.c == ConstraintType.MustBeDefined)
     val validMDs = mdConstraints.filter(c => constraints.exists(p => p.c == ConstraintType.HasProperty && p.v1 == c.v1))
     validMDs.size == mdConstraints.size
@@ -106,7 +106,7 @@ trait ConstraintProcessor {
    * @param constraints model
    * @return result
    */
-  def hasNoDuplicates(constraints: Seq[Constraint]): Boolean = {
+  protected def hasNoDuplicates(constraints: Seq[Constraint]): Boolean = {
     constraints.count(c => constraints.exists(sym => sym.id != c.id && sym.c == c.c && sym.v1 == c.v1)) == 0
   }
 
@@ -117,7 +117,7 @@ trait ConstraintProcessor {
    * @param constraints complete Constraint model
    * @return Boolean - false as soon as one missing HasProperty is found
    */
-  def hasCompletePlugins(constraints: Seq[Constraint]): Boolean = {
+  protected def hasCompletePlugins(constraints: Seq[Constraint]): Boolean = {
     constraints.filter(_.c == ConstraintType.UsesPlugin).map(pluginConstraint => {
       val pluginType = PluginType.withName(pluginConstraint.v1)
       val requiredProperties = PluginSpec.getSpecFromType(pluginType)
@@ -159,7 +159,7 @@ trait ConstraintProcessor {
    * @param pluginType type of the new Plugin
    * @return Seq[Constraint] without the UsesPlugin Constraint
    */
-  def deriveConstraintsFromPlugin(pluginType: PluginType.Type): Seq[Constraint] = {
+  protected def deriveConstraintsFromPlugin(pluginType: PluginType.Type): Seq[Constraint] = {
     PluginSpec.getSpecFromType(pluginType).map(propertySpec => {
       val (key: String, propertyType: PropertyType.Value) = propertySpec
       Constraint(0, ConstraintType.HasProperty, key, propertyType.name, Option(pluginType), 0)
