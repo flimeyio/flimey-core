@@ -29,7 +29,8 @@ import modules.util.messages.{ERR, OK, Status}
 trait CollectionConstraintProcessor extends ConstraintProcessor {
 
   /**
-   * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
+   * [[modules.subject.model.Collection Collection]]Type
    * No semantic analysis is done!
    *
    * @param constraint to check
@@ -46,11 +47,11 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
   }
 
   /**
-   * Checks if a Constraint model is valid to model a Collection.
-   * <p> Checks if HasProperty(s) and MustBeDefined(s) are matching
-   * <p> Checks if no duplicate Constraints are present
-   * <p> Checks if the configuration serves its UsesPlugin(s)
-   * <p> Checks NOT for invalid Constraints without effect, use [[isValidConstraint]]
+   * Checks if a [[modules.core.model.Constraint Constraint]] model is valid to model a [[modules.subject.model.Collection Collection]].
+   * <p> 1. Checks if HasProperty(s) and MustBeDefined(s) are matching
+   * <p> 2. Checks if no duplicate Constraints are present
+   * <p> 3. Checks if the configuration serves its UsesPlugin(s)
+   * <p> 4. Checks NOT for invalid Constraints without effect, use [[isValidConstraint]]
    *
    * @param constraints model to check
    * @return Status with optional error message
@@ -63,4 +64,5 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
     if (!hasCompletePlugins(constraints)) return ERR("Model requires properties to serve its plugins")
     OK()
   }
+
 }
