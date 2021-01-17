@@ -18,16 +18,16 @@
 
 package modules.core.util
 
-import modules.core.model.{Constraint, ConstraintType, PluginSpec, PluginType, PropertyType}
+import modules.core.model._
 import modules.util.messages.{ERR, OK, Status}
 
 /**
- * Trait which provides functionality for parsing and processing constraints
+ * Trait which provides functionality for parsing and processing [[modules.core.model.Constraint Constraint]]s
  */
 trait ConstraintProcessor {
 
   /**
-   * Checks if a given constraint is a syntactically correct HasProperty constraint.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct HasProperty constraint.
    * No semantic analysis is performed!
    *
    * @param v1      first constraint parameter
@@ -41,7 +41,7 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks if a given constraint is a syntactically correct MustBeDefined constraint.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct MustBeDefined constraint.
    * No semantic analysis is performed!
    *
    * @param v1 first constraint parameter
@@ -54,7 +54,7 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks if a given constraint is a syntactically correct CanContain constraint.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct CanContain constraint.
    * No semantic analysis is performed!
    *
    * @param v1 first constraint parameter
@@ -67,7 +67,7 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks if a given constraint is a syntactically correct UsesPlugin constraint.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct UsesPlugin constraint.
    * No semantic analysis is performed!
    *
    * @param v1 first constraint parameter
@@ -80,8 +80,8 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks if a given Constraint is a syntactically correct Constraint of an EntityTypes specific subtype.
-   * No semantic analysis is done!
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
+   * [[modules.core.model.EntityType EntityType]] specific subtype. No semantic analysis is done!
    *
    * @param constraint to check
    * @return Status with optional error message
@@ -89,7 +89,7 @@ trait ConstraintProcessor {
   def isValidConstraint(constraint: Constraint): Status
 
   /**
-   * Checks every MustBeDefined rule has a corresponding HasProperty rule
+   * Checks every MustBeDefined [[modules.core.model.Constraint Constraint]] has a corresponding HasProperty rule
    *
    * @param constraints model
    * @return result
@@ -101,7 +101,7 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks no rules are duplicates
+   * Checks that no [[modules.core.model.Constraint Constraint]]s are duplicates
    *
    * @param constraints model
    * @return result
@@ -111,11 +111,11 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks if a Constraint model contains all HasProperty Constraints with correct keys and PropertyTypes to fullfill
-   * the requirements of all defined UsesPlugin Constraints.
+   * Checks if a [[modules.core.model.Constraint Constraint]] model contains all HasProperty Constraints with correct keys
+   * and PropertyTypes to fulfill the requirements of all defined UsesPlugin Constraints.
    *
    * @param constraints complete Constraint model
-   * @return Boolean - false as soon as one missing Property is found
+   * @return Boolean - false as soon as one missing HasProperty is found
    */
   def hasCompletePlugins(constraints: Seq[Constraint]): Boolean = {
     constraints.filter(_.c == ConstraintType.UsesPlugin).map(pluginConstraint => {
@@ -129,8 +129,8 @@ trait ConstraintProcessor {
   }
 
   /**
-   * Checks a given EntityType constraint model for semantic correctness.
-   * It is checked that:
+   * Checks a given [[modules.core.model.EntityType EntityType]] [[modules.core.model.Constraint Constraint]]
+   * model for semantic correctness. It is checked that:
    * <p> 1) every MustBeDefined rule has a corresponding HasProperty rule
    * <p> 2) no rules are duplicates
    *
@@ -150,6 +150,61 @@ trait ConstraintProcessor {
     }
     //everything ok
     OK()
+  }
+
+  /**
+   * Build the sequence of helper [[modules.core.model.Constraint]]s that are needed to fulfill the Plugin definition.
+   *
+   * @see [[modules.core.util.ConstraintProcessor#applyConstraint]]
+   * @param pluginType type of the new Plugin
+   * @return Seq[Constraint] without the UsesPlugin Constraint
+   */
+  def deriveConstraintsFromPlugin(pluginType: PluginType.Type): Seq[Constraint] = {
+    PluginSpec.getSpecFromType(pluginType).map(propertySpec => {
+      val (key: String, propertyType: PropertyType.Value) = propertySpec
+      Constraint(0, ConstraintType.HasProperty, key, propertyType.name, Option(pluginType), 0)
+    }).toSeq
+  }
+
+  /**
+   * Get the [[modules.core.model.Constraint]]s that are needed to fulfill the definition of a new Constraint to add.
+   * <p> For example if a UsesPlugin Constraint is added, there may be multiple HasProperty Constraints needed to add
+   * the properties the Plugin defines. This method creates those Constraints.
+   * <p> If a Constraint does not need other Constraints, for example a MustBeDefined Constraint, only the Constraint
+   * itself is returned.
+   *
+   * @param newConstraint new Constraint to add to a model
+   * @return Seq[Constraint] of all needed derived Constraints, contains at least newConstraint.
+   */
+  def applyConstraint(newConstraint: Constraint): Seq[Constraint] = {
+    if (newConstraint.c == ConstraintType.UsesPlugin) {
+      val pluginType = PluginType.withName(newConstraint.v1)
+      Seq(newConstraint) ++ deriveConstraintsFromPlugin(pluginType)
+    } else {
+      Seq(newConstraint)
+    }
+  }
+
+  /**
+   * Get the [[modules.core.model.Constraint]]s to be also removed if a Constraint is removed from a model.
+   * <p> If a Constraint stands alone, like a MustBeDefined Constraint, only the Constraint itself is returned.
+   * <p> If a Constraint is a UsesPlugin Constraint, all other Constraints of the model that have the same byPlugin
+   * definition are also returned and must be deleted.
+   * <p> In this method, only dependencies of UsesPlugin Constraints are resolved. Other dependencies can be for example
+   * HasProperty - MustBeDefined must be resolved manually.
+   *
+   * @param removedConstraint the Constraint which is deleted (dependency root)
+   * @param constraints       all Constraints of the [[modules.core.model.EntityType]]
+   * @return Seq[Constraint] that must be deleted. Contains at least removedConstraint.
+   */
+  def removeConstraint(removedConstraint: Constraint, constraints: Seq[Constraint]): Seq[Constraint] = {
+    if (removedConstraint.c == ConstraintType.UsesPlugin) {
+      val pluginType = PluginType.withName(removedConstraint.v1)
+      val pluginAssociatedConstraints = constraints.filter(c => c.byPlugin.isDefined && c.byPlugin.get == pluginType)
+      Seq(removedConstraint) ++ pluginAssociatedConstraints
+    } else {
+      Seq(removedConstraint)
+    }
   }
 
 }

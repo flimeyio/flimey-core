@@ -106,7 +106,7 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
   override def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
-      if(!CollectionLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
+      if (!CollectionLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
       if (active) {
         getConstraintsOfType(id) flatMap (constraints => {
           val status = CollectionLogic.isConstraintModel(constraints)
@@ -156,17 +156,19 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
         val constraint = constraintOption.get
         getType(constraint.typeId) flatMap (collectionType => {
           if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
+
           getConstraintsOfType(collectionType.get.id) flatMap (constraints => {
 
-            //FIXME
-            //val status = AssetLogic.isConstraintModel(constraints.filter(c => c.id != id))
-            //if (!status.valid) status.throwError
+            val deletedConstraints = CollectionLogic.removeConstraint(constraint, constraints)
 
-            //if (constraint.c == ConstraintType.HasProperty) {
-            //  assetRepository.deletePropertyConstraint(constraint)
-            //} else {
-            constraintRepository.deleteConstraint(constraint.id) map (_ => Future.unit)
-            //}
+            val status = CollectionLogic.isConstraintModel(constraints.filter(c => c.id != id))
+            if (!status.valid) status.throwError
+
+            if (constraint.c == ConstraintType.HasProperty) {
+              collectionRepository.deletePropertyConstraint(constraint)
+            } else {
+              constraintRepository.deleteConstraint(constraint.id) map (_ => Future.unit)
+            }
           })
         })
       })
@@ -193,17 +195,20 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
     try {
       RoleAssertion.assertModeler
       //FIXME the ConstraintType.find() needs a check before, the rules can be empty and lead to a unspecified exception
-      val collectionConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
+      val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
       //val constraintStatus = AssetLogic.isValidConstraint(assetConstraint)
       //if (!constraintStatus.valid) constraintStatus.throwError
-      getConstraintsOfType(collectionConstraint.typeId) flatMap { i =>
+      getConstraintsOfType(newConstraint.typeId) flatMap { constraints =>
+
+        val newConstraints = CollectionLogic.applyConstraint(newConstraint)
+
         //val modelStatus = AssetLogic.isConstraintModel(i :+ assetConstraint)
         //if (!modelStatus.valid) modelStatus.throwError
 
         //if (assetConstraint.c == ConstraintType.HasProperty) {
         //  assetRepository.addPropertyConstraint(assetConstraint)
         //} else {
-        constraintRepository.addConstraint(collectionConstraint) map (_ -> Future.unit)
+        constraintRepository.addConstraint(newConstraint) map (_ -> Future.unit)
         //}
       }
     } catch {
