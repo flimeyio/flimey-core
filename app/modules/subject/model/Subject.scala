@@ -32,3 +32,16 @@ import java.sql.Timestamp
  * @param created time of creation
  */
 case class Subject(id: Long, entityId: Long, name: String, status: SubjectStatus.Status, created: Timestamp)
+
+object Subject {
+
+  def applyRaw (id: Long, entityId: Long, name: String, status: String, created: Timestamp): Subject = {
+    Subject(id, entityId, name, SubjectStatus.withName(status), created)
+  }
+
+  def unapplyToRaw(arg: Subject): Option[(Long, Long, String, String, Timestamp)] =
+    Option((arg.id, arg.entityId, arg.name, arg.status.toString, arg.created))
+
+  val tupledRaw: ((Long, Long, String, String, Timestamp)) => Subject = (this.applyRaw _).tupled
+
+}
