@@ -204,7 +204,7 @@ class AssetService @Inject()(typeRepository: TypeRepository,
 
   /**
    * Get a number od Assets defined by multiple query parameters and information on all AssetTypes.
-   * <p> This method calls [[ModelAssetService.getAllAssetTypes]] (see there for more information)
+   * <p> This method calls [[ModelAssetService.getAllTypes]] (see there for more information)
    * <p> This method calls [[AssetService.getAssets]] (see there for more information)
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
@@ -220,7 +220,7 @@ class AssetService @Inject()(typeRepository: TypeRepository,
                      (implicit ticket: Ticket): Future[AssetTypeCombination] = {
     try {
       RoleAssertion.assertWorker
-      modelAssetService.getAllAssetTypes flatMap (types => {
+      modelAssetService.getAllTypes flatMap (types => {
         val selectedAssetType = types.find(_.id == typeId)
         if (selectedAssetType.isDefined) {
           getAssets(typeId, pageNumber, pageSize, groupSelector) map (assetData => {

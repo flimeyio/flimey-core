@@ -19,11 +19,13 @@
 package modules.core.model
 
 /**
- * The AssetType data class
+ * The EntityType data class holds the definition of a modeled type.
+ * The associated Constraints are not held by this class but hold a reference to this class on their own.
+ * <p> Has a repository representation.
  *
  * @param id     unique primary key (given by db interface)
- * @param value  name of the AssetType
+ * @param value  name of the EntityType
  * @param typeOf specifies for which kind of entity this type is applicable
- * @param active status if AssetType can be used to create new Assets and Assets of this type can be accessed
+ * @param active status if the type can be used to create new entities and edit existing entities of this type.
  */
 case class EntityType(id: Long, value: String, typeOf: String, active: Boolean)

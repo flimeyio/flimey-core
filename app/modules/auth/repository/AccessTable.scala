@@ -19,7 +19,7 @@
 package modules.auth.repository
 
 import modules.auth.model.Access
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 class AccessTable (tag: Tag) extends Table[Access](tag, "access") {
 

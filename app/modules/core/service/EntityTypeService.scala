@@ -43,6 +43,7 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
   def addType(name: String, typeOf: String)(implicit ticket: Ticket): Future[Long] = {
     try {
       RoleAssertion.assertModeler
+      if(!CoreLogic.isStringIdentifier(name)) throw new Exception("Invalid identifier")
       //FIXME the input data must be validated, especially the typeOf value must match an actual type!
       typeRepository.add(EntityType(0, name, typeOf, active = false))
     } catch {

@@ -27,7 +27,6 @@ import modules.user.model.ViewerCombinator
  * <p> Contains attributes all subjects have in common.
  */
 abstract class ExtendedSubject {
-  val subject: Subject
   val properties: Seq[Property]
   val attachments: Seq[Asset]
   val viewers: ViewerCombinator

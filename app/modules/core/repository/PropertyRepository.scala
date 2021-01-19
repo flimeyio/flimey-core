@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,9 @@ package modules.core.repository
 import com.google.inject.Inject
 import modules.core.model.Property
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,8 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param dbConfigProvider injected database config
  * @param executionContext future execution context
  */
-class PropertyRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class PropertyRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
+  implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val properties = TableQuery[PropertyTable]
 

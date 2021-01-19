@@ -21,7 +21,7 @@ package modules.auth.repository
 import java.sql.Timestamp
 
 import modules.auth.model.AuthSession
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 class AuthSessionTable(tag: Tag) extends Table[AuthSession](tag, "auth_session") {
 
@@ -30,7 +30,7 @@ class AuthSessionTable(tag: Tag) extends Table[AuthSession](tag, "auth_session")
   def role = column[String]("role")
   def status = column[Boolean]("status")
   def userId = column[Long]("user_id")
-  def created = column[Timestamp]("created", O.SqlType("datetime not null default CURRENT_TIMESTAMP"))
+  def created = column[Timestamp]("created")
 
   override def * = (id, session, role, status, userId, created) <> (AuthSession.tupledRaw, AuthSession.unapplyToRaw)
 

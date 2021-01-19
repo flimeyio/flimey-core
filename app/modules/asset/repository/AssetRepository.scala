@@ -24,10 +24,11 @@ import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
 import modules.core.repository.{ConstraintTable, FlimeyEntityTable, PropertyTable, TypeTable, ViewerTable}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 import modules.user.model.{Group, ViewerCombinator}
 import modules.user.repository.GroupTable
+import play.db.NamedDatabase
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,8 +39,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param dbConfigProvider injected db config
  * @param executionContext future execution context
  */
-class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
+  implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val flimeyEntities = TableQuery[FlimeyEntityTable]
   val assets = TableQuery[AssetTable]
@@ -225,9 +226,9 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * @return Future[Unit]
    */
   def deletePropertyConstraint(constraint: Constraint): Future[Unit] = {
-    val assetsWithPropertyQuery = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
+    val entityIDsWithProperty = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
     db.run((for {
-      _ <- properties.filter(_.parentId in assetsWithPropertyQuery).filter(_.key === constraint.v1).delete
+      _ <- properties.filter(_.parentId in entityIDsWithProperty).filter(_.key === constraint.v1).delete
       _ <- constraints.filter(_.id === constraint.id).delete
     } yield ()).transactionally)
   }

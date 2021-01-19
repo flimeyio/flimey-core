@@ -18,30 +18,51 @@
 
 package modules.subject.service
 
-import modules.core.util.ConstraintProcessor
 import modules.core.model.{Constraint, ConstraintType}
+import modules.core.util.ConstraintProcessor
 import modules.subject.model.CollectionConstraintSpec
-import modules.util.messages.{ERR, Status}
+import modules.util.messages.{ERR, OK, Status}
 
 /**
  * Trait which provides functionality for parsing and processing constraints
  */
 trait CollectionConstraintProcessor extends ConstraintProcessor {
-  
+
   /**
-   * Checks if a given Constraint is a syntactically correct Constraint of an AssetType.
+   * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
+   * [[modules.subject.model.Collection Collection]]Type
    * No semantic analysis is done!
    *
    * @param constraint to check
    * @return Status with optional error message
    */
-    //FIXME adjust for collections
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
       case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, CollectionConstraintSpec.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
+      case ConstraintType.UsesPlugin => isUsesPluginConstraint(constraint.v1, constraint.v2)
+      case ConstraintType.CanContain => isCanContainConstraint(constraint.v1, constraint.v2)
       case _ => ERR("Invalid Asset Constraint Rule")
     }
+  }
+
+  /**
+   * Checks if a [[modules.core.model.Constraint Constraint]] model is valid to model a [[modules.subject.model.Collection Collection]].
+   * <p> 1. Checks if HasProperty(s) and MustBeDefined(s) are matching
+   * <p> 2. Checks if no duplicate Constraints are present
+   * <p> 3. Checks if the configuration serves its UsesPlugin(s)
+   * <p> 4. Checks NOT for invalid Constraints without effect, use [[isValidConstraint]]
+   *
+   * @param constraints model to check
+   * @return Status with optional error message
+   */
+  override def isConstraintModel(constraints: Seq[Constraint]): Status = {
+    //check HasProperty, MustBeDefined Constraints and duplicates.
+    val checkBaseModelStatus = super.isConstraintModel(constraints)
+
+    if (!checkBaseModelStatus.valid) return checkBaseModelStatus
+    if (!hasCompletePlugins(constraints)) return ERR("Model requires properties to serve its plugins")
+    OK()
   }
 
 }

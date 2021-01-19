@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package modules.core.repository
 
 import modules.core.model.Viewer
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
  * Slick framework db mapping for Viewers.
@@ -29,9 +29,12 @@ import slick.jdbc.MySQLProfile.api._
  */
 class ViewerTable(tag: Tag) extends Table[Viewer](tag, "entity_viewer") {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+
   def targetId = column[Long]("target_id")
+
   def viewerId = column[Long]("viewer_id")
+
   def role = column[String]("role")
 
   override def * = (id, targetId, viewerId, role) <> (Viewer.tupledRaw, Viewer.unapplyToRaw)

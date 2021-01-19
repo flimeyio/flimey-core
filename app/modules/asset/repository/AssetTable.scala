@@ -19,7 +19,7 @@
 package modules.asset.repository
 
 import modules.asset.model.Asset
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
  * Slick framework db mapping for Assets.

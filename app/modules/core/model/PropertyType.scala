@@ -20,13 +20,17 @@ package modules.core.model
 
 /**
  * Enum of available Property data types.
+ * <p> Every subclass of a [[FlimeyEntity]] can specify its own subset of these values.
  */
 object PropertyType extends Enumeration {
 
   import scala.language.implicitConversions
+
   protected case class Val(name: String) extends super.Val
+
   implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
 
   val StringType: Val = Val("string")
   val NumericType: Val = Val("number")
+  val DateTimeType: Val = Val("datetime")
 }

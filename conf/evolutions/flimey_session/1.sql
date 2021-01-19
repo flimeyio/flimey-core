@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.model
+-- !Ups
 
-import java.sql.Timestamp
+create table auth_session (
+    id SERIAL NOT NULL PRIMARY KEY,
+    session VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    status BOOL NOT NULL,
+    user_id BIGINT NOT NULL,
+    created TIMESTAMP NOT NULL
+);
 
-/**
- * A Subject is a basic time and process based entity.
- * Logical super class for both Collection and Collectible.
- * <p> Has a repository representation.
- *
- * @param id unique identifier
- *           @param entityId id of the parent FlimeyEntity
- * @param name short and descriptive name
- * @param status progress status - see [[SubjectStatus]]
- * @param created time of creation
- */
-case class Subject(id: Long, entityId: Long, name: String, status: SubjectStatus.Status, created: Timestamp)
+create table access (
+    id SERIAL NOT NULL PRIMARY KEY,
+    session_id BIGINT NOT NULL,
+    group_id BIGINT NOT NULL,
+    group_name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    FOREIGN KEY(session_id) REFERENCES auth_session(id)
+);
+
+-- !Downs
+
+DROP TABLE access;
+DROP TABLE auth_session;

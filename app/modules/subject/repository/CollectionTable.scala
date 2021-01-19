@@ -16,8 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.service
+package modules.subject.repository
+import java.sql.Timestamp
 
-class ModelSubjectService {
+import modules.subject.model.Collection
+import slick.jdbc.PostgresProfile.api._
+
+class CollectionTable(tag: Tag) extends Table[Collection](tag, "collection") {
+
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def typeId = column[Long]("type_id")
+  def entityId = column[Long]("entity_id")
+  def name = column[String]("name")
+  def status = column[String]("status")
+  def created = column[Timestamp]("created")
+
+  override def * = (id, typeId, entityId, name, status, created) <> (Collection.tupledRaw, Collection.unapplyToRaw)
 
 }

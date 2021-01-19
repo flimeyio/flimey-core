@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 package modules.auth.service
 
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.UUID.randomUUID
 
 import modules.auth.model.{Access, AuthSession}
@@ -43,8 +45,8 @@ object AuthLogic extends SessionProcessor with PasswordProcessor with ViewerProc
     //create random key (uuid is random enough)
     val sessionKey = randomUUID().toString
     //access id and session id (also foreign key) can be set to 0, the repository will replace them with actual values
-    //the same goes for the timestamp, which is set by sql to NOW
-    val session = AuthSession(0, sessionKey, user.role, status = true, user.id, null)
+    //the timestamp is set to the current system time
+    val session = AuthSession(0, sessionKey, user.role, status = true, user.id, Timestamp.valueOf(LocalDateTime.now()))
     val accesses: Set[Access] =
       viewerCombinator.maintainers.map(group => Access(0,0,group.id, group.name, ViewerRole.MAINTAINER)) ++
       viewerCombinator.editors.map(group => Access(0,0,group.id, group.name, ViewerRole.EDITOR)) ++

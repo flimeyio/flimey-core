@@ -18,7 +18,7 @@
 
 package modules.user.repository
 
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import modules.user.model.Group
 
 /**

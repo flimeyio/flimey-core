@@ -21,8 +21,9 @@ package modules.auth.repository
 import modules.auth.model.{Access, AuthSession}
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,8 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param dbConfigProvider injected db config
  * @param executionContext future execution context
  */
-class SessionRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class SessionRepository @Inject()(@NamedDatabase("flimey_session") protected val dbConfigProvider: DatabaseConfigProvider)(
+  implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val sessions = TableQuery[AuthSessionTable]
   val accesses = TableQuery[AccessTable]

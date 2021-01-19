@@ -56,7 +56,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def index: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelAssetService.getAllAssetTypes map (types => {
+        modelAssetService.getAllTypes map (types => {
           val error = request.flash.get("error")
           Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, error))
         }) recoverWith {
@@ -70,7 +70,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def searchAssets: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelAssetService.getAllAssetTypes map (types => {
+        modelAssetService.getAllTypes map (types => {
           //FIXME
           Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, None))
         })
@@ -93,7 +93,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
           },
           data => {
             val assetTypeValue = data.value
-            modelAssetService.getAssetTypeByValue(assetTypeValue) flatMap (assetType => {
+            modelAssetService.getTypeByValue(assetTypeValue) flatMap (assetType => {
               if (assetType.isEmpty) Future.failed(new Exception("No such AssetType found"))
               if (assetType.isDefined) {
                 Future.successful(Redirect(routes.AssetController.getAssets(assetType.get.id, 0)))
@@ -190,7 +190,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
                                    (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       groups <- groupService.getAllGroups
-      typeData <- modelAssetService.getCompleteAssetType(assetTypeId)
+      typeData <- modelAssetService.getCompleteType(assetTypeId)
     } yield {
       val (assetType, constraints) = typeData
       Ok(views.html.container.asset.new_asset_editor(assetType,
@@ -284,7 +284,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
                                 (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       extendedAsset <- assetService.getAsset(assetId)
-      typeData <- modelAssetService.getCompleteAssetType(extendedAsset.asset.typeId)
+      typeData <- modelAssetService.getCompleteType(extendedAsset.asset.typeId)
       groups <- groupService.getAllGroups
     } yield {
       val (assetType, constraints) = typeData
