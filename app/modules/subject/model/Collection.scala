@@ -18,13 +18,31 @@
 
 package modules.subject.model
 
+import java.sql.Timestamp
+
 /**
- * Collection is a subtype of Subject and represent the accumulation of several other Subjects.
- * In other words, a Collection is a Subject tree node.
+ * A Collection represents the accumulation of several [[modules.subject.model.Collectible Collectibles]].
+ * In other words, a Collection is a Collectible tree node.
  * <p> Has a repository representation.
  *
- * @param id unique identifier
- * @param subjectId id of the parent Subject
- * @param typeId id of the parent EntityType
+ * @param id       unique identifier (primary key)
+ * @param entityId id of the parent [[modules.core.model.FlimeyEntity FlimeyEntity]]
+ * @param typeId   if of the parent [[modules.core.model.EntityType EntityType]]
+ * @param name     unique name
+ * @param status   progress status
+ * @param created  creation time
  */
-case class Collection(id: Long, subjectId: Long, typeId: Long)
+case class Collection(id: Long, entityId: Long, typeId: Long, name: String, status: SubjectStatus.Status, created: Timestamp)
+
+object Collection {
+
+  def applyRaw(id: Long, entityId: Long, typeId: Long, name: String, status: String, created: Timestamp): Collection = {
+    Collection(id, entityId, typeId, name, SubjectStatus.withName(status), created)
+  }
+
+  def unapplyToRaw(arg: Collection): Option[(Long, Long, Long, String, String, Timestamp)] =
+    Option((arg.id, arg.entityId, arg.typeId, arg.name, arg.status.toString, arg.created))
+
+  val tupledRaw: ((Long, Long, Long, String, String, Timestamp)) => Collection = (this.applyRaw _).tupled
+
+}

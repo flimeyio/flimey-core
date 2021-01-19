@@ -26,14 +26,12 @@ import modules.user.model.ViewerCombinator
  * The extended [[Collection]] class how it is commonly used with all its objectified properties.
  *
  * @param collection   Collection head (contains only id and type reference)
- * @param subject      parent Subject
  * @param collectibles child Collectibles
  * @param properties   all SubjectProperties of the Collection
  * @param attachments  all attached Assets of the Collection (not of the Collectibles)
  * @param viewers      ViewerCombinator
  */
 case class ExtendedCollection(collection: Collection,
-                              subject: Subject,
                               collectibles: Seq[ExtendedCollectible],
                               properties: Seq[Property],
                               attachments: Seq[Asset],
