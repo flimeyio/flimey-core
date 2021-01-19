@@ -46,7 +46,7 @@ object Constraint {
 
   def unapplyToRaw(arg: Constraint): Option[(Long, String, String, String, Option[String], Long)] = {
     if(arg.byPlugin.isDefined) {
-      Option((arg.id, arg.c.toString, arg.v1, arg.v2, Option(arg.byPlugin.toString), arg.typeId))
+      Option((arg.id, arg.c.toString, arg.v1, arg.v2, Option(arg.byPlugin.get.toString), arg.typeId))
     }else{
       Option((arg.id, arg.c.toString, arg.v1, arg.v2, None, arg.typeId))
     }

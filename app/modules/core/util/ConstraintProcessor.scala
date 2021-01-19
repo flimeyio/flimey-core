@@ -119,11 +119,13 @@ trait ConstraintProcessor {
    */
   protected def hasCompletePlugins(constraints: Seq[Constraint]): Boolean = {
     constraints.filter(_.c == ConstraintType.UsesPlugin).map(pluginConstraint => {
+      //for every UsesPlugin Constraint
       val pluginType = PluginType.withName(pluginConstraint.v1)
       val requiredProperties = PluginSpec.getSpecFromType(pluginType)
+      //for all properties required by the Plugin
       requiredProperties.map(propertySpec => {
         val (key: String, propertyType: PropertyType.Value) = propertySpec
-        constraints.exists(c => c.c == ConstraintType.HasProperty && c.v1 == key && c.v2 == propertyType.toString)
+        constraints.exists(c => c.c == ConstraintType.HasProperty && c.v1 == key && c.v2 == propertyType.name)
       }).reduceOption((a, b) => a & b).getOrElse(true)
     }).reduceOption((a, b) => a & b).getOrElse(true)
   }

@@ -79,7 +79,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    */
   def addConstraints(typeId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
 
-    val allConstraints = propertyConstraints ++ otherConstraints
+    val allConstraints = (propertyConstraints ++ otherConstraints) map (c => Constraint(c.id, c.c, c.v1, c.v2, c.byPlugin, typeId))
 
     db.run((for {
       entityIDsWithType <- collections.filter(_.typeId === typeId).map(_.entityId).result
