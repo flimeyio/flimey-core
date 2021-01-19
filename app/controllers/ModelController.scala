@@ -158,7 +158,7 @@ class ModelController @Inject()(cc: ControllerComponents,
             }).tupled(res)) recoverWith {
             case e: Throwable => {
               logger.error(e.getMessage, e)
-              Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing(("error" -> e.getMessage)))
+              Future.successful(Redirect(routes.ModelController.index()).flashing(("error" -> e.getMessage)))
             }
           }
       }
