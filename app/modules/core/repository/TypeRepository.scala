@@ -22,8 +22,9 @@ import com.google.inject.Inject
 import modules.asset.repository.{AssetRepository, AssetTable}
 import modules.core.model.{Constraint, EntityType}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,7 +35,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param dbConfigProvider injected db config
  * @param executionContext future execution context
  */
-class TypeRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val assetRepository: AssetRepository)(implicit executionContext: ExecutionContext)
+class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider,
+                               val assetRepository: AssetRepository)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val types = TableQuery[TypeTable]

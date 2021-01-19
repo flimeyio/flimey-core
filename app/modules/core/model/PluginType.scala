@@ -18,9 +18,6 @@
 
 package modules.core.model
 
-/**
- * Enumeration representing the possible Plugin types of a [[modules.subject.model.Subject]]
- */
 object PluginType extends Enumeration {
 
   type Type = Value

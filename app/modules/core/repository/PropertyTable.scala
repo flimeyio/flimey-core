@@ -19,7 +19,7 @@
 package modules.core.repository
 
 import modules.core.model.Property
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
  * Slick framework db mapping for Properties.
@@ -31,7 +31,7 @@ class PropertyTable(tag: Tag) extends Table[Property](tag, "property") {
 
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
-  def key = column[String]("key")
+  def key = column[String]("pkey")
 
   def value = column[String]("value")
 

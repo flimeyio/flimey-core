@@ -21,9 +21,10 @@ package modules.user.repository
 import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 import modules.user.model.User
+import play.db.NamedDatabase
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,8 +35,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param dbConfigProvider injected db config
  * @param executionContext future execution context
  */
-class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class UserRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
+  implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val users = TableQuery[UserTable]
   val groupMemberships = TableQuery[GroupMembershipTable]

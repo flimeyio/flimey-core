@@ -124,8 +124,8 @@ trait ConstraintProcessor {
       requiredProperties.map(propertySpec => {
         val (key: String, propertyType: PropertyType.Value) = propertySpec
         constraints.exists(c => c.c == ConstraintType.HasProperty && c.v1 == key && c.v2 == propertyType.toString)
-      }).reduce((a, b) => a & b)
-    }).reduce((a, b) => a & b)
+      }).reduceOption((a, b) => a & b).getOrElse(true)
+    }).reduceOption((a, b) => a & b).getOrElse(true)
   }
 
   /**

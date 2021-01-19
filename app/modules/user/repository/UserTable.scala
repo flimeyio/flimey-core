@@ -18,7 +18,7 @@
 
 package modules.user.repository
 
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import modules.user.model.User
 
 /**
@@ -27,7 +27,7 @@ import modules.user.model.User
  *
  * @param tag fro mysql
  */
-class UserTable(tag: Tag) extends Table[User](tag, "user") {
+class UserTable(tag: Tag) extends Table[User](tag, "f_user") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
   def username = column[String]("username", O.Unique)

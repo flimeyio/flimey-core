@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,25 +18,25 @@
 
 -- !Ups
 
-create table `auth_session` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `session` VARCHAR(255) NOT NULL,
-    `role` VARCHAR(255) NOT NULL,
-    `status` BOOL NOT NULL,
-    `user_id` BIGINT NOT NULL,
-    `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+create table auth_session (
+    id SERIAL NOT NULL PRIMARY KEY,
+    session VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    status BOOL NOT NULL,
+    user_id BIGINT NOT NULL,
+    created TIMESTAMP NOT NULL
 );
 
-create table `access` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `session_id` BIGINT NOT NULL,
-    `group_id` BIGINT NOT NULL,
-    `group_name` VARCHAR(255) NOT NULL,
-    `role` VARCHAR(255) NOT NULL,
+create table access (
+    id SERIAL NOT NULL PRIMARY KEY,
+    session_id BIGINT NOT NULL,
+    group_id BIGINT NOT NULL,
+    group_name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
     FOREIGN KEY(session_id) REFERENCES auth_session(id)
 );
 
 -- !Downs
 
-DROP TABLE `access`;
-DROP TABLE `auth_session`;
+DROP TABLE access;
+DROP TABLE auth_session;

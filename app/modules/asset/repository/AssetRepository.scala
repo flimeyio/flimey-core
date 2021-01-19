@@ -24,10 +24,11 @@ import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
 import modules.core.repository.{ConstraintTable, FlimeyEntityTable, PropertyTable, TypeTable, ViewerTable}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 import modules.user.model.{Group, ViewerCombinator}
 import modules.user.repository.GroupTable
+import play.db.NamedDatabase
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,8 +39,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param dbConfigProvider injected db config
  * @param executionContext future execution context
  */
-class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
+  implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val flimeyEntities = TableQuery[FlimeyEntityTable]
   val assets = TableQuery[AssetTable]

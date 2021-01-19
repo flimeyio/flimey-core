@@ -20,7 +20,7 @@ package modules.subject.repository
 import java.sql.Timestamp
 
 import modules.subject.model.Collection
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 class CollectionTable(tag: Tag) extends Table[Collection](tag, "collection") {
 
@@ -29,7 +29,7 @@ class CollectionTable(tag: Tag) extends Table[Collection](tag, "collection") {
   def entityId = column[Long]("entity_id")
   def name = column[String]("name")
   def status = column[String]("status")
-  def created = column[Timestamp]("created", O.SqlType("datetime not null default CURRENT_TIMESTAMP"))
+  def created = column[Timestamp]("created")
 
   override def * = (id, typeId, entityId, name, status, created) <> (Collection.tupledRaw, Collection.unapplyToRaw)
 

@@ -19,7 +19,7 @@
 package modules.user.repository
 
 import modules.core.model.Viewer
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
  * Slick framework db mapping for Viewers which target Groups.

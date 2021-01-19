@@ -22,14 +22,15 @@ import com.google.inject.Inject
 import modules.core.model.{Constraint, Property}
 import modules.core.repository._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CollectionRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
+  implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val collections = TableQuery[CollectionTable]
   val entities = TableQuery[FlimeyEntityTable]

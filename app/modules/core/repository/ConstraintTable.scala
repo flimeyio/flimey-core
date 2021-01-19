@@ -19,7 +19,7 @@
 package modules.core.repository
 
 import modules.core.model.Constraint
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
  * Slick framework db mapping for Constraints.
@@ -27,7 +27,7 @@ import slick.jdbc.MySQLProfile.api._
  *
  * @param tag for mysql
  */
-class ConstraintTable(tag: Tag) extends Table[Constraint](tag, "constraint") {
+class ConstraintTable(tag: Tag) extends Table[Constraint](tag, "type_constraint") {
 
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
