@@ -39,6 +39,17 @@ create table `constraint` (
     FOREIGN KEY(type_id) REFERENCES entity_type(id)
 );
 
+create table `collection` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `type_id` BIGINT NOT NULL,
+    `entity_id` BIGINT NOT NULL,
+    `name` VARCHAR(255) NOT NULL UNIQUE,
+    `status` VARCHAR(255) NOT NULL,
+    `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(entity_id) REFERENCES flimey_entity(id),
+    FOREIGN KEY(type_id) REFERENCES entity_type(id)
+);
+
 create table `asset` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `entity_id` BIGINT NOT NULL,
@@ -116,5 +127,6 @@ drop table `user`;
 drop table `property`;
 drop table `constraint`;
 drop table `asset`;
+drop table `collection`;
 drop table `entity_type`;
 drop table `flimey_entity`;
