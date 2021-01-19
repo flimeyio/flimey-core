@@ -138,9 +138,8 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    * Delete a CollectionConstraint by its ID.
    * <p> By deleting a Constraint, the associated ACollectionType model must stay valid.
    * If the removal of the Constraint will invalidate the model, the future will fail.
-   * <p> <strong>The removal of a 'HasProperty' Constraint leads to the system wide removal of all corresponding
+   * <p> <strong>The removal of a HasProperty or UsesPlugin Constraint leads to the system wide removal of all corresponding
    * Collection data properties!</strong>
-   * //FIXME what happens if uses plugin or can contain is removed -> in this case also strict deletion!
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -154,21 +153,22 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
       entityTypeService.getConstraint(id) flatMap (constraintOption => {
         if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
         val constraint = constraintOption.get
+
         getType(constraint.typeId) flatMap (collectionType => {
           if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
+          val typeId = collectionType.get.id
 
-          getConstraintsOfType(collectionType.get.id) flatMap (constraints => {
-
+          getConstraintsOfType(typeId) flatMap (constraints => {
             val deletedConstraints = CollectionLogic.removeConstraint(constraint, constraints)
+            val remainingConstraints = constraints.filter(c => !deletedConstraints.contains(c))
 
-            val status = CollectionLogic.isConstraintModel(constraints.filter(c => c.id != id))
+            val status = CollectionLogic.isConstraintModel(remainingConstraints)
             if (!status.valid) status.throwError
 
-            if (constraint.c == ConstraintType.HasProperty) {
-              collectionRepository.deletePropertyConstraint(constraint)
-            } else {
-              constraintRepository.deleteConstraint(constraint.id) map (_ => Future.unit)
-            }
+            val deletedPropertyConstraints = deletedConstraints.filter(_.c == ConstraintType.HasProperty)
+            val deletedOtherConstraints = deletedConstraints diff deletedPropertyConstraints
+
+            collectionRepository.deleteConstraints(typeId, deletedPropertyConstraints, deletedOtherConstraints)
           })
         })
       })
@@ -196,21 +196,27 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
       RoleAssertion.assertModeler
       //FIXME the ConstraintType.find() needs a check before, the rules can be empty and lead to a unspecified exception
       val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
-      //val constraintStatus = AssetLogic.isValidConstraint(assetConstraint)
-      //if (!constraintStatus.valid) constraintStatus.throwError
-      getConstraintsOfType(newConstraint.typeId) flatMap { constraints =>
+      val constraintStatus = CollectionLogic.isValidConstraint(newConstraint)
+      if (!constraintStatus.valid) constraintStatus.throwError
 
-        val newConstraints = CollectionLogic.applyConstraint(newConstraint)
+      getType(newConstraint.typeId) flatMap (collectionType => {
+        if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
+        val typeId = collectionType.get.id
 
-        //val modelStatus = AssetLogic.isConstraintModel(i :+ assetConstraint)
-        //if (!modelStatus.valid) modelStatus.throwError
+        getConstraintsOfType(newConstraint.typeId) flatMap (constraints => {
 
-        //if (assetConstraint.c == ConstraintType.HasProperty) {
-        //  assetRepository.addPropertyConstraint(assetConstraint)
-        //} else {
-        constraintRepository.addConstraint(newConstraint) map (_ -> Future.unit)
-        //}
-      }
+          val newConstraints = CollectionLogic.applyConstraint(newConstraint)
+          val newConstraintModel = constraints ++ newConstraints
+
+          val modelStatus = CollectionLogic.isConstraintModel(newConstraintModel)
+          if (!modelStatus.valid) modelStatus.throwError
+
+          val newPropertyConstraints = newConstraints.filter(_.c == ConstraintType.HasProperty)
+          val newOtherConstraints = newConstraints diff newPropertyConstraints
+
+          collectionRepository.addConstraints(typeId, newPropertyConstraints, newOtherConstraints)
+        })
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }
