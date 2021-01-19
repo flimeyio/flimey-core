@@ -22,17 +22,13 @@ object PluginType extends Enumeration {
 
   type Type = Value
 
-  import scala.language.implicitConversions
+  val TimedInterval, Milestone, TimeAccumulation, CostAccumulation, WithPriority = Value
 
-  protected case class Val(name: String) extends super.Val
-
-  implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
-
-  val TimedInterval: Val = Val("Timed Interval")
-  val Milestone: Val = Val("Milestone")
-  val TimeAccumulation: Val = Val("Time Accumulation")
-  val CostAccumulation: Val = Val("Cost Accumulation")
-  val WithPriority: Val = Val("Prioritizing")
-
-  def find(name: String): Option[PluginType.Type] = values find (t => t.name == name)
+  def find(name: String): Option[PluginType.Type] = {
+    try {
+      Option(PluginType.withName(name))
+    } catch {
+      case e: Exception => None
+    }
+  }
 }
