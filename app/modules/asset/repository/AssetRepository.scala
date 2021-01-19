@@ -225,9 +225,9 @@ class AssetRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
    * @return Future[Unit]
    */
   def deletePropertyConstraint(constraint: Constraint): Future[Unit] = {
-    val assetsWithPropertyQuery = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
+    val entityIDsWithProperty = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
     db.run((for {
-      _ <- properties.filter(_.parentId in assetsWithPropertyQuery).filter(_.key === constraint.v1).delete
+      _ <- properties.filter(_.parentId in entityIDsWithProperty).filter(_.key === constraint.v1).delete
       _ <- constraints.filter(_.id === constraint.id).delete
     } yield ()).transactionally)
   }
