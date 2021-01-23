@@ -18,15 +18,15 @@
 
 package controllers
 
-import auth.service.AuthService
+import modules.auth.service.AuthService
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.formdata._
-import user.model.Role
-import user.service.{GroupService, UserService}
+import modules.user.formdata._
+import modules.user.model.Role
+import modules.user.service.{GroupService, UserService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

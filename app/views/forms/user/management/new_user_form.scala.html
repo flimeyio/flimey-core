@@ -15,8 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import auth.formdata.LoginForm
-@import user.formdata.NewUserForm
+@import modules.auth.formdata.LoginForm
+@import modules.user.formdata.NewUserForm
 @import views.html.helper.CSRF
 @import views.html.components.utils.message_box_error
 @(newUserForm: Form[NewUserForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)

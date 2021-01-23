@@ -15,17 +15,17 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import auth.model.Ticket
-@import user.formdata.NewGroupMemberForm
+@import modules.auth.model.Ticket
+@import modules.user.formdata.NewGroupMemberForm
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category
 @import views.html.components.utils.management_nav
 @import views.html.components.utils.navbar_category_closeable
-@import user.model.User
+@import modules.user.model.User
 @import views.html.components.user.group_member_block
 @import views.html.components.user.group_detail_view
 @import views.html.forms.user.management.new_group_member_form
-@import user.model.Group
+@import modules.user.model.Group
 @(group: Group, members: Seq[User], newGroupMemberForm: Form[NewGroupMemberForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

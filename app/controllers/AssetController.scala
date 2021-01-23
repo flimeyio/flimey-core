@@ -18,16 +18,17 @@
 
 package controllers
 
-import asset.formdata.{NewAssetForm, SelectAssetTypeForm}
-import asset.service.{AssetService, ModelAssetService}
-import auth.model.Ticket
+import modules.asset.formdata.NewAssetForm
+import modules.asset.service.{AssetService, ModelAssetService}
+import modules.auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
+import modules.core.formdata.SelectTypeForm
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import user.service.GroupService
+import modules.user.service.GroupService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -55,7 +56,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def index: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelAssetService.getAllAssetTypes map (types => {
+        modelAssetService.getAllTypes map (types => {
           val error = request.flash.get("error")
           Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, error))
         }) recoverWith {
@@ -69,7 +70,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def searchAssets: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelAssetService.getAllAssetTypes map (types => {
+        modelAssetService.getAllTypes map (types => {
           //FIXME
           Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, None))
         })
@@ -86,13 +87,13 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def changeAssetType: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        SelectAssetTypeForm.form.bindFromRequest fold(
+        SelectTypeForm.form.bindFromRequest fold(
           errorForm => {
             Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> "No such Asset Type found"))
           },
           data => {
             val assetTypeValue = data.value
-            modelAssetService.getAssetTypeByValue(assetTypeValue) flatMap (assetType => {
+            modelAssetService.getTypeByValue(assetTypeValue) flatMap (assetType => {
               if (assetType.isEmpty) Future.failed(new Exception("No such AssetType found"))
               if (assetType.isDefined) {
                 Future.successful(Redirect(routes.AssetController.getAssets(assetType.get.id, 0)))
@@ -189,7 +190,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
                                    (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       groups <- groupService.getAllGroups
-      typeData <- modelAssetService.getCompleteAssetType(assetTypeId)
+      typeData <- modelAssetService.getCompleteType(assetTypeId)
     } yield {
       val (assetType, constraints) = typeData
       Ok(views.html.container.asset.new_asset_editor(assetType,
@@ -283,7 +284,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
                                 (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       extendedAsset <- assetService.getAsset(assetId)
-      typeData <- modelAssetService.getCompleteAssetType(extendedAsset.asset.typeId)
+      typeData <- modelAssetService.getCompleteType(extendedAsset.asset.typeId)
       groups <- groupService.getAllGroups
     } yield {
       val (assetType, constraints) = typeData

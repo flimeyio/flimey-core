@@ -15,14 +15,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.model.AssetType
-@import auth.model.Ticket
+@import modules.auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_searchable}
-@import views.html.forms.asset.select_asset_type_form
-@import asset.model.ExtendedAsset
+@import modules.asset.model.ExtendedAsset
 @import views.html.components.asset.asset_block
-@(selectedType: Option[AssetType],
-        assetTypes: Seq[AssetType],
+@import modules.core.model.EntityType
+@import views.html.forms.core.select_type_form
+@(selectedType: Option[EntityType],
+        assetTypes: Seq[EntityType],
         assetData: Seq[ExtendedAsset],
         pageNumber: Int,
         selectedAsset: Option[Long],
@@ -35,7 +35,7 @@
 @navbar_category_searchable(Seq("Assets"), routes.AssetController.searchAssets)
 @message_box_error(msg)
     <div class="select-bar menu relative-container">
-@select_asset_type_form(selectedType, assetTypes)
+@select_type_form(selectedType, assetTypes)
 @if(selectedType.isDefined) {
     <div class="padding-left-right">
     <a href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">

@@ -18,7 +18,7 @@
 
 package middleware
 
-import auth.service.AuthService
+import modules.auth.service.AuthService
 import com.google.inject.Inject
 import controllers.routes
 import play.api.Logging

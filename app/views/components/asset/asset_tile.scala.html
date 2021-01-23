@@ -15,9 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import asset.model.ExtendedAsset
-@import auth.model.Ticket
-@import user.util.ViewerAssertion
+@import modules.asset.model.ExtendedAsset
+@import modules.auth.model.Ticket
+@import modules.user.util.ViewerAssertion
 @(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 <div class="">
