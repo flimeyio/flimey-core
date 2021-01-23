@@ -249,3 +249,16 @@ tbody tr:nth-child(even){
 .big-icon{
     font-size: 30px;
 }
+
+.admin_nav a{
+    color:white;
+}
+
+.admin_nav .button{
+    width: 100%;
+}
+
+.small-margin-top{
+    margin-top: 1px;
+    margin-bottom: 0;
+}
