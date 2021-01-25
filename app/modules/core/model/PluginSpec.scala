@@ -40,7 +40,7 @@ object PluginSpec {
   )
 
   def withPriorityConstraints: Map[String, PropertyType.Value] = Map(
-    "Final Date" -> PropertyType.DateTimeType
+    "Priority" -> PropertyType.NumericType
   )
 
   def getSpecFromType(pluginType: PluginType.Type): Map[String, PropertyType.Value] = pluginType match {
