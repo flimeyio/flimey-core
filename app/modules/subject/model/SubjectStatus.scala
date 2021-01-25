@@ -25,6 +25,6 @@ object SubjectStatus extends Enumeration {
 
   type Status = Value
 
-  val OPEN, CLOSED, ARCHIVED = Value
+  val CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED = Value
 
 }
