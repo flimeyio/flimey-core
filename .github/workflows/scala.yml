@@ -41,12 +41,12 @@ jobs:
     
     - name: Creat dummy db conf (which is overritten by the test setup later)
       run: |
-        echo data_url="" > ./conf/db.conf
-        echo data_user="" >> ./conf/db.conf
-        echo data_password="" >> ./conf/db.conf
-        echo session_url="" >> ./conf/db.conf
-        echo session_user="" >> ./conf/db.conf
-        echo session_password="" >> ./conf/db.conf
+        echo 'data_url="x"' > ./conf/db.conf
+        echo 'data_user="x"' >> ./conf/db.conf
+        echo 'data_password="x"' >> ./conf/db.conf
+        echo 'session_url="x"' >> ./conf/db.conf
+        echo 'session_user="x"' >> ./conf/db.conf
+        echo 'session_password="x"' >> ./conf/db.conf
     
     - name: Cache SBT
       uses: actions/cache@v2
