@@ -7,3 +7,7 @@
 This project is work in progress. Do not use in production! 
 
 A detailled documentation can be found [here](https://github.com/flimeyio/flimey-core/wiki).
+
+## Contribute
+
+Interested in flimey? - Contact us at ``dev@flimey.io``
