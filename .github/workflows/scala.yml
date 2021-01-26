@@ -38,7 +38,16 @@ jobs:
     - name: Create session test database
       run: |
          PGPASSWORD=developer psql -h localhost -p 5432 -U developer -c "SELECT 'CREATE DATABASE flimey_session_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'flimey_session_test')"
-      
+    
+    - name: Creat dummy db conf (which is overritten by the test setup later)
+      run: |
+        echo data_url="" > ./conf/db.conf
+        echo data_user="" >> ./conf/db.conf
+        echo data_password="" >> ./conf/db.conf
+        echo session_url="" >> ./conf/db.conf
+        echo session_user="" >> ./conf/db.conf
+        echo session_password="" >> ./conf/db.conf
+    
     - name: Cache SBT
       uses: actions/cache@v2
       with:
