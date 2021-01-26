@@ -30,6 +30,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       
+    - name: Create data test database
+      run: |
+        PGPASSWORD=postgres psql -U postgres -tc "SELECT 'CREATE DATABASE flimey_data_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'flimey_data_test')"
+    
+    - name: Create session test database
+      run: |
+        PGPASSWORD=postgres psql -U postgres -tc "SELECT 'CREATE DATABASE flimey_session_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'flimey_session_test')"
+      
+    - name: Create developer user for database testing
+      run: |
+        PGPASSWORD=postgres psql -U postgres -tc "CREATE ROLE developer WITH LOGIN SUPERUSER PASSWORD 'developer'"
+      
+      
     - name: Cache SBT
       uses: actions/cache@v2
       with:
