@@ -30,8 +30,8 @@ trait CredentialProcessor {
    * @return
    */
   def validateUsername(candidate: String): Status = {
-    if(candidate.length > 64){
-      ERR("Username must be shorter than 64 characters")
+    if(candidate.length < 1 || candidate.length > 64){
+      ERR("Username must be shorter longer than 0 and than 64 characters")
     }else{
       OK()
     }
