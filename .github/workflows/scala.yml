@@ -35,15 +35,15 @@ jobs:
       run: |
         PGPASSWORD=developer psql -U developer -c "SELECT 'CREATE DATABASE flimey_data_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'flimey_data_test')"
       env:
-         POSTGRES_HOST: postgres
-         POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+         POSTGRES_HOST: localhost
+         POSTGRES_PORT: 5432
     
     - name: Create session test database
       run: |
         PGPASSWORD=developer psql -U developer -c "SELECT 'CREATE DATABASE flimey_session_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'flimey_session_test')"
       env:
-        POSTGRES_HOST: postgres
-        POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
       
       
     - name: Cache SBT
