@@ -18,17 +18,13 @@
 
 package modules.subject.model
 
-import modules.asset.model.Asset
-import modules.core.model.Property
+import modules.core.model.ExtendedEntityType
 
 /**
- * The extended [[modules.subject.model.Collectible Collectible]] class how it is commonly used with all its objectified
- * [[modules.core.model.Property Properties]] as well as all associated entities.
+ * The CollectionTypeComplex is a helper class to wrap several [[modules.subject.model.CollectionHeader CollectionHeaders]]
+ * together with all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define [[modules.subject.model.Collection Collections]].
  *
- * @param collectible Collectible (contains only id and type reference)
- * @param properties  all Properties of the Collectible
- * @param attachments all attached [[modules.asset.model.Asset Assets]] of the Collectible
+ * @param collections   CollectionHeaders
+ * @param collectionTypes all EntityTypes which define Collections
  */
-case class ExtendedCollectible(collectible: Collectible,
-                               properties: Seq[Property],
-                               attachments: Seq[Asset])
+case class CollectionTypeComplex(collections: Seq[CollectionHeader], collectionTypes: Seq[ExtendedEntityType])
