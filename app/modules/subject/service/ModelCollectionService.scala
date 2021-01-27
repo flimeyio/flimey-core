@@ -21,7 +21,7 @@ package modules.subject.service
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, ConstraintType, EntityType}
+import modules.core.model.{Constraint, ConstraintType, EntityType, ExtendedEntityType}
 import modules.core.repository.{ConstraintRepository, TypeRepository}
 import modules.core.service.{EntityTypeService, ModelEntityService}
 import modules.subject.model.CollectionConstraintSpec
@@ -53,6 +53,19 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    */
   override def getAllTypes()(implicit ticket: Ticket): Future[Seq[EntityType]] = {
     entityTypeService.getAllTypes(Option(CollectionConstraintSpec.COLLECTION))
+  }
+
+  /**
+   * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define
+   * [[modules.subject.model.Collection Collections]].
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param ticket implicit authentication ticket
+   * @return Future Seq[EntityType]
+   */
+  def getAllExtendedTypes()(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
+    entityTypeService.getAllExtendedTypes(Option(CollectionConstraintSpec.COLLECTION))
   }
 
   /**

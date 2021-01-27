@@ -21,7 +21,7 @@ package modules.core.service
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, EntityType}
+import modules.core.model.{Constraint, EntityType, ExtendedEntityType}
 import modules.core.repository.{ConstraintRepository, TypeRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -68,6 +68,25 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
       case e: Throwable => Future.failed(e)
     }
   }
+
+  /**
+   * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]].
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param derivesFrom optional parent type specification
+   * @param ticket      implicit authentication ticket
+   * @return Future Seq[ExtendedEntityType]
+   */
+  def getAllExtendedTypes(derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
+    try {
+      RoleAssertion.assertWorker
+      typeRepository.getAllExtended(derivesFrom)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
 
   /**
    * Get an EntityType by its ID.
