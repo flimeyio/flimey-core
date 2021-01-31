@@ -19,12 +19,27 @@
 @import modules.user.model.Group
 @(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <p>@group.name</p>
-    <p><a href="@routes.ManagementController.getGroupEditor(group.id)">Edit Members</a></p>
-    <p><a href="@routes.ManagementController.getGroupRelationEditor(group.id)">Edit Relations</a></p>
-    <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">X</button>
-    </form>
+<div class="tile flex-container vertical padding-bottom">
+    <div class="subtitle-bar full-width h6">@group.name</div>
+    <div class="flex-container horizontal full-width">
+        <div class="col-3">
+            <div class="button border-button no-margin align-horizontal">
+                <i class="material-icons center-icon-vertical">create</i>
+                <a class="no-hover" href="@routes.ManagementController.getGroupEditor(group.id)">Members</a>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="button border-button no-margin align-horizontal">
+                <i class="material-icons center-icon-vertical">create</i>
+                <a class="no-hover" href="@routes.ManagementController.getGroupRelationEditor(group.id)">Relations</a>
+            </div>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-2">
+            <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
+                @CSRF.formField
+                <button type="submit" class="button button-small no-margin delete-button border-button">Delete</button>
+            </form>
+        </div>
+    </div>
 </div>

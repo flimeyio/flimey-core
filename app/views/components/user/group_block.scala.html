@@ -20,9 +20,5 @@
 @(groups: Seq[Group])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @for(group <- groups){
-    <div>
-        <hr>
         @group_tile(group)
-        <hr>
-    </div>
 }

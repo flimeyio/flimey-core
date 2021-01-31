@@ -66,13 +66,8 @@
 
 a{
     color: var(--color-prim);
-    padding: 0 !important;
 }
 
-a:hover{
-    text-shadow: 0 0 1px var(--color-sec-light);
-    color: var(--color-prim-dark);
-}
 
 .button{
     color: #ffffff;
@@ -146,8 +141,10 @@ a:hover{
 }
 
 .button-small{
-    width: 70px;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+    width: fit-content;
+    min-width: 60px;
+    /*box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);*/
+    padding: 3px;
 }
 
 tbody tr:nth-child(even){
@@ -171,6 +168,7 @@ tbody tr:nth-child(even){
 .tile{
     margin: 10px;
     padding: 10px;
+    width: calc(100% - 20px);
     box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2), 0 2px 8px 0 rgba(0, 0, 0, 0.01);
 }
 
@@ -216,6 +214,7 @@ tbody tr:nth-child(even){
 .border-button:hover{
     background-color: var(--color-prim-dark);
     border-color: var(--color-prim-dark);
+    color: white;
 }
 
 .padding-left-right{
@@ -225,14 +224,6 @@ tbody tr:nth-child(even){
     padding-right:5px;
 }
 
-
-.border-button i{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    height: 60%;
-    transform: translate(-50%, -50%);
-}
 
 .right{
     position: absolute;
@@ -261,4 +252,76 @@ tbody tr:nth-child(even){
 .small-margin-top{
     margin-top: 1px;
     margin-bottom: 0;
+}
+
+.form-container{
+    padding: 10px;
+}
+
+.cell-center-text{
+    margin-top: 7px;
+}
+
+.bottom-right{
+    float: right;
+}
+
+.margin-bottom-10{
+    margin-bottom: 10px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.delete-button:hover{
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.subtitle-bar{
+    padding: 7px;
+    margin: 1px 1px 10px 1px;
+    border-bottom: solid;
+    border-bottom-color: var(--color-sec-light);
+    border-width: 1px;
+    text-align: center;
+}
+
+.padding-bottom{
+    padding-top: 0;
+}
+
+.align-horizontal{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 0 auto;
+
+}
+
+.center-icon-vertical{
+    /*position: absolute;*/
+    top: 50%;
+    left: 5%;
+    height: 60%;
+    transform: translate(-50%, -50%);
+}
+
+a:hover{
+    text-shadow: 0 0 1px var(--color-sec-light);
+    color: var(--color-prim-dark);
+}
+
+.no-hover:hover{
+    color: white !important;
+    text-shadow: none !important;
+}
+
+.no-padding{
+    padding: 0 !important;
+}
+
+.margin-top-5{
+    margin-top: 5px;
 }
