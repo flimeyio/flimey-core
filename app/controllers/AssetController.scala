@@ -121,8 +121,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def getAssets(assetTypeId: Long, pageNumber: Int, groupSelector: Option[String] = None):
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
-      //FIXME set pageSize to something around 50
-      assetService.getAssetComplex(assetTypeId, pageNumber, pageSize = 8, groupSelector) map (assetComplex => {
+      assetService.getAssetComplex(assetTypeId, pageNumber, pageSize = 20, groupSelector) map (assetComplex => {
         val error = request.flash.get("error")
         Ok(views.html.container.asset.asset_overview(assetComplex.parentAssetType, assetComplex.allAssetTypes, assetComplex.children, pageNumber, error))
       }) recoverWith {
