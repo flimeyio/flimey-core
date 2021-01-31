@@ -38,10 +38,8 @@
 @select_type_form(selectedType, assetTypes)
 @if(selectedType.isDefined) {
     <div class="padding-left-right">
-    <a href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">
-        <button class="button border-button no-margin">
-        <i class="material-icons">add</i>
-        </button>
+    <a class= "button border-button no-padding" href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">
+        <i class="material-icons margin-top-5">add</i>
     </a>
     </div>
     <div>
@@ -53,7 +51,7 @@
         </div>
     }
     <div class="right">
-    <a href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber+1)">
+    <a class="no-padding" href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber+1)">
         <i class="material-icons big-icon">navigate_next</i>
     </a>
     </div>
