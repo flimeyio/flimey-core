@@ -18,12 +18,11 @@
 
 package controllers
 
-import modules.asset.formdata.NewAssetForm
 import modules.asset.service.{AssetService, ModelAssetService}
 import modules.auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
-import modules.core.formdata.SelectTypeForm
+import modules.core.formdata.{NewEntityForm, SelectTypeForm}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
@@ -142,7 +141,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def getNewAssetEditor(assetTypeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        val newAssetForm = NewAssetForm.form.fill(NewAssetForm.Data(Seq(), Seq(), Seq(), Seq()))
+        val newAssetForm = NewEntityForm.form.fill(NewEntityForm.Data(Seq(), Seq(), Seq(), Seq()))
         val error = request.flash.get("error")
         val success = request.flash.get("success")
         newAssetEditorFactory(assetTypeId, newAssetForm, error, success)
@@ -160,7 +159,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def addNewAsset(assetTypeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        NewAssetForm.form.bindFromRequest fold(
+        NewEntityForm.form.bindFromRequest fold(
           errorForm => newAssetEditorFactory(assetTypeId, errorForm),
           data => {
             assetService.addAsset(assetTypeId, data.values, data.maintainers, data.editors, data.viewers) map (_ => {
@@ -168,7 +167,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
             }) recoverWith {
               case e =>
                 logger.error(e.getMessage, e)
-                val newAssetForm = NewAssetForm.form.fill(data)
+                val newAssetForm = NewEntityForm.form.fill(data)
                 newAssetEditorFactory(assetTypeId, newAssetForm, Option(e.getMessage))
             }
           })
@@ -185,7 +184,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * @param request     implicit request context
    * @return new asset editor result future (view)
    */
-  private def newAssetEditorFactory(assetTypeId: Long, form: Form[NewAssetForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
+  private def newAssetEditorFactory(assetTypeId: Long, form: Form[NewEntityForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
                                    (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       groups <- groupService.getAllGroups
@@ -231,15 +230,15 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def postAsset(assetTypeId: Long, assetId: Long, msg: Option[String] = None): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        NewAssetForm.form.bindFromRequest fold(
+        NewEntityForm.form.bindFromRequest fold(
           errorForm => assetEditorFactory(assetTypeId, assetId, Option(errorForm)),
           data => {
             assetService.updateAsset(assetId, data.values, data.maintainers, data.editors, data.viewers) flatMap (_ => {
-              assetEditorFactory(assetTypeId, assetId, Option(NewAssetForm.form.fill(data)), None, Option("Changes saved successfully"))
+              assetEditorFactory(assetTypeId, assetId, Option(NewEntityForm.form.fill(data)), None, Option("Changes saved successfully"))
             }) recoverWith {
               case e: Throwable =>
                 logger.error(e.getMessage, e)
-                val newAssetForm = NewAssetForm.form.fill(data)
+                val newAssetForm = NewEntityForm.form.fill(data)
                 assetEditorFactory(assetTypeId, assetId, Option(newAssetForm), Option(e.getMessage))
             }
           })
@@ -278,7 +277,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * @param request     implicit request context
    * @return asset editor result future (view)
    */
-  private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[NewAssetForm.Data]],
+  private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[NewEntityForm.Data]],
                                  msg: Option[String] = None, successMsg: Option[String] = None)
                                 (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
@@ -287,8 +286,8 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
       groups <- groupService.getAllGroups
     } yield {
       val (assetType, constraints) = typeData
-      val editForm = if (form.isDefined) form.get else NewAssetForm.form.fill(
-        NewAssetForm.Data(
+      val editForm = if (form.isDefined) form.get else NewEntityForm.form.fill(
+        NewEntityForm.Data(
           extendedAsset.properties.map(_.value),
           extendedAsset.viewers.maintainers.toSeq.map(_.name),
           extendedAsset.viewers.editors.toSeq.map(_.name),

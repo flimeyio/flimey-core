@@ -15,18 +15,18 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.NewAssetForm
 @import modules.auth.model.Ticket
+@import modules.core.formdata.NewEntityForm
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
 @import views.html.components.utils.message_box_success
-@import views.html.forms.asset.new_asset_form
 @import modules.user.model.Group
 @import modules.core.model.EntityType
+@import views.html.forms.core.new_entity_form
 @(selectedType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newAssetForm: Form[NewAssetForm.Data],
+        newAssetForm: Form[NewEntityForm.Data],
         errmsg: Option[String] = None,
         succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
@@ -35,6 +35,6 @@
     @message_box_error(errmsg)
     @message_box_success(succmsg)
     <div class="scroll-container">
-        @new_asset_form(selectedType, propertyKeys, obligatoryKeys, groups, newAssetForm)
+        @new_entity_form(selectedType, propertyKeys, obligatoryKeys, groups, newAssetForm, routes.AssetController.addNewAsset(selectedType.id))
     </div>
 }()()
