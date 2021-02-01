@@ -32,7 +32,15 @@ import play.api.mvc._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-//FIXME ScalaDoc
+/**
+ * Controller to provide all required endpoints to manage [[modules.subject.model.Collection Collections]]
+ *
+ * @param cc injected ControllerComponents (provides methods and implicits)
+ * @param withAuthentication injected [[middleware.AuthenticationFilter AuthenticationFilter]] to handle session verification
+ * @param collectionService injected [[modules.subject.service.CollectionService CollectionService]]
+ * @param modelCollectionService injected [[modules.subject.service.ModelCollectionService ModelCollectionService]]
+ * @param groupService injected [[modules.user.service.GroupService GroupService]]
+ */
 @Singleton
 class CollectionController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
                                      collectionService: CollectionService, modelCollectionService: ModelCollectionService,
@@ -40,8 +48,11 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
-   * Endpoint to show the asset overview page.<br />
-   * No AssetType is initially selected.
+   * Endpoint to show the [[modules.subject.model.Collection Collection]] overview page.
+   * <p> Depending on the flashed error, different configurations are shown:
+   * <p> 1. There is an "recursive_error" (an error that will lead to recursive redirect), the redirect is stopped and
+   * an empty collection page is returned
+   * <p> 2. In all other cases the getCollections() is redirected, with or without not recursive error
    *
    * @return asset overview page
    */
@@ -49,31 +60,38 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         val error = request.flash.get("error")
-        if (error.isEmpty) {
-          Future.successful(Redirect(routes.CollectionController.getCollections()))
-        } else {
-          modelCollectionService.getAllTypes map (types => {
-            Ok(views.html.container.subject.collection_overview(types, Seq(), error))
-          }) recoverWith {
-            case e =>
-              logger.error(e.getMessage, e)
-              Future.successful(Ok(views.html.container.subject.collection_overview(Seq(), Seq(), Option(e.getMessage))))
+        val recursiveError = request.flash.get("recursive_error")
+        if (recursiveError.isEmpty) {
+          if (error.isDefined) {
+            Future.successful(Redirect(routes.CollectionController.getCollections()).flashing("error" -> error.get))
+          } else {
+            Future.successful(Redirect(routes.CollectionController.getCollections()))
           }
+        } else {
+          Future.successful(Ok(views.html.container.subject.collection_overview(Seq(), Seq(), recursiveError)))
         }
       }
     }
 
+  /**
+   * Right now, this endpoint ignores the query and just redirects to getCollections()
+   *
+   * @return redirect to getCollections()
+   */
   //FIXME ############################################################################################################
   def searchCollections: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelCollectionService.getAllTypes map (types => {
-          Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, None))
-        })
+        Future.successful(Redirect(routes.CollectionController.getCollections()))
       }
     }
 
-  //FIXME
+  /**
+   * Right now, this endpoint ignores the query and just redirects to getCollections()
+   *
+   * @return redirect to getCollections()
+   */
+  //FIXME ############################################################################################################
   def findByQuery: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
@@ -82,8 +100,11 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to get a number of Assets based on multiple query parameters.<br />
-   * In every case, only Assets which can be accessed based on the Ticket can be selected.<br />
+   * Endpoint to get all [[modules.subject.model.Collection Collection]] the requesting user can access.
+   *
+   * @param typeSelector  FIXME: this is ignored right now
+   * @param groupSelector FIXME: this is ignored right now
+   * @return collection overview page
    */
   def getCollections(typeSelector: Option[String] = None, groupSelector: Option[String] = None):
   Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -94,11 +115,17 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.CollectionController.index()).flashing("error" -> e.getMessage))
+          Future.successful(Redirect(routes.CollectionController.index()).flashing("recursive_error" -> e.getMessage))
       }
     }
   }
 
+  /**
+   * Endpoint to redirect to a new collection editor of the specified type (by a post request via form submit)
+   * redirects to the equivalent get endpoint.
+   *
+   * @return redirect to getNewCollectionEditor or form with errors
+   */
   def requestNewCollectionEditor(): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
@@ -109,7 +136,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
           data => {
             val collectionTypeValue = data.value
             modelCollectionService.getTypeByValue(collectionTypeValue) map (collectionType => {
-              if(collectionType.isEmpty) throw new Exception("No such Collection Type found")
+              if (collectionType.isEmpty) throw new Exception("No such Collection Type found")
               Redirect(routes.CollectionController.getNewCollectionEditor(collectionType.get.id))
             }) recoverWith {
               case e =>
@@ -121,10 +148,10 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to get an editor to create new Assets.<br />
-   * The Editor will only accept Assets of the previously selected (currently active) AssetType.
+   * Endpoint to get an editor to create new [[modules.subject.model.Collection Collections]].
+   * <p> The Editor will only accept Collections  of the previously selected Entity(Collection)Type.
    *
-   * @return new asset editor
+   * @return new collection editor
    */
   def getNewCollectionEditor(typeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -138,11 +165,11 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to add a new Asset.<br />
-   * The Asset must be of the selected AssetType.<br />
+   * Endpoint to add a new [[modules.subject.model.Collection Collection]].<br />
+   * The Collection must be of the selected Collection EntityType.<br />
    * The incoming form data seq must be in the same order as the previously sent property keys.
    *
-   * @return new asset editor (clean or with errors)
+   * @return new collection editor (clean or with errors)
    */
   def addNewCollection(typeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -164,14 +191,14 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Helper function to build a 'new asset editor' view based on different configuration parameters.
+   * Helper function to build a 'new collection editor' view based on different configuration parameters.
    *
-   * @param typeId id of the AssetType
-   * @param form        NewAssetForm, which can be already filled
-   * @param errmsg      optional error message
-   * @param succmsg     optional positive message
-   * @param request     implicit request context
-   * @return new asset editor result future (view)
+   * @param typeId  id of the EntityType
+   * @param form    NewEntityForm, which can be already filled
+   * @param errmsg  optional error message
+   * @param succmsg optional positive message
+   * @param request implicit request context
+   * @return new entity editor result future (view)
    */
   private def newCollectionEditorFactory(typeId: Long, form: Form[NewEntityForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
                                         (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
@@ -180,17 +207,17 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
       typeData <- modelCollectionService.getCompleteType(typeId)
     } yield {
       val (assetType, constraints) = typeData
-      Ok(views.html.container.asset.new_asset_editor(assetType,
+      Ok(views.html.container.subject.new_collection_editor(assetType,
         collectionService.getCollectionPropertyKeys(constraints),
         collectionService.getObligatoryPropertyKeys(constraints),
         groups,
         form, errmsg, succmsg))
     }
-    } recoverWith {
-      case e =>
-        logger.error(e.getMessage, e)
-        Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
-    }
+  } recoverWith {
+    case e =>
+      logger.error(e.getMessage, e)
+      Future.successful(Redirect(routes.CollectionController.index()).flashing("error" -> e.getMessage))
+  }
 
 }
 
