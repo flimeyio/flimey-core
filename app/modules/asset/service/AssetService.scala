@@ -18,7 +18,7 @@
 
 package modules.asset.service
 
-import modules.asset.model.{Asset, AssetTypeCombination, ExtendedAsset}
+import modules.asset.model.{Asset, AssetConstraintSpec, AssetTypeCombination, ExtendedAsset}
 import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
@@ -67,7 +67,7 @@ class AssetService @Inject()(typeRepository: TypeRepository,
                viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
-      typeRepository.getComplete(typeId) flatMap (typeData => {
+      typeRepository.getComplete(typeId, Some(AssetConstraintSpec.ASSET)) flatMap (typeData => {
         val (head, constraints) = typeData
         if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not defined or active")
         val properties = AssetLogic.derivePropertiesFromRawData(constraints, propertyData)
