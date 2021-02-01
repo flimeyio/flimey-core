@@ -22,7 +22,7 @@ object PluginType extends Enumeration {
 
   type Type = Value
 
-  val TimedInterval, Milestone, TimeAccumulation, CostAccumulation, WithPriority = Value
+  val WithName, TimedInterval, Milestone, TimeAccumulation, CostAccumulation, WithPriority = Value
 
   def find(name: String): Option[PluginType.Type] = {
     try {

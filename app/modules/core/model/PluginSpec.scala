@@ -20,6 +20,10 @@ package modules.core.model
 
 object PluginSpec {
 
+  def withNameConstraints: Map[String, PropertyType.Value] = Map(
+    "Name" -> PropertyType.StringType
+  )
+
   def timedIntervalConstraints: Map[String, PropertyType.Value] = Map(
     "Start Date" -> PropertyType.DateTimeType,
     "End Date" -> PropertyType.DateTimeType
@@ -44,6 +48,7 @@ object PluginSpec {
   )
 
   def getSpecFromType(pluginType: PluginType.Type): Map[String, PropertyType.Value] = pluginType match {
+    case t if t == PluginType.WithName => withNameConstraints
     case t if t == PluginType.TimedInterval => timedIntervalConstraints
     case t if t == PluginType.Milestone => milestoneConstraints
     case t if t == PluginType.CostAccumulation => costAccumulationConstraints
