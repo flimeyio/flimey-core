@@ -31,7 +31,6 @@
                 @CSRF.formField
                 <input type="text" name="value" id="input-nasf" class="" placeholder="unique name"/>
                 <select class="" name="typeOf">
-                    <option>Choose an option</option>
                     @for(parent <- possibleParents) {
                         <option @if(parent == "Choose a Type") {
                             selected="selected"}>
