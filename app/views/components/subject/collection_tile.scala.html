@@ -23,6 +23,10 @@
     <div class="float-top-right">
             <i class="material-icons">create</i>
     </div>
-    <p>name: @data.collection.name</p>
+    @if(data.properties.exists(_.key == "Name")){
+        <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
+    }
+    <p>status: @data.collection.status</p>
+    <p>created at: @data.collection.created.toString</p>
     @viewer_tag_box(data.viewers)
 </div>
