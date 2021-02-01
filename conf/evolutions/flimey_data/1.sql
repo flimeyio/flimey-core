@@ -43,7 +43,6 @@ create table collection (
     id SERIAL NOT NULL PRIMARY KEY,
     type_id BIGINT NOT NULL,
     entity_id BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL UNIQUE,
     status VARCHAR(255) NOT NULL,
     created TIMESTAMP NOT NULL,
     FOREIGN KEY(entity_id) REFERENCES flimey_entity(id),

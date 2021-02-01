@@ -15,12 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
 @import modules.asset.model.ExtendedAsset
 @import views.html.forms.asset.delete_asset_form
 @import modules.user.model.Group
 @import modules.auth.model.Ticket
+@import modules.core.formdata.NewEntityForm
 @import modules.user.util.ViewerAssertion
 @import modules.core.model.EntityType
 @(assetType: EntityType,
@@ -28,7 +28,7 @@
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+        newAssetForm: Form[NewEntityForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @key(index: Int) = @{
     val (key, _) = propertyKeys(index)

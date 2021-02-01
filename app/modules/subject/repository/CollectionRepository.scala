@@ -19,8 +19,11 @@
 package modules.subject.repository
 
 import com.google.inject.Inject
-import modules.core.model.{Constraint, Property}
+import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
 import modules.core.repository._
+import modules.subject.model.{Collection, CollectionHeader}
+import modules.user.model.ViewerCombinator
+import modules.user.repository.GroupTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -29,6 +32,12 @@ import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * Repository to perform database operation on [[modules.subject.model.Collection Collection]] and associated entities.
+ *
+ * @param dbConfigProvider injected db configuration
+ * @param executionContext implicit ExecutionContext
+ */
 class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
   implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
@@ -38,6 +47,73 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
   val viewers = TableQuery[ViewerTable]
+  val groups = TableQuery[GroupTable]
+
+  /**
+   * Add a new [[modules.subject.model.Collection Collection]] with [[modules.core.model.Property Properties]] to the db.<br />
+   * The Collection id and Property ids are set to 0 to enable auto increment.
+   * <p> Only valid Collection configurations should be added to the repository.
+   *
+   * @param collection    new Collection entity
+   * @param newProperties Properties of the Collection
+   * @param newViewers    [[modules.core.model.Viewer Viewers]] of the Collection.
+   * @return Future[Unit]
+   */
+  def add(collection: Collection, newProperties: Seq[Property], newViewers: Seq[Viewer]): Future[Unit] = {
+    db.run((for {
+      entityId <- (entities returning entities.map(_.id)) += FlimeyEntity(0)
+      _ <- (collections returning collections.map(_.id)) += Collection(0, entityId, collection.typeId, collection.status, collection.created)
+      _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
+      _ <- viewers ++= newViewers.map(v => Viewer(0, entityId, v.viewerId, v.role))
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Get all [[modules.subject.model.CollectionHeader CollectionHeaders]] which are accessible by the given
+   * [[modules.user.model.Group Groups]].
+   * <p> Note that this operation is not limited so that large amounts of data could be returned.
+   *
+   * @param groupIds groups which must have access to the selected Collections
+   * @return Future Seq[CollectionHeader]
+   */
+  def getCollectionHeaders(groupIds: Set[Long]): Future[Seq[CollectionHeader]] = {
+    //build sub-query to get all ids of collections which can be accessed by the given groups
+    val subQuery = (for {
+      (c, s) <- collections join viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
+    } yield (c, s)).groupBy(_._1.id).map(_._1)
+
+    val accessableCollections = collections.filter(_.id in subQuery).sortBy(_.id.asc)
+
+    //main query to fetch all data from the by the sub-query specified assets
+    val propertyQuery = for {
+      c <- accessableCollections join properties on (_.entityId === _.parentId)
+    } yield c
+
+    val viewerQuery = for {
+      c <- accessableCollections join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
+    } yield c
+
+    for {
+      propertyResult <- db.run(propertyQuery.result)
+      viewerResult <- db.run(viewerQuery.result)
+    } yield {
+      val collectionsWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2))
+      val collectionsWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2))
+
+      collectionsWithProperties.keys.map(collection => {
+        val properties = collectionsWithProperties(collection)
+        val viewerRelations = collectionsWithViewers(collection)
+        CollectionHeader(collection, Seq(), properties, ViewerCombinator.fromRelations(viewerRelations))
+      }).toSeq.sortBy(_.collection.id)
+    }
+  }
+
+  //private def collectionHeaderFromRaw(collection: Collection, parameters: Seq[(((Collection, Property), Viewer), Group)]): CollectionHeader = {
+  //  val properties = parameters.groupBy(_._1._1._2).keySet.toSeq.sortBy(_.id)
+  //  val viewers = parameters.map(param => (param._1._2, param._2)).groupBy(_._1).mapValues(pairs => pairs.map(_._2).head).toSeq
+  //  val collectionViewerCombinator = ViewerCombinator.fromRelations(viewers.map(_.swap))
+  //  CollectionHeader(collection, Seq(), properties, collectionViewerCombinator)
+  //}
 
   /**
    * Delete a [[modules.core.model.EntityType EntityType]] of a [[modules.subject.model.Collection Collection]].

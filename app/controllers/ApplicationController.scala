@@ -19,9 +19,12 @@
 package controllers
 
 import javax.inject._
-import middleware.{Authentication, AuthenticationFilter}
+import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
 import play.api.Logging
+import play.api.i18n.I18nSupport
 import play.api.mvc._
+
+import scala.concurrent.Future
 
 /**
  * The ApplicationController responsible for the page index and overview endpoints.
@@ -30,7 +33,8 @@ import play.api.mvc._
  * @param withAuthentication injected AuthenticationAction
  */
 @Singleton
-class ApplicationController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter) extends AbstractController(cc) with Logging with Authentication {
+class ApplicationController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter) extends
+  AbstractController(cc) with I18nSupport with Logging with Authentication {
 
   /**
    * Page index Endpoint. Redirects to the login page.
@@ -47,9 +51,11 @@ class ApplicationController @Inject()(cc: ControllerComponents, withAuthenticati
    *
    * @return overview page (not implemented yet, just redirect)
    */
-  def overview: Action[AnyContent] = withAuthentication { implicit request: Request[AnyContent] =>
-    //TODO implement user based overview
-    Redirect(routes.AssetController.index()).flashing("error" -> "Overview page not implemented yet...")
+  def overview: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      //TODO implement user based overview
+      Future.successful(Ok(views.html.container.overview.overview(Some("Overview page not implemented yet..."))))
+    }
   }
 
 }

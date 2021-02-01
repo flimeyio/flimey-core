@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.formdata
+package modules.subject.model
 
-import play.api.data.Form
-import play.api.data.Forms.{mapping, seq, text}
+import modules.core.model.ExtendedEntityType
 
-object NewAssetForm {
-
-  case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
-
-  val form = Form(
-    mapping(
-      "values" -> seq(text),
-      "maintainers" -> seq(text),
-      "editors" -> seq(text),
-      "viewers" -> seq(text)
-    )(Data.apply)(Data.unapply)
-  )
-
-}
+/**
+ * The CollectionTypeComplex is a helper class to wrap several [[modules.subject.model.CollectionHeader CollectionHeaders]]
+ * together with all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define [[modules.subject.model.Collection Collections]].
+ *
+ * @param collections   CollectionHeaders
+ * @param collectionTypes all EntityTypes which define Collections
+ */
+case class CollectionTypeComplex(collections: Seq[CollectionHeader], collectionTypes: Seq[ExtendedEntityType])

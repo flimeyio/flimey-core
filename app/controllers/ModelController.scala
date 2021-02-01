@@ -26,7 +26,7 @@ import modules.auth.model.Ticket
 import modules.core.formdata.{EditTypeForm, NewConstraintForm, NewTypeForm}
 import modules.core.model.{Constraint, EntityType}
 import modules.core.service.{EntityTypeService, ModelEntityService}
-import modules.subject.model.CollectionConstraintSpec
+import modules.subject.model.{CollectibleConstraintSpec, CollectionConstraintSpec}
 import modules.subject.service.ModelCollectionService
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -93,15 +93,20 @@ class ModelController @Inject()(cc: ControllerComponents,
             Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            entityTypeService.addType(data.value, data.typeOf) map { _ =>
-              Redirect(routes.ModelController.index())
-            } recoverWith {
-              case e => {
-                logger.error(e.getMessage, e)
-                Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+            val parentName = data.typeOf;
+            if(!Seq(AssetConstraintSpec.ASSET, CollectionConstraintSpec.COLLECTION, CollectibleConstraintSpec.COLLECTIBLE).contains(parentName)){
+              Future.failed(new Exception("Select a valid parent type!"))
+            }else {
+              entityTypeService.addType(data.value, parentName) map { _ =>
+                Redirect(routes.ModelController.index())
               }
             }
-          })
+          }) recoverWith {
+          case e => {
+            logger.error(e.getMessage, e)
+            Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+          }
+        }
       }
   }
 

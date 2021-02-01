@@ -18,6 +18,7 @@
 @import modules.asset.model.ExtendedAsset
 @import modules.auth.model.Ticket
 @import modules.user.util.ViewerAssertion
+@import views.html.components.core.viewer_tag_box
 @(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 <div class="">
@@ -28,6 +29,7 @@
                     <i class="material-icons">create</i>
                 </a>
             </div>
+        }
         @if(asset.properties.nonEmpty) {
             <table>
             @for(i <- asset.properties.indices) {
@@ -42,29 +44,6 @@
             }
             </table>
         }
-        <!--FIXME: the part with the groups should be hidden and open with a little extension arrow-->
-        <!--Group Names should be small and with these nice bubble tag names in different colors like a rainbow unicorn-->
-
-        <div class="tag-box">
-            <div class="grid-x">
-                @for(group <- asset.viewers.maintainers){
-                    <div class="tag bg-maintain cell-small-1">
-                    @group.name
-                    </div>
-                }
-            @for(group <- asset.viewers.editors){
-                <div class="tag bg-edit cell-small-1">
-                @group.name
-                </div>
-            }
-                @for(group <- asset.viewers.viewers){
-                    <div class="tag bg-view cell-small-1">
-                    @group.name
-                    </div>
-                }
-                </div>
-            </div>
-        </div>
-
-    }
+        @viewer_tag_box(asset.viewers)
+    </div>
 </div>

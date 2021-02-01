@@ -18,16 +18,14 @@
 
 package modules.subject.model
 
-import modules.asset.model.Asset
 import modules.core.model.Property
-import modules.user.model.ViewerCombinator
 
 /**
- * Common base class for [[ExtendedCollection]] and [[ExtendedCollectible]].
- * <p> Contains attributes all subjects have in common.
+ * The CollectibleHeader class wraps a [[modules.subject.model.Collectible Collectible]] together with with all its objectified
+ * [[modules.core.model.Property Properties]].
+ *
+ * @param collectible Collectible (contains only id and type reference)
+ * @param properties  all Properties of the Collectible
  */
-abstract class ExtendedSubject {
-  val properties: Seq[Property]
-  val attachments: Seq[Asset]
-  val viewers: ViewerCombinator
-}
+case class CollectibleHeader(collectible: Collectible,
+                             properties: Seq[Property])

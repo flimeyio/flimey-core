@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.service
+package modules.core.model
 
-class SubjectCollectionService {
-
-}
+/**
+ * The ExtendedEntityType data class wraps an [[modules.core.model.EntityType EntityType]] together with its
+ * [[modules.core.model.Constraint Constraints]].
+ *
+ * @param entityType  parent EntityType
+ * @param constraints child Constraints
+ */
+case class ExtendedEntityType(entityType: EntityType, constraints: Seq[Constraint])

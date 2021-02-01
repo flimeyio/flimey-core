@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.model
+package modules.core.formdata
 
-object PluginType extends Enumeration {
+import play.api.data.Form
+import play.api.data.Forms.{mapping, seq, text}
 
-  type Type = Value
+object NewEntityForm {
 
-  val WithName, TimedInterval, Milestone, TimeAccumulation, CostAccumulation, WithPriority = Value
+  case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
 
-  def find(name: String): Option[PluginType.Type] = {
-    try {
-      Option(PluginType.withName(name))
-    } catch {
-      case e: Exception => None
-    }
-  }
+  val form = Form(
+    mapping(
+      "values" -> seq(text),
+      "maintainers" -> seq(text),
+      "editors" -> seq(text),
+      "viewers" -> seq(text)
+    )(Data.apply)(Data.unapply)
+  )
+
 }

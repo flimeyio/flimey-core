@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -26,15 +26,15 @@
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newAssetForm: Form[NewEntityForm.Data],
+        newEntityForm: Form[NewEntityForm.Data],
         errmsg: Option[String] = None,
         succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssets(selectedType.id, 0))
+    @navbar_category_closeable(Seq("New", selectedType.value), routes.CollectionController.index())
     @message_box_error(errmsg)
     @message_box_success(succmsg)
     <div class="scroll-container">
-        @new_entity_form(selectedType, propertyKeys, obligatoryKeys, groups, newAssetForm, routes.AssetController.addNewAsset(selectedType.id))
+        @new_entity_form(selectedType, propertyKeys, obligatoryKeys, groups, newEntityForm, routes.CollectionController.addNewCollection(selectedType.id))
     </div>
 }()()
