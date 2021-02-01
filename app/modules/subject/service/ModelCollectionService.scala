@@ -31,12 +31,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
- * FIXME
+ * The service class to provide safe functionality to work with [[modules.core.model.EntityType EntityTypes]] of
+ * [[modules.subject.model.Collection Collections]].
+ * <p> Normally, this class is used with dependency injection in controller classes or as helper in other services.
  *
- * @param typeRepository
- * @param constraintRepository
- * @param collectionRepository
- * @param entityTypeService
+ * @param typeRepository injected [[modules.core.repository.TypeRepository TypeRepository]]
+ * @param constraintRepository injected [[modules.core.repository.ConstraintRepository ConstraintRepository]]
+ * @param collectionRepository injected [[modules.subject.repository.CollectionRepository]]
+ * @param entityTypeService injected [[modules.core.service.EntityTypeService EntityTypeService]]
  */
 class ModelCollectionService @Inject()(typeRepository: TypeRepository,
                                        constraintRepository: ConstraintRepository,
