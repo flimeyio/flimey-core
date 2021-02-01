@@ -23,6 +23,7 @@
 @import modules.subject.model.CollectionHeader
 @import views.html.components.utils.navbar_category_searchable
 @import modules.core.model.ExtendedEntityType
+@import views.html.forms.core.select_type_form
 @(collectionTypes: Seq[ExtendedEntityType],
         collectionData: Seq[CollectionHeader],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
@@ -30,6 +31,7 @@
 @app {
     @navbar_category_searchable(Seq("Collections"), routes.CollectionController.index())
     @message_box_error(msg)
-    @collection_query_form()
+    @select_type_form(None, collectionTypes.map(_.entityType), routes.CollectionController.requestNewCollectionEditor(), "New")
+    <!--@collection_query_form()-->
     @collection_block(collectionData)
 }()()
