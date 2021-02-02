@@ -120,6 +120,19 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
   }
 
+  def getCollection(collectionId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      val error = request.flash.get("error")
+      collectionService.getCollection(collectionId) map (data => {
+        Ok(views.html.container.subject.collection_detail_page(data._2, data._1, error))
+      }) recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.CollectionController.index()).flashing("error" -> e.getMessage))
+      }
+    }
+  }
+
   /**
    * Endpoint to redirect to a new collection editor of the specified type (by a post request via form submit)
    * redirects to the equivalent get endpoint.
