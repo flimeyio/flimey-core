@@ -18,8 +18,11 @@
 * *@
 @import modules.subject.model.CollectionHeader
 @import views.html.components.subject.collection_tile
-@(collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="scroll-container">
+@import modules.core.model.ExtendedEntityType
+@import views.html.components.core.meta_typedef
+@(collectionTypes: Seq[ExtendedEntityType], collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+<div class="meta-entity-root scroll-container">
+    @meta_typedef(collectionTypes)
     @for(collection <- collections){
         @collection_tile(collection)
     }

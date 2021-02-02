@@ -1,0 +1,38 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.core.model.ExtendedEntityType
+@(entityTypes: Seq[ExtendedEntityType])
+
+<div class="meta-typedef" hidden >
+    @for(entityType <- entityTypes) {
+        <div class="meta-entity-type">
+            <div class="meta-entity-type-id">@entityType.entityType.id</div>
+            <div class="meta-entity-type-value">@entityType.entityType.value</div>
+            <list class="meta-entity-type-constraints">
+            @for(constraint <- entityType.constraints) {
+                <li class="meta-constraint">
+                    <div class="meta-constraint-c">@constraint.c</div>
+                    <div class="meta-constraint-v1">@constraint.v1</div>
+                    <div class="meta-constraint-v2">@constraint.v2</div>
+                    <div class="meta-constraint-plugin">@if(constraint.byPlugin.isDefined){@constraint.byPlugin.get.toString}</div>
+                </li>
+            }
+            </list>
+        </div>
+    }
+</div>

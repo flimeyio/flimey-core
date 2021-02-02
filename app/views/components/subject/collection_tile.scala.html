@@ -17,9 +17,10 @@
 * *@
 @import modules.subject.model.CollectionHeader
 @import views.html.components.core.viewer_tag_box
+@import views.html.components.core.meta_entity
 @(data: CollectionHeader)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card relative-container tile">
+<div class="meta-entity-container card relative-container tile">
     <div class="float-top-right">
             <i class="material-icons">create</i>
     </div>
@@ -28,5 +29,7 @@
     }
     <p>status: @data.collection.status</p>
     <p>created at: @data.collection.created.toString</p>
+    @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeId, c.properties))))
+    <div class="meta-viewport"></div>
     @viewer_tag_box(data.viewers)
 </div>
