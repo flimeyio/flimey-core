@@ -24,7 +24,7 @@ import java.time.Instant
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.Constraint
+import modules.core.model.{Constraint, ExtendedEntityType}
 import modules.core.repository.{PropertyRepository, TypeRepository}
 import modules.subject.model._
 import modules.subject.repository.CollectionRepository
@@ -66,7 +66,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * @return Future[Unit]
    */
   def addCollection(typeId: Long, propertyData: Seq[String], maintainers: Seq[String], editors: Seq[String],
-               viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
+                    viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
       typeRepository.getComplete(typeId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
@@ -115,24 +115,32 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
   //  }
   //}
 
-  ///**
-  // * Get an [[modules.subject.model.ExtendedCollection ExtendedCollection]] together with its
-  // * [[modules.core.model.ExtendedEntityType ExtendedEntityType]] by its id.
-  // * <p> A User (given by his ticket) can only request Collections he has access rights to.
-  // * <p> Fails without WORKER rights.
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // *
-  // * @param collectionId id of the Asset to fetch
-  // * @param ticket  implicit authentication ticket
-  // * @return Future[(ExtendedCollection, ExtendedEntityType)]
-  // */
-  //def getCollection(collectionId: Long)(implicit ticket: Ticket): Future[(ExtendedCollection, ExtendedEntityType)] = {
-  //  try {
-  //    //TODO
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Get an [[modules.subject.model.ExtendedCollection ExtendedCollection]] together with its
+   * [[modules.core.model.ExtendedEntityType ExtendedEntityType]] by its id.
+   * <p> A User (given by his ticket) can only request Collections he has access rights to.
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectionId id of the Asset to fetch
+   * @param ticket       implicit authentication ticket
+   * @return Future[(ExtendedCollection, ExtendedEntityType)]
+   */
+  def getCollection(collectionId: Long)(implicit ticket: Ticket): Future[(ExtendedCollection, Seq[ExtendedEntityType])] = {
+    try {
+      RoleAssertion.assertWorker
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
+      for {
+        collection <- collectionRepository.getCollection(collectionId, accessedGroupIds)
+        entityTypes <- modelCollectionService.getAllExtendedTypes()
+      } yield {
+        if (collection.isEmpty) throw new Exception("Collection does not exist or missing rights")
+        (collection.get, entityTypes)
+      }
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   /**
    * Get all [[modules.subject.model.CollectionHeader CollectionHeaders]]

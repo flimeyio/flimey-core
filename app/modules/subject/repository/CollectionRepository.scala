@@ -21,7 +21,7 @@ package modules.subject.repository
 import com.google.inject.Inject
 import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
 import modules.core.repository._
-import modules.subject.model.{Collection, CollectionHeader}
+import modules.subject.model.{Collection, CollectionHeader, ExtendedCollection}
 import modules.user.model.ViewerCombinator
 import modules.user.repository.GroupTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -108,12 +108,50 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     }
   }
 
-  //private def collectionHeaderFromRaw(collection: Collection, parameters: Seq[(((Collection, Property), Viewer), Group)]): CollectionHeader = {
-  //  val properties = parameters.groupBy(_._1._1._2).keySet.toSeq.sortBy(_.id)
-  //  val viewers = parameters.map(param => (param._1._2, param._2)).groupBy(_._1).mapValues(pairs => pairs.map(_._2).head).toSeq
-  //  val collectionViewerCombinator = ViewerCombinator.fromRelations(viewers.map(_.swap))
-  //  CollectionHeader(collection, Seq(), properties, collectionViewerCombinator)
-  //}
+  /**
+   * Get a single [[modules.subject.model.ExtendedCollection ExtendedCollection]] by its id. The given
+   * [[modules.user.model.Group Group]] ids must give access rights to the [[modules.subject.model.Collection Collection]].
+   * <p> If the id does not exisit or there are no access rights, nothing is returned.
+   *
+   * @param collectionId id of the Collection to get
+   * @param groupIds Group ids of which at least one must have access to the Collection
+   * @return Future Option[ExtendedCollection]
+   */
+  def getCollection(collectionId: Long, groupIds: Set[Long]): Future[Option[ExtendedCollection]] = {
+
+    val accessQuery = (for {
+      (c, s) <- collections.filter(_.id === collectionId) join viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
+    } yield (c, s)).groupBy(_._1.id).map(_._1)
+
+    val collectionQuery = collections.filter(_.id in accessQuery)
+
+    val propertyQuery = for {
+      c <- collectionQuery join properties on (_.entityId === _.parentId)
+    } yield c
+
+    val viewerQuery = for {
+      c <- collectionQuery join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
+    } yield c
+
+    for {
+      propertyResult <- db.run(propertyQuery.result)
+      viewerResult <- db.run(viewerQuery.result)
+    } yield {
+      val collectionWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
+      val collectionWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
+
+      if(collectionWithProperties.isEmpty){
+        None
+      }else{
+        Some(ExtendedCollection(
+          collectionWithProperties.get._1,
+          Seq(), //TODO ExtendedCollectibles --> May be moved to CollectibleRepository ... getChildrenOf(collectionId: Long)
+          collectionWithProperties.get._2,
+          Seq(), //TODO Attachments --> May be moved to AttachmentRepository somehow
+          ViewerCombinator.fromRelations(collectionWithViewers.get._2)))
+      }
+    }
+  }
 
   /**
    * Delete a [[modules.core.model.EntityType EntityType]] of a [[modules.subject.model.Collection Collection]].
