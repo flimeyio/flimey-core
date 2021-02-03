@@ -21,7 +21,7 @@ package modules.core.formdata
 import play.api.data.Form
 import play.api.data.Forms.{mapping, seq, text}
 
-object NewEntityForm {
+object EntityForm {
 
   case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
 

@@ -36,10 +36,15 @@
 @app {
     @navbar_category_closeable(Seq("Collection Details"), routes.CollectionController.index())
     @message_box_error(msg)
-    <div class="meta-entity-root">
+    <div class="meta-entity-root scroll-container">
         @meta_typedef(collectionTypes)
         @collection_detail_tile(collectionData)
     </div>
 }{
     @navbar_category(Seq("Collectibles"))
+    <!-- TODO show new collectible request from here -->
+    <div class="meta-entity-root">
+        @meta_typedef(collectionTypes)
+        <!-- TODO show collectible block here (also move meta to collectible block) -->
+    </div>
 }()

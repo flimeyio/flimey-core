@@ -26,6 +26,9 @@
             <i class="material-icons">open_in_new</i>
         </a>
     </div>
+    <div class="tag bg-sec-dark cell-small-1">
+        entity type
+    </div>
     @if(data.properties.exists(_.key == "Name")){
         <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
     }

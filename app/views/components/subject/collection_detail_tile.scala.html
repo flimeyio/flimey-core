@@ -21,12 +21,21 @@
 
 <div class="meta-entity-container card relative-container tile">
     <div class="float-top-right">
-        <i class="material-icons">create</i>
+        <a href="@routes.CollectionController.getCollectionEditor(data.collection.id)">
+            <i class="material-icons">create</i>
+        </a>
+    </div>
+    <div class="tag bg-sec-dark cell-small-1">
+        entity type
     </div>
     @if(data.properties.exists(_.key == "Name")) {
         <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
     }
-    <p>status: @data.collection.status <i class="material-icons">swap_horiz</i> </p>
+    <p>status: @data.collection.status
+        <a href="@routes.CollectionController.getStateEditor(data.collection.id)">
+            <i class="material-icons">swap_horiz</i>
+        </a>
+    </p>
     <p> created at: @data.collection.created.toString</p>
     <hr/>
     @for(property <- data.properties) {

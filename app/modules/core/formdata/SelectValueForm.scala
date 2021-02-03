@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.model
+package modules.core.formdata
 
-/**
- * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
- */
-object SubjectStatus extends Enumeration {
+import play.api.data.Form
+import play.api.data.Forms._
 
-  type Status = Value
+object SelectValueForm {
 
-  val CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED = Value
+  case class Data(value: String)
+
+  val form = Form(
+    mapping(
+      "value" -> nonEmptyText
+    )(Data.apply)(Data.unapply)
+  )
 
 }

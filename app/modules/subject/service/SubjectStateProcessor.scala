@@ -18,9 +18,25 @@
 
 package modules.subject.service
 
-import modules.core.util.PropertyProcessor
-import modules.user.service.ViewerProcessor
+import modules.subject.model.SubjectState
+import modules.util.messages.{ERR, OK, Status}
 
-object CollectionLogic extends CollectionConstraintProcessor with PropertyProcessor with ViewerProcessor with SubjectStateProcessor {
+/**
+ * Trait which provides functionality for parsing and processing constraints
+ */
+trait SubjectStateProcessor {
+  
+  def parseState(value: String): SubjectState.State = {
+    try{
+      SubjectState.withName(value)
+    }catch {
+      case e: Throwable => throw new Exception("Invalid state value")
+    }
+  }
+
+  def isValidStateTransition(oldState: SubjectState.State, newState: SubjectState.State): Status = {
+    if(newState == SubjectState.CREATED) return ERR("This state can not be entered again")
+    OK()
+  }
 
 }

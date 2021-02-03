@@ -31,12 +31,12 @@ import java.sql.Timestamp
  * @param status   progress status
  * @param created  creation time
  */
-case class Collection(id: Long, entityId: Long, typeId: Long, status: SubjectStatus.Status, created: Timestamp)
+case class Collection(id: Long, entityId: Long, typeId: Long, status: SubjectState.State, created: Timestamp)
 
 object Collection {
 
   def applyRaw(id: Long, entityId: Long, typeId: Long, status: String, created: Timestamp): Collection = {
-    Collection(id, entityId, typeId, SubjectStatus.withName(status), created)
+    Collection(id, entityId, typeId, SubjectState.withName(status), created)
   }
 
   def unapplyToRaw(arg: Collection): Option[(Long, Long, Long, String, Timestamp)] =

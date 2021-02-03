@@ -72,6 +72,13 @@ POST    /collection/:typeId/new                             controllers.Collecti
 
 GET     /collection/:collectionId                           controllers.CollectionController.getCollection(collectionId: Long)
 
+GET     /collection/editor/:collectionId                    controllers.CollectionController.getCollectionEditor(collectionId: Long)
+POST    /collection/editor/:collectionId                    controllers.CollectionController.postCollection(collectionId: Long)
+POST    /collection/editor/:collectionId/delete             controllers.CollectionController.deleteCollection(collectionId: Long)
+
+GET     /collection/editor/:collectionId/state              controllers.CollectionController.getStateEditor(collectionId: Long)
+POST    /collection/editor/:collectionId/state              controllers.CollectionController.postState(collectionId: Long)
+
 GET     /management                                         controllers.ManagementController.index()
 
 GET     /management/invitations                             controllers.ManagementController.getInvitedUsers()
