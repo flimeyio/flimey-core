@@ -8,6 +8,8 @@ This project is work in progress. Do not use in production!
 
 A detailled documentation can be found [here](https://github.com/flimeyio/flimey-core/wiki).
 
+The development setup/getting started guide can also be found [here](https://github.com/flimeyio/flimey-core/wiki/System-Setup).
+
 ## Contribute
 
 Interested in flimey? - Contact us at ``dev@flimey.io`` and we will add you to our team.
