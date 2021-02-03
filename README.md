@@ -18,7 +18,7 @@ The development setup/getting started guide can also be found [here](https://git
 * HTML templating with Play-Templates (Twirl)
 * Visualization with JQuery + D3.js
 * Database management with Slick 3 on top of PostgreSQL
-* Testing with Scala-Test (scalatesplayplus)
+* Testing with Scala-Test (scalatestplayplus)
 * CI with Github-Actions
 
 ## Contribute
