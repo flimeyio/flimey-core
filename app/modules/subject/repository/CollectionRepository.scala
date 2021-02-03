@@ -69,9 +69,10 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   }
 
   /**
+   * Delete a [[modules.subject.model.Collection Collection]] and all associated data from the db.
    *
-   * @param collection
-   * @return
+   * @param collection the Collection to delete
+   * @return Future[Unit]
    */
   def delete(collection: Collection): Future[Unit] = {
     db.run((for {

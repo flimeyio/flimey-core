@@ -34,6 +34,7 @@ import scala.concurrent.Future
 
 /**
  * Controller to provide all required endpoints to manage [[modules.subject.model.Collection Collections]]
+ * FIXME update documentation of defined endpoints
  *
  * @param cc                     injected ControllerComponents (provides methods and implicits)
  * @param withAuthentication     injected [[middleware.AuthenticationFilter AuthenticationFilter]] to handle session verification
@@ -198,6 +199,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
       }
     }
 
+  //TODO add doc
   def getStateEditor(collectionId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
@@ -211,6 +213,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
       }
     }
 
+  //TODO add doc
   def postState(collectionId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>

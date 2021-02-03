@@ -42,14 +42,14 @@ class FlimeyEntityRepository @Inject()(@NamedDatabase("flimey_data") protected v
   val properties = TableQuery[PropertyTable]
 
   /**
-   * Update Asset properties and Viewers.
-   * <p> Updates the value field of all given AssetProperties.
+   * Update FlimeyEntity properties and Viewers.
+   * <p> Updates the value field of all given Properties.
    * <p> Deletes all given deleted Viewers.
    * <p> Inserts all given new Viewers. The new Viewer objects must be complete and must already contain the target id.
    *
    * @param propertiesUpdate Properties to update the value field
-   * @param deletedViewers Group ids of Viewers to delete
-   * @param newViewers Viewers to add - id must be 0
+   * @param deletedViewers   Group ids of Viewers to delete
+   * @param newViewers       Viewers to add - id must be 0
    * @return Future[Unit]
    **/
   def update(propertiesUpdate: Seq[Property], deletedViewers: Set[Long], newViewers: Set[Viewer]): Future[Unit] = {

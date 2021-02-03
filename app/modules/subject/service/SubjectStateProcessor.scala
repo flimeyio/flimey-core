@@ -22,7 +22,7 @@ import modules.subject.model.SubjectState
 import modules.util.messages.{ERR, OK, Status}
 
 /**
- * Trait which provides functionality for parsing and processing constraints
+ * Trait which provides functionality for parsing and processing the [[modules.subject.model.SubjectState SubjectState]].
  */
 trait SubjectStateProcessor {
   
