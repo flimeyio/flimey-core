@@ -18,13 +18,13 @@
 
 package modules.asset.service
 
+import com.google.inject.Inject
 import modules.asset.model.{Asset, AssetConstraintSpec, AssetTypeCombination, ExtendedAsset}
 import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import com.google.inject.Inject
 import modules.core.model.Constraint
-import modules.core.repository.{PropertyRepository, TypeRepository}
+import modules.core.repository.{FlimeyEntityRepository, PropertyRepository, TypeRepository}
 import modules.user.model.GroupStats
 import modules.user.service.GroupService
 import modules.user.util.ViewerAssertion
@@ -37,13 +37,16 @@ import scala.concurrent.Future
  * This class is normally used by dependency injection inside controller endpoints.
  *
  * @param typeRepository     injected db interface for AssetTypes
- * @param assetRepository         injected db interface for Assets
+ * @param assetRepository    injected db interface for Assets
  * @param propertyRepository injected db interface for (Asset)Properties
- * @param groupService            injected service class to access Group functionality
+ * @param entityRepository
+ * @param modelAssetService
+ * @param groupService       injected service class to access Group functionality
  */
 class AssetService @Inject()(typeRepository: TypeRepository,
                              assetRepository: AssetRepository,
                              propertyRepository: PropertyRepository,
+                             entityRepository: FlimeyEntityRepository,
                              modelAssetService: ModelAssetService,
                              groupService: GroupService) {
 
@@ -94,12 +97,12 @@ class AssetService @Inject()(typeRepository: TypeRepository,
    * <p> If Viewers are change, MAINTAINER rights are required.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param assetId id of the Asset to update
+   * @param assetId            id of the Asset to update
    * @param propertyUpdateData all Properties of the changed Asset (can contain updated values)
-   * @param maintainers all (old and new) Group names of Viewers with role MAINTAINER
-   * @param editors all (old and new) Group names of Viewers with role EDITOR
-   * @param viewers all (old and new) Group names of Viewers with role VIEWER
-   * @param ticket implicit authentication ticket
+   * @param maintainers        all (old and new) Group names of Viewers with role MAINTAINER
+   * @param editors            all (old and new) Group names of Viewers with role EDITOR
+   * @param viewers            all (old and new) Group names of Viewers with role VIEWER
+   * @param ticket             implicit authentication ticket
    * @return Future[Unit]
    */
   def updateAsset(assetId: Long, propertyUpdateData: Seq[String], maintainers: Seq[String], editors: Seq[String],
@@ -133,10 +136,10 @@ class AssetService @Inject()(typeRepository: TypeRepository,
               groups,
               extendedAsset.asset.id)
 
-            if(viewersToDelete.nonEmpty || viewersToInsert.nonEmpty){
+            if (viewersToDelete.nonEmpty || viewersToInsert.nonEmpty) {
               ViewerAssertion.assertMaintain(extendedAsset.viewers)
             }
-            assetRepository.update(newConfig, viewersToDelete, viewersToInsert)
+            entityRepository.update(newConfig, viewersToDelete, viewersToInsert)
           })
         })
       })

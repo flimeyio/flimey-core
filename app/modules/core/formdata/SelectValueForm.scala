@@ -19,18 +19,15 @@
 package modules.core.formdata
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, seq, text}
+import play.api.data.Forms._
 
-object NewEntityForm {
+object SelectValueForm {
 
-  case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
+  case class Data(value: String)
 
   val form = Form(
     mapping(
-      "values" -> seq(text),
-      "maintainers" -> seq(text),
-      "editors" -> seq(text),
-      "viewers" -> seq(text)
+      "value" -> nonEmptyText
     )(Data.apply)(Data.unapply)
   )
 

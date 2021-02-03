@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.service
+package modules.core.formdata
 
-import modules.core.util.PropertyProcessor
-import modules.user.service.ViewerProcessor
+import play.api.data.Form
+import play.api.data.Forms.{mapping, seq, text}
 
-object CollectionLogic extends CollectionConstraintProcessor with PropertyProcessor with ViewerProcessor with SubjectStateProcessor {
+object EntityForm {
+
+  case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
+
+  val form = Form(
+    mapping(
+      "values" -> seq(text),
+      "maintainers" -> seq(text),
+      "editors" -> seq(text),
+      "viewers" -> seq(text)
+    )(Data.apply)(Data.unapply)
+  )
 
 }

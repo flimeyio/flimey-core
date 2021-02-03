@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021  Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.model
+package modules.subject.service
+
+import modules.subject.model.SubjectState
+import modules.util.messages.{ERR, OK, Status}
 
 /**
- * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
+ * Trait which provides functionality for parsing and processing the [[modules.subject.model.SubjectState SubjectState]].
  */
-object SubjectStatus extends Enumeration {
+trait SubjectStateProcessor {
+  
+  def parseState(value: String): SubjectState.State = {
+    try{
+      SubjectState.withName(value)
+    }catch {
+      case e: Throwable => throw new Exception("Invalid state value")
+    }
+  }
 
-  type Status = Value
-
-  val CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED = Value
+  def isValidStateTransition(oldState: SubjectState.State, newState: SubjectState.State): Status = {
+    if(newState == SubjectState.CREATED) return ERR("This state can not be entered again")
+    OK()
+  }
 
 }

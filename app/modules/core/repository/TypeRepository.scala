@@ -19,7 +19,7 @@
 package modules.core.repository
 
 import com.google.inject.Inject
-import modules.asset.repository.{AssetRepository, AssetTable}
+import modules.asset.repository.AssetRepository
 import modules.core.model.{Constraint, EntityType, ExtendedEntityType}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
@@ -41,7 +41,6 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
 
   val types = TableQuery[TypeTable]
   val constraints = TableQuery[ConstraintTable]
-  val assets = TableQuery[AssetTable]
   val properties = TableQuery[PropertyTable]
 
   /**

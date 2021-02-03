@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
 
 @import views.html.helper.CSRF
 
-@(typeId: Long, assetId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(typeId: Long, assetId: Long, action: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="">
-<form role="form" action='@routes.AssetController.deleteAsset(typeId, assetId)' method="post">
+<form role="form" action='@action' method="post">
     @CSRF.formField
     <button type="submit" class="">Delete</button>
 </form>

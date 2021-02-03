@@ -24,12 +24,13 @@ import java.time.Instant
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.Constraint
-import modules.core.repository.{PropertyRepository, TypeRepository}
+import modules.core.model.{Constraint, ExtendedEntityType}
+import modules.core.repository.{FlimeyEntityRepository, PropertyRepository, TypeRepository}
 import modules.subject.model._
 import modules.subject.repository.CollectionRepository
 import modules.user.model.GroupStats
 import modules.user.service.GroupService
+import modules.user.util.ViewerAssertion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -41,12 +42,14 @@ import scala.concurrent.Future
  * @param typeRepository         injected [[modules.core.repository.TypeRepository TypeRepository]]
  * @param collectionRepository   injected [[modules.subject.repository.CollectionRepository CollectionRepository]]
  * @param propertyRepository     injected [[modules.core.repository.PropertyRepository PropertyRepository]]
+ * @param entityRepository
  * @param modelCollectionService injected [[modules.subject.service.ModelCollectionService]]
  * @param groupService           injected [[modules.user.service.GroupService]]
  */
 class CollectionService @Inject()(typeRepository: TypeRepository,
                                   collectionRepository: CollectionRepository,
                                   propertyRepository: PropertyRepository,
+                                  entityRepository: FlimeyEntityRepository,
                                   modelCollectionService: ModelCollectionService,
                                   groupService: GroupService) {
 
@@ -66,7 +69,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * @return Future[Unit]
    */
   def addCollection(typeId: Long, propertyData: Seq[String], maintainers: Seq[String], editors: Seq[String],
-               viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
+                    viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
       typeRepository.getComplete(typeId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
@@ -78,7 +81,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         groupService.getAllGroups flatMap (allGroups => {
           val aViewers = CollectionLogic.deriveViewersFromData(maintainers :+ GroupStats.SYSTEM_GROUP, editors, viewers, allGroups)
           //FIXME validate status and move creation to CollectionLogic object
-          collectionRepository.add(Collection(0, 0, typeId, SubjectStatus.CREATED, Timestamp.from(Instant.now())), properties, aViewers)
+          collectionRepository.add(Collection(0, 0, typeId, SubjectState.CREATED, Timestamp.from(Instant.now())), properties, aViewers)
         })
       })
     } catch {
@@ -86,53 +89,147 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
     }
   }
 
-  ///**
-  // * Update a [[modules.subject.model.Collection Collection]] with its [[modules.core.model.Property Properties]]
-  // * and [[modules.core.model.Viewer Viewers]].
-  // * <p> All Properties (if updated or not) must be passed, else the configuration can not be verified.
-  // * <p> All Viewers (old AND new ones) must be passed as string. Old viewers that are not passed will be deleted.
-  // * Invalid and duplicate Viewer names (Group names) are filtered out. Only the highest role is applied per Viewer.
-  // * The SYSTEM Group can not be removed as MAINTAINER.
-  // * <p> Fails without WORKER rights.
-  // * <p> If Properties are changed, EDITOR rights are required.
-  // * <p> If Viewers are changed, MAINTAINER rights are required.
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // *
-  // * @param collectionId       id of the Collection to update
-  // * @param propertyUpdateData all Properties of the changed Collection (can contain updated values)
-  // * @param maintainers        all (old and new) Group names of Viewers with role MAINTAINER
-  // * @param editors            all (old and new) Group names of Viewers with role EDITOR
-  // * @param viewers            all (old and new) Group names of Viewers with role VIEWER
-  // * @param ticket             implicit authentication ticket
-  // * @return Future[Unit]
-  // */
-  //def updateCollection(collectionId: Long, propertyUpdateData: Seq[String], maintainers: Seq[String], editors: Seq[String],
-  //                viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
-  //  try {
-  //    //TODO
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Update a [[modules.subject.model.Collection Collection]] with its [[modules.core.model.Property Properties]]
+   * and [[modules.core.model.Viewer Viewers]].
+   * <p> All Properties (if updated or not) must be passed, else the configuration can not be verified.
+   * <p> All Viewers (old AND new ones) must be passed as string. Old viewers that are not passed will be deleted.
+   * Invalid and duplicate Viewer names (Group names) are filtered out. Only the highest role is applied per Viewer.
+   * The SYSTEM Group can not be removed as MAINTAINER.
+   * <p> Fails without WORKER rights.
+   * <p> If Properties are changed, EDITOR rights are required.
+   * <p> If Viewers are changed, MAINTAINER rights are required.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectionId       id of the Collection to update
+   * @param propertyUpdateData all Properties of the changed Collection (can contain updated values)
+   * @param maintainers        all (old and new) Group names of Viewers with role MAINTAINER
+   * @param editors            all (old and new) Group names of Viewers with role EDITOR
+   * @param viewers            all (old and new) Group names of Viewers with role VIEWER
+   * @param ticket             implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def updateCollection(collectionId: Long, propertyUpdateData: Seq[String], maintainers: Seq[String], editors: Seq[String],
+                       viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
+    try {
+      RoleAssertion.assertWorker
+      getSlimCollection(collectionId) flatMap (collectionHeader => {
 
-  ///**
-  // * Get an [[modules.subject.model.ExtendedCollection ExtendedCollection]] together with its
-  // * [[modules.core.model.ExtendedEntityType ExtendedEntityType]] by its id.
-  // * <p> A User (given by his ticket) can only request Collections he has access rights to.
-  // * <p> Fails without WORKER rights.
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // *
-  // * @param collectionId id of the Asset to fetch
-  // * @param ticket  implicit authentication ticket
-  // * @return Future[(ExtendedCollection, ExtendedEntityType)]
-  // */
-  //def getCollection(collectionId: Long)(implicit ticket: Ticket): Future[(ExtendedCollection, ExtendedEntityType)] = {
-  //  try {
-  //    //TODO
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+        //Check if the User can edit this Collection
+        ViewerAssertion.assertEdit(collectionHeader.viewers)
+
+        //Parse updated properties and verify the configuration
+        val properties = collectionHeader.properties
+        val oldConfig = properties
+        val newConfig = CollectionLogic.mapConfigurations(oldConfig, propertyUpdateData)
+
+        //check if the EntityType of the Collection is active (else it can not be edited)
+        typeRepository.getComplete(collectionHeader.collection.typeId) flatMap (typeData => {
+          val (head, constraints) = typeData
+          if (!(head.isDefined && head.get.active)) throw new Exception("The selected Collection Type is not active")
+          val configurationStatus = CollectionLogic.isModelConfiguration(constraints, newConfig)
+          if (!configurationStatus.valid) configurationStatus.throwError
+
+          groupService.getAllGroups flatMap (groups => {
+
+            val (viewersToDelete, viewersToInsert) = CollectionLogic.getViewerChanges(
+              maintainers.toSet + GroupStats.SYSTEM_GROUP,
+              editors.toSet,
+              viewers.toSet,
+              collectionHeader.viewers,
+              groups,
+              collectionHeader.collection.id)
+
+            if (viewersToDelete.nonEmpty || viewersToInsert.nonEmpty) {
+              ViewerAssertion.assertMaintain(collectionHeader.viewers)
+            }
+            entityRepository.update(newConfig, viewersToDelete, viewersToInsert)
+          })
+        })
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Update the [[modules.subject.model.SubjectState State]] of a [[modules.subject.model.Collection Collection]].
+   * <p> Fails without WORKER rights.
+   * <p> The requesting User must be EDITOR.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectionId       id of the Collection to update
+   * @param ticket             implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def updateState(collectionId: Long, newState: String)(implicit ticket: Ticket): Future[Int] = {
+    try {
+      RoleAssertion.assertWorker
+      getSlimCollection(collectionId) flatMap (collectionHeader => {
+        //Check if the User can edit this Collection
+        ViewerAssertion.assertEdit(collectionHeader.viewers)
+        val state = CollectionLogic.parseState(newState);
+        //FIXME if state is set to ARCHIVED, the whole collection must be added to the archive
+        val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
+        if (!updateStatus.valid) updateStatus.throwError
+        collectionRepository.updateState(collectionId, state)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Get an [[modules.subject.model.ExtendedCollection ExtendedCollection]] together with its
+   * [[modules.core.model.ExtendedEntityType ExtendedEntityType]] by its id.
+   * <p> A User (given by his ticket) can only request Collections he has access rights to.
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectionId id of the Collection to fetch
+   * @param ticket       implicit authentication ticket
+   * @return Future[(ExtendedCollection, ExtendedEntityType)]
+   */
+  def getCollection(collectionId: Long)(implicit ticket: Ticket): Future[(ExtendedCollection, Seq[ExtendedEntityType])] = {
+    try {
+      RoleAssertion.assertWorker
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
+      for {
+        collection <- collectionRepository.getCollection(collectionId, accessedGroupIds)
+        entityTypes <- modelCollectionService.getAllExtendedTypes()
+      } yield {
+        if (collection.isEmpty) throw new Exception("Collection does not exist or missing rights")
+        (collection.get, entityTypes)
+      }
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Get a [[modules.subject.model.CollectionHeader CollectionHeader]] WITHOUT its children
+   * [[modules.subject.model.Collectible Collectible]] data but together with its
+   * [[modules.core.model.Property Properties]] and [[modules.core.model.Viewer Viewers]] by id.
+   * <p> A User (given by his ticket) can only request Collections he has access rights to.
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectionId id of the Collection to fetch
+   * @param ticket       implicit authentication ticket
+   * @return Future[CollectionHeader]
+   */
+  def getSlimCollection(collectionId: Long)(implicit ticket: Ticket): Future[CollectionHeader] = {
+    try {
+      RoleAssertion.assertWorker
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
+      collectionRepository.getSlimCollection(collectionId, accessedGroupIds) map (collectionOption => {
+        if (collectionOption.isEmpty) throw new Exception("Collection does not exist or missing rights")
+        collectionOption.get
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   /**
    * Get all [[modules.subject.model.CollectionHeader CollectionHeaders]]
@@ -185,23 +282,27 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
     }
   }
 
-  ///**
-  // * Delete a [[modules.subject.model.Collection Collection]].
-  // * <p> <strong> This will also delete all child [[modules.subject.model.Collectible Collectibles]]!</strong>
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // * <p> Fails without MAINTAINER rights
-  // *
-  // * @param id     of the Collection
-  // * @param ticket implicit authentication ticket
-  // * @return Future[Unit]
-  // */
-  //def deleteCollection(id: Long)(implicit ticket: Ticket): Future[Unit] = {
-  //  try {
-  //    //TODO
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Delete a [[modules.subject.model.Collection Collection]].
+   * <p> <strong> This will also delete all child [[modules.subject.model.Collectible Collectibles]]!</strong>
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without MAINTAINER rights
+   *
+   * @param id     of the Collection
+   * @param ticket implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def deleteCollection(id: Long)(implicit ticket: Ticket): Future[Unit] = {
+    try {
+      RoleAssertion.assertWorker
+      getSlimCollection(id) flatMap (collectionData => {
+        ViewerAssertion.assertMaintain(collectionData.viewers)
+        collectionRepository.delete(collectionData.collection)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   /**
    * Forwards to same method of [[modules.subject.service.CollectionLogic CollectionLogic]].

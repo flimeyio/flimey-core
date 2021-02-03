@@ -16,7 +16,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.auth.model.Ticket
-@import modules.core.formdata.NewEntityForm
+@import modules.core.formdata.EntityForm
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
 @import views.html.components.utils.message_box_success
 @import modules.user.model.Group
@@ -26,7 +26,7 @@
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newEntityForm: Form[NewEntityForm.Data],
+        newEntityForm: Form[EntityForm.Data],
         errmsg: Option[String] = None,
         succmsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 

@@ -19,7 +19,6 @@
 package modules.core.repository
 
 import com.google.inject.Inject
-import modules.asset.repository.AssetTable
 import modules.core.model.Viewer
 import modules.user.model.Group
 import modules.user.repository.GroupTable
@@ -43,7 +42,6 @@ class ViewerRepository @Inject()(@NamedDatabase("flimey_data") protected val dbC
 
   val viewers = TableQuery[ViewerTable]
   val groups = TableQuery[GroupTable]
-  val assets = TableQuery[AssetTable]
 
   /**
    * Add a new Viewer.<br />

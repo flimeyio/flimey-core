@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020-2021 Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.formdata
+package modules.subject.model
 
-import play.api.data.Form
-import play.api.data.Forms._
+/**
+ * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
+ */
+object SubjectState extends Enumeration {
 
-object SelectTypeForm {
+  type State = Value
 
-  case class Data(value: String)
+  val CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED = Value
 
-  val form = Form(
-    mapping(
-      "value" -> nonEmptyText
-    )(Data.apply)(Data.unapply)
-  )
-
+  def getAll: Seq[SubjectState.State] = Seq(CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED)
 }
