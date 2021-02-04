@@ -87,9 +87,9 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
    */
   def getAll(derivesFrom: Option[String] = None): Future[Seq[EntityType]] = {
     if (derivesFrom.isEmpty) {
-      db.run(types.result)
+      db.run(types.sortBy(_.id.asc).result)
     } else {
-      db.run(types.filter(_.typeOf === derivesFrom.get).result)
+      db.run(types.filter(_.typeOf === derivesFrom.get).sortBy(_.id.asc).result)
     }
   }
 
