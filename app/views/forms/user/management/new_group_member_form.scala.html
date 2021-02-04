@@ -26,7 +26,14 @@
     @if(newGroupMemberForm.error("userMail").isDefined){
         <div>@message_box_error(Option("Invalid email"))</div>
     }
-
     <input type="text" name="userMail" placeholder="User E-Mail" value="@newGroupMemberForm.data("userMail")"/>
-    <button class="">Add Member</button>
+    <div class="margin-bottom-10 flex-container horizontal">
+        <div class="col-7"></div>
+        <div class="col-3 ">
+            <div class="button no-margin align-horizontal">
+                <div>add&nbsp</div>
+                <div>Member</div>
+            </div>
+        </div>
+    </div>
 }

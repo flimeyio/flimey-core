@@ -19,15 +19,22 @@
 @import views.html.helper.CSRF
 @(member: User, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <table>
-        <tr><td>Username</td><td>@member.username</td></tr>
-        <tr><td>EMail</td><td>@member.email</td></tr>
-        <tr><td>
-            <form role="form" action='@routes.ManagementController.deleteUserFromGroup(groupId, member.id)' method="post">
+<div class="tile">
+    <div class="flex-container vertical full-width">
+        <div class="flex-container horizontal full-width">
+            <div class="col-3">Username</div>
+            <div class="col-7">@member.username</div>
+        </div>
+        <div class="flex-container horizontal full-width">
+            <div class="col-3">EMail</div>
+            <div class="col-7">@member.email</div>
+        </div>
+        <div class="flex-container horizontal full-width">
+            <div class="col-8"></div>
+            <form class="col-2" role="form" action='@routes.ManagementController.deleteUserFromGroup(groupId, member.id)' method="post">
                 @CSRF.formField
-                <button type="submit" class="">X</button>
+                <button type="submit" class="button-small button border-button delete-button no-margin">Delete</button>
             </form>
-        </td></tr>
-    </table>
+        </div>
+    </div>
 </div>

@@ -73,6 +73,7 @@ a{
     color: #ffffff;
     background-color: var(--color-prim);
     height: 40px;
+    width: min-content;
 }
 
 .button:hover{
@@ -324,4 +325,8 @@ a:hover{
 
 .margin-top-5{
     margin-top: 5px;
+}
+
+.padding-10{
+    padding: 10px 10px 10px 10px;
 }

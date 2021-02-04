@@ -34,9 +34,11 @@
 }{
     @navbar_category_closeable(Seq("Group Editor"), routes.ManagementController.getGroups())
     @message_box_error(msg)
-    @group_detail_view(group)
-    <h1>New Member</h1>
-    @new_group_member_form(group.id, newGroupMemberForm)
-    <h1>Members</h1>
-    @group_member_block(members, group.id)
+    <div class="scroll-container padding-10">
+        @group_detail_view(group)
+        <div>New Member</div>
+        @new_group_member_form(group.id, newGroupMemberForm)
+        <div>Members</div>
+        @group_member_block(members, group.id)
+    </div>
 }()
