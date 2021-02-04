@@ -27,7 +27,7 @@ import modules.core.formdata.{EditTypeForm, NewConstraintForm, NewTypeForm}
 import modules.core.model.{Constraint, EntityType}
 import modules.core.service.{EntityTypeService, ModelEntityService}
 import modules.subject.model.{CollectibleConstraintSpec, CollectionConstraintSpec}
-import modules.subject.service.ModelCollectionService
+import modules.subject.service.{ModelCollectibleService, ModelCollectionService}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -47,6 +47,7 @@ class ModelController @Inject()(cc: ControllerComponents,
                                 withAuthentication: AuthenticationFilter,
                                 modelAssetService: ModelAssetService,
                                 modelCollectionService: ModelCollectionService,
+                                modelCollectibleService: ModelCollectibleService,
                                 entityTypeService: EntityTypeService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
 
@@ -55,6 +56,7 @@ class ModelController @Inject()(cc: ControllerComponents,
       case t if t.isEmpty => throw new Exception("No such EntityType found")
       case t if t.get.typeOf == AssetConstraintSpec.ASSET => modelAssetService
       case t if t.get.typeOf == CollectionConstraintSpec.COLLECTION => modelCollectionService
+      case t if t.get.typeOf == CollectibleConstraintSpec.COLLECTIBLE => modelCollectibleService
       case _ => throw new Exception("Unknown error fetching EntityType")
     }
   }
@@ -69,7 +71,6 @@ class ModelController @Inject()(cc: ControllerComponents,
       withTicket { implicit ticket =>
         entityTypeService.getAllTypes() map (types => {
           val error = request.flash.get("error")
-          //FIXME thats just a model overview, remove asset naming
           Ok(views.html.container.core.model_overview(types, error))
         }) recoverWith {
           case e => {
@@ -85,7 +86,7 @@ class ModelController @Inject()(cc: ControllerComponents,
    *
    * @return model overview page with optional error message
    */
-  def addType: Action[AnyContent] = withAuthentication.async {
+  def addType(): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         NewTypeForm.form.bindFromRequest fold(
