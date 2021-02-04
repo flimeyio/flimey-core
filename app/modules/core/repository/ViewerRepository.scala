@@ -20,7 +20,7 @@ package modules.core.repository
 
 import com.google.inject.Inject
 import modules.core.model.Viewer
-import modules.user.model.Group
+import modules.user.model.{Group, ViewerCombinator}
 import modules.user.repository.GroupTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
@@ -69,13 +69,24 @@ class ViewerRepository @Inject()(@NamedDatabase("flimey_data") protected val dbC
   /**
    * Get all Groups which have an Viewer relation to a specified Entity.
    *
-   * @param entityId id of the Asset which Viewers shall be fetched
+   * @param entityId id of the Entity which Viewers shall be fetched
    * @return Future Seq[(Group, Viewer)]
    */
   def getAllViewingGroups(entityId: Long): Future[Seq[(Group, Viewer)]] = {
     db.run((for {
       (c, s) <- groups join viewers.filter(_.targetId === entityId) on (_.id === _.viewerId)
     } yield (c, s)).result)
+  }
+
+  /**
+   * Get the [[modules.user.model.ViewerCombinator ViewerCombinator]] of a specified Entity.
+   * <p> Returns an empty ViewerCombinator if the entity is not existing.
+   *
+   * @param entityId id of the Entity which Viewers shall be fetched
+   * @return Future[ViewerCombinator]
+   */
+  def getViewerCombinator(entityId: Long): Future[ViewerCombinator] = {
+    getAllViewingGroups(entityId) map (relations => ViewerCombinator.fromRelations(relations))
   }
 
 }
