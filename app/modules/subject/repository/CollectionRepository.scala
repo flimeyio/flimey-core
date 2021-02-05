@@ -21,7 +21,7 @@ package modules.subject.repository
 import com.google.inject.Inject
 import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
 import modules.core.repository._
-import modules.subject.model.{Collection, CollectionHeader, ExtendedCollection, SubjectState}
+import modules.subject.model.{Collectible, CollectibleHeader, Collection, CollectionHeader, ExtendedCollection, SubjectState}
 import modules.user.model.ViewerCombinator
 import modules.user.repository.GroupTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -42,6 +42,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val collections = TableQuery[CollectionTable]
+  val collectibles = TableQuery[CollectibleTable]
   val entities = TableQuery[FlimeyEntityTable]
   val entityTypes = TableQuery[TypeTable]
   val constraints = TableQuery[ConstraintTable]
@@ -70,15 +71,19 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
 
   /**
    * Delete a [[modules.subject.model.Collection Collection]] and all associated data from the db.
+   * <p> Deletes also all [[modules.subject.model.Collectible Collectibles]]!
    *
    * @param collection the Collection to delete
    * @return Future[Unit]
    */
   def delete(collection: Collection): Future[Unit] = {
+    val collectibleEntityIDsToDelete = collectibles.filter(_.collectionId === collection.id).map(_.entityId)
     db.run((for {
       _ <- properties.filter(_.parentId === collection.entityId).delete
       _ <- viewers.filter(_.targetId === collection.entityId).delete
-      //TODO delete collectibles here
+      _ <- properties.filter(_.parentId in collectibleEntityIDsToDelete).delete
+      _ <- collectibles.filter(_.entityId in collectibleEntityIDsToDelete).delete
+      _ <- entities.filter(_.id in collectibleEntityIDsToDelete).delete
       //TODO delete attachments here
       _ <- collections.filter(_.id === collection.id).delete
       _ <- entities.filter(_.id === collection.entityId).delete
@@ -105,34 +110,50 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
 
     val accessableCollections = collections.filter(_.id in subQuery).sortBy(_.id.asc)
 
-    //main query to fetch all data from the by the sub-query specified assets
-    val propertyQuery = for {
-      c <- accessableCollections join properties on (_.entityId === _.parentId)
-    } yield c
+    //fetch all properties
+    val propertyQuery = accessableCollections joinLeft properties on (_.entityId === _.parentId)
 
-    val viewerQuery = for {
-      c <- accessableCollections join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
-    } yield c
+    //fetch all viewers
+    val viewerQuery = accessableCollections join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
+
+    //fetch all collectibles with properties
+    val collectibleQuery = accessableCollections join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
 
     for {
       propertyResult <- db.run(propertyQuery.result)
       viewerResult <- db.run(viewerQuery.result)
+      collectibleResult <- db.run(collectibleQuery.result)
     } yield {
       val collectionsWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2))
       val collectionsWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2))
+      val collectionsWithCollectibleData = collectibleResult.groupBy(_._1).mapValues(values =>
+        values.map(_._2).groupBy(_._1).mapValues(cValues => cValues.map(_._2)))
 
       collectionsWithProperties.keys.map(collection => {
-        val properties = collectionsWithProperties(collection)
+        val properties = collectionsWithProperties(collection).filter(_.isDefined).map(_.get)
         val viewerRelations = collectionsWithViewers(collection)
-        CollectionHeader(collection, Seq(), properties, ViewerCombinator.fromRelations(viewerRelations))
+        val collectiblesOption = collectionsWithCollectibleData.get(collection)
+
+        var collectibles: Seq[CollectibleHeader] = Seq()
+        if(collectiblesOption.isDefined) collectibles = parseCollectibles(collectiblesOption.get)
+
+        CollectionHeader(collection, collectibles, properties, ViewerCombinator.fromRelations(viewerRelations))
+
       }).toSeq.sortBy(_.collection.id)
     }
+  }
+
+  private def parseCollectibles(collectiblesData: Map[Collectible, Seq[Property]]): Seq[CollectibleHeader] = {
+    collectiblesData.keys.map(collectible => {
+      val properties = collectiblesData(collectible).sortBy(_.id)
+      CollectibleHeader(collectible, properties)
+    }).toSeq.sortBy(_.collectible.id)
   }
 
   /**
    * Get a single [[modules.subject.model.ExtendedCollection ExtendedCollection]] by its id. The given
    * [[modules.user.model.Group Group]] ids must give access rights to the [[modules.subject.model.Collection Collection]].
-   * <p> If the id does not exisit or there are no access rights, nothing is returned.
+   * <p> If the id does not exists or there are no access rights, nothing is returned.
    *
    * @param collectionId id of the Collection to get
    * @param groupIds Group ids of which at least one must have access to the Collection
@@ -146,28 +167,33 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
 
     val collectionQuery = collections.filter(_.id in accessQuery)
 
-    val propertyQuery = for {
-      c <- collectionQuery join properties on (_.entityId === _.parentId)
-    } yield c
+    val propertyQuery = collectionQuery joinLeft properties on (_.entityId === _.parentId)
 
-    val viewerQuery = for {
-      c <- collectionQuery join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
-    } yield c
+    val viewerQuery = collectionQuery join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
+
+    //fetch all collectibles with properties
+    val collectibleQuery = collectionQuery join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
 
     for {
       propertyResult <- db.run(propertyQuery.result)
       viewerResult <- db.run(viewerQuery.result)
+      collectibleResult <- db.run(collectibleQuery.result)
     } yield {
       val collectionWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
       val collectionWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
+      val collectionWithCollectibleData = collectibleResult.groupBy(_._1).mapValues(values =>
+        values.map(_._2).groupBy(_._1).mapValues(cValues => cValues.map(_._2)))
 
-      if(collectionWithProperties.isEmpty){
+      if(collectionWithViewers.isEmpty){
         None
       }else{
+        val collection = collectionWithProperties.get._1
+        var collectibles: Seq[CollectibleHeader] = Seq()
+        if(collectionWithCollectibleData.contains(collection)) collectibles = parseCollectibles(collectionWithCollectibleData(collection))
         Some(ExtendedCollection(
-          collectionWithProperties.get._1,
-          Seq(), //TODO ExtendedCollectibles --> May be moved to CollectibleRepository ... getChildrenOf(collectionId: Long)
-          collectionWithProperties.get._2,
+          collection,
+          collectibles,
+          collectionWithProperties.get._2.filter(_.isDefined).map(_.get),
           Seq(), //TODO Attachments --> May be moved to AttachmentRepository somehow
           ViewerCombinator.fromRelations(collectionWithViewers.get._2)))
       }
@@ -211,7 +237,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
       }else{
         Some(CollectionHeader(
           collectionWithProperties.get._1,
-          Seq(), //that's the slim part ;)
+          Seq(), //No Collectibles here - that's the slim part ;)
           collectionWithProperties.get._2,
           ViewerCombinator.fromRelations(collectionWithViewers.get._2)))
       }
