@@ -46,6 +46,10 @@ trait StringProcessor {
     value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
   }
 
+  def isDateTimeString(value: String): Boolean = {
+    value.matches("^((\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}))$".r.regex)
+  }
+
   /**
    * Splits a string containing of an Int list into single Int values.<br />
    * The string must have the form "v1,v2,v3,..."
