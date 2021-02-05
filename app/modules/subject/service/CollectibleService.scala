@@ -71,7 +71,7 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
           if (!(collectionTypeOption.isDefined && collectionTypeOption.get.active)) throw new Exception("The selected Collection Type is not defined or active")
           if (!(collectibleTypeOption.isDefined && collectibleTypeOption.get.active)) throw new Exception("The selected Collectible Type is not defined or active")
           val collectibleType = collectibleTypeOption.get
-          val extensionStatus = CollectibleLogic.canBeChildOf(collectibleType, collectionConstraints)
+          val extensionStatus = CollectibleLogic.canBeChildOf(collectibleType.value, collectionConstraints)
           if (!extensionStatus.valid) extensionStatus.throwError
 
           val properties = CollectibleLogic.derivePropertiesFromRawData(collectibleConstraints, propertyData)
