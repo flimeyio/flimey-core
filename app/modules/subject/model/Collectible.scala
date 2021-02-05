@@ -27,17 +27,17 @@ import java.sql.Timestamp
  * <p> Has a repository representation.
  *
  * @param id           unique identifier
- * @param entityId
+ * @param entityId     id of the parent FlimeyEntity
  * @param collectionId id of the Collection which contains the Collectible
  * @param typeId       id of the parent EntityType
- * @param state
- * @param created
+ * @param state        [[modules.subject.model.SubjectState SubjectState]] of the Collectible
+ * @param created      creation timestamp
  */
 case class Collectible(id: Long, entityId: Long, collectionId: Long, typeId: Long, state: SubjectState.State, created: Timestamp)
 
 object Collectible {
 
-  def applyRaw(id: Long, entityId: Long, collectionId : Long, typeId: Long, state: String, created: Timestamp): Collectible = {
+  def applyRaw(id: Long, entityId: Long, collectionId: Long, typeId: Long, state: String, created: Timestamp): Collectible = {
     Collectible(id, entityId, collectionId, typeId, SubjectState.withName(state), created)
   }
 
