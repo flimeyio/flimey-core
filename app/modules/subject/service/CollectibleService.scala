@@ -24,36 +24,26 @@ import java.time.Instant
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.repository.{FlimeyEntityRepository, PropertyRepository, TypeRepository, ViewerRepository}
+import modules.core.model.Constraint
+import modules.core.repository.TypeRepository
 import modules.subject.model.{Collectible, CollectibleConstraintSpec, CollectionConstraintSpec, SubjectState}
-import modules.subject.repository.{CollectibleRepository, CollectionRepository}
-import modules.user.model.GroupStats
-import modules.user.service.GroupService
+import modules.subject.repository.CollectibleRepository
 import modules.user.util.ViewerAssertion
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * The service class to provide safe functionality to work with [[modules.subject.model.Collectible Collectibles]].
  * <p> Normally, this class is used with dependency injection in controller classes or as helper in other services.
  *
- * @param typeRepository         injected [[modules.core.repository.TypeRepository TypeRepository]]
- * @param collectionRepository   injected [[modules.subject.repository.CollectionRepository CollectionRepository]]
- * @param propertyRepository     injected [[modules.core.repository.PropertyRepository PropertyRepository]]
- * @param entityRepository
- * @param viewerRepository
- * @param modelCollectionService injected [[modules.subject.service.ModelCollectionService]]
- * @param groupService           injected [[modules.user.service.GroupService]]
+ * @param typeRepository        injected [[modules.core.repository.TypeRepository TypeRepository]]
+ * @param collectibleRepository injected [[modules.subject.repository.CollectibleRepository CollectibleRepository]]
+ * @param collectionService     injected [[modules.subject.service.CollectionService CollectionService]]
  */
 class CollectibleService @Inject()(typeRepository: TypeRepository,
                                    collectibleRepository: CollectibleRepository,
-                                   propertyRepository: PropertyRepository,
-                                   entityRepository: FlimeyEntityRepository,
-                                   viewerRepository: ViewerRepository,
-                                   modelCollectionService: ModelCollectionService,
-                                   collectionService: CollectionService,
-                                   groupService: GroupService) {
+                                   collectionService: CollectionService) {
 
   /**
    * Add a new [[modules.subject.model.Collectible Collectible]].
@@ -82,14 +72,14 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
           if (!(collectibleTypeOption.isDefined && collectibleTypeOption.get.active)) throw new Exception("The selected Collectible Type is not defined or active")
           val collectibleType = collectibleTypeOption.get
           val extensionStatus = CollectibleLogic.canBeChildOf(collectibleType, collectionConstraints)
-          if(!extensionStatus.valid) extensionStatus.throwError
+          if (!extensionStatus.valid) extensionStatus.throwError
 
           val properties = CollectibleLogic.derivePropertiesFromRawData(collectibleConstraints, propertyData)
-            val configurationStatus = CollectibleLogic.isModelConfiguration(collectibleConstraints, properties)
-            if (!configurationStatus.valid) configurationStatus.throwError
+          val configurationStatus = CollectibleLogic.isModelConfiguration(collectibleConstraints, properties)
+          if (!configurationStatus.valid) configurationStatus.throwError
 
-            collectibleRepository.add(
-              Collectible(0, 0, collectionHeader.collection.id, typeId, SubjectState.CREATED, Timestamp.from(Instant.now())), properties)
+          collectibleRepository.add(
+            Collectible(0, 0, collectionHeader.collection.id, typeId, SubjectState.CREATED, Timestamp.from(Instant.now())), properties)
 
         }
       })
@@ -224,32 +214,32 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
   //  }
   //}
 
-  ///**
-  // * Forwards to same method of [[modules.subject.service.CollectibleLogic CollectibleLogic]].
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // * <p> Fails without WORKER rights
-  // *
-  // * @param constraints model of an CollectibleType
-  // * @param ticket      implicit authentication ticket
-  // * @return Seq[(String, String)] (property key -> data type)
-  // */
-  //def getCollectiblePropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] = {
-  //  RoleAssertion.assertWorker
-  //  //CollectionLogic.getPropertyKeys(constraints)
-  //}
+  /**
+   * Forwards to same method of [[modules.subject.service.CollectibleLogic CollectibleLogic]].
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without WORKER rights
+   *
+   * @param constraints model of an CollectibleType
+   * @param ticket      implicit authentication ticket
+   * @return Seq[(String, String)] (property key -> data type)
+   */
+  def getCollectiblePropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] = {
+    RoleAssertion.assertWorker
+    CollectibleLogic.getPropertyKeys(constraints)
+  }
 
-  ///**
-  // * Forwards to same method of [[modules.subject.service.CollectibleLogic CollectibleLogic]].
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // * <p> Fails without WORKER rights
-  // *
-  // * @param constraints model of an CollectibleType
-  // * @param ticket      implicit authentication ticket
-  // * @return Map[String, String] (property key -> default value)
-  // */
-  //def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] = {
-  //  RoleAssertion.assertWorker
-  //  //CollectionLogic.getObligatoryPropertyKeys(constraints)
-  //}
+  /**
+   * Forwards to same method of [[modules.subject.service.CollectibleLogic CollectibleLogic]].
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without WORKER rights
+   *
+   * @param constraints model of an CollectibleType
+   * @param ticket      implicit authentication ticket
+   * @return Map[String, String] (property key -> default value)
+   */
+  def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] = {
+    RoleAssertion.assertWorker
+    CollectibleLogic.getObligatoryPropertyKeys(constraints)
+  }
 
 }
