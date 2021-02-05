@@ -27,5 +27,4 @@ import modules.core.model.Property
  * @param collectible Collectible (contains only id and type reference)
  * @param properties  all Properties of the Collectible
  */
-case class CollectibleHeader(collectible: Collectible,
-                             properties: Seq[Property])
+case class CollectibleHeader(collectible: Collectible, properties: Seq[Property])
