@@ -19,9 +19,9 @@
 package modules.subject.repository
 
 import com.google.inject.Inject
-import modules.core.model.{Constraint, Property}
+import modules.core.model.{Constraint, FlimeyEntity, Property}
 import modules.core.repository._
-import modules.user.repository.GroupTable
+import modules.subject.model.Collectible
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -39,14 +39,29 @@ import scala.concurrent.{ExecutionContext, Future}
 class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected val dbConfigProvider: DatabaseConfigProvider)(
   implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
-  val collections = TableQuery[CollectionTable]
   val collectibles = TableQuery[CollectibleTable]
   val entities = TableQuery[FlimeyEntityTable]
   val entityTypes = TableQuery[TypeTable]
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
-  val viewers = TableQuery[ViewerTable]
-  val groups = TableQuery[GroupTable]
+
+  /**
+   * Add a new [[modules.subject.model.Collectible Collectible]] with [[modules.core.model.Property Properties]] to the db.<br />
+   * The Collectible id and Property ids are set to 0 to enable auto increment.
+   * <p> Only valid Collectible configurations should be added to the repository.
+   *
+   * @param collectible   new Collectible entity
+   * @param newProperties Properties of the Collectible
+   * @return Future[Unit]
+   */
+  def add(collectible: Collectible, newProperties: Seq[Property]): Future[Unit] = {
+    db.run((for {
+      entityId <- (entities returning entities.map(_.id)) += FlimeyEntity(0)
+      _ <- (collectibles returning collectibles.map(_.id)) +=
+        Collectible(0, entityId, collectible.collectionId, collectible.typeId, collectible.state, collectible.created)
+      _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
+    } yield ()).transactionally)
+  }
 
   /**
    * Delete a [[modules.core.model.EntityType EntityType]] of a [[modules.subject.model.Collectible Collectible]].
@@ -54,7 +69,6 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
    * <p> 1. all [[modules.core.model.Constraint Constraints]] of the type.
    * <p> 2. all [[modules.core.model.FlimeyEntity Entities (Collectibles)]] which use this type...
    * <p> 3. ... with all their [[modules.core.model.Property Properties]].
-   * <p> 4. all to Entities of this type associated [[modules.core.model.Viewer Viewers]].
    *
    * @param id of the EntityType (Collectible Type) to delete
    * @return Future[Unit]
@@ -63,7 +77,6 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
     val entitiesOfType = collectibles.filter(_.typeId === id).map(_.entityId)
     db.run((for {
       _ <- properties.filter(_.parentId in entitiesOfType).delete
-      _ <- viewers.filter(_.targetId in entitiesOfType).delete
       _ <- collectibles.filter(_.typeId === id).delete
       _ <- entities.filter(_.id in entitiesOfType).delete
       _ <- constraints.filter(_.typeId === id).delete
