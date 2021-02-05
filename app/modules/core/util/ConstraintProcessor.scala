@@ -209,4 +209,21 @@ trait ConstraintProcessor {
     }
   }
 
+  /**
+   * Check if an [[modules.core.model.EntityType EntityType]] is allowed as a child type (defined by a CanContain
+   * [[modules.core.model.Constraint Constraint]]) of another EntityType.
+   *
+   * @param childType         the child EntityType
+   * @param parentConstraints Constraints of the parent EntityType which should contain the child
+   * @return Status
+   */
+  def canBeChildOf(childType: EntityType, parentConstraints: Seq[Constraint]): Status = {
+    val isDefinedChild = parentConstraints.filter(_.c == ConstraintType.CanContain).map(_.v1).contains(childType.value)
+    if (isDefinedChild) {
+      OK()
+    } else {
+      ERR("This child type is not allowed here")
+    }
+  }
+
 }
