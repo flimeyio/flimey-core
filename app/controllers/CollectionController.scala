@@ -265,7 +265,6 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
   def getNewCollectionEditor(typeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        Future.successful(Redirect(routes.CollectionController.index()).flashing("error" -> "Not Implemented yet"))
         val newEntityForm = EntityForm.form.fill(EntityForm.Data(Seq(), Seq(), Seq(), Seq()))
         val error = request.flash.get("error")
         val success = request.flash.get("success")
@@ -315,8 +314,8 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
       groups <- groupService.getAllGroups
       typeData <- modelCollectionService.getCompleteType(typeId)
     } yield {
-      val (assetType, constraints) = typeData
-      Ok(views.html.container.subject.new_collection_editor(assetType,
+      val (collectionType, constraints) = typeData
+      Ok(views.html.container.subject.new_collection_editor(collectionType,
         collectionService.getCollectionPropertyKeys(constraints),
         collectionService.getObligatoryPropertyKeys(constraints),
         groups,
