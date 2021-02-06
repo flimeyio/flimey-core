@@ -194,26 +194,26 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
     }
   }
 
-  ///**
-  // * Delete a [[modules.subject.model.Collectible Collectible]].
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // * <p> Fails without MAINTAINER rights
-  // *
-  // * @param id     of the Collectible
-  // * @param ticket implicit authentication ticket
-  // * @return Future[Unit]
-  // */
-  //def deleteCollectible(id: Long)(implicit ticket: Ticket): Future[Unit] = {
-  //  try {
-  //    RoleAssertion.assertWorker
-  //    //getSlimCollection(id) flatMap (collectionData => {
-  //    //  ViewerAssertion.assertMaintain(collectionData.viewers)
-  //    //  collectionRepository.delete(collectionData.collection)
-  //    //})
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Delete a [[modules.subject.model.Collectible Collectible]].
+   * <p> This is a safe implementation and can be used by controller classes.
+   * <p> Fails without MAINTAINER rights
+   *
+   * @param id     of the Collectible
+   * @param ticket implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def deleteCollectible(id: Long)(implicit ticket: Ticket): Future[Unit] = {
+    try {
+      RoleAssertion.assertWorker
+      getCollectible(id) flatMap (extendedCollectible => {
+        ViewerAssertion.assertMaintain(extendedCollectible.viewers)
+        collectibleRepository.delete(extendedCollectible.collectible)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   /**
    * Forwards to same method of [[modules.subject.service.CollectibleLogic CollectibleLogic]].

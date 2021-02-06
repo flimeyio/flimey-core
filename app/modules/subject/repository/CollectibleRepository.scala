@@ -90,6 +90,21 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
   }
 
   /**
+   * Delete a [[modules.subject.model.Collectible Collectible]] and all associated data from the db.
+   *
+   * @param collectible the Collectible to delete
+   * @return Future[Unit]
+   */
+  def delete(collectible: Collectible): Future[Unit] = {
+    db.run((for {
+      _ <- properties.filter(_.parentId === collectible.entityId).delete
+      _ <- properties.filter(_.parentId === collectible.entityId).delete
+      _ <- collectibles.filter(_.id === collectible.id).delete
+      _ <- entities.filter(_.id === collectible.entityId).delete
+    } yield ()).transactionally)
+  }
+
+  /**
    * Get the [[modules.subject.model.Collectible Collectible]] of given id.
    * <p> The [[modules.subject.model.ExtendedCollectible ExtendedCollectible]] with all [[modules.core.model.Property Properties]]
    * and [[modules.core.model.Viewer Viewers]] is returned.
@@ -105,7 +120,7 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
       viewers on (_._2.entityId === _.targetId) join
       groups on (_._2.viewerId === _.id)
 
-    val propertyQuery = collectibleQuery joinLeft properties on (_.id === _.parentId)
+    val propertyQuery = collectibleQuery joinLeft properties on (_.entityId === _.parentId)
 
     for {
       viewerResult <- db.run(viewerQuery.result)
