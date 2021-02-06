@@ -26,7 +26,7 @@ import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.Constraint
 import modules.core.repository.TypeRepository
-import modules.subject.model.{Collectible, CollectibleConstraintSpec, CollectionConstraintSpec, SubjectState}
+import modules.subject.model._
 import modules.subject.repository.CollectibleRepository
 import modules.user.util.ViewerAssertion
 
@@ -142,56 +142,57 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
   //  }
   //}
 
-  ///**
-  // * Update the [[modules.subject.model.SubjectState State]] of a [[modules.subject.model.Collectible Collectible]].
-  // * <p> Fails without WORKER rights.
-  // * <p> The requesting User must be EDITOR.
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // *
-  // * @param collectibleId id of the Collectible to update
-  // * @param ticket        implicit authentication ticket
-  // * @return Future[Unit]
-  // */
-  //def updateState(collectibleId: Long, newState: String)(implicit ticket: Ticket): Future[Int] = {
-  //  try {
-  //    RoleAssertion.assertWorker
-  //    //getSlimCollection(collectionId) flatMap (collectionHeader => {
-  //    //  //Check if the User can edit this Collection
-  //    //  ViewerAssertion.assertEdit(collectionHeader.viewers)
-  //    //  val state = CollectionLogic.parseState(newState);
-  //    //  //FIXME if state can not be set to archived...
-  //    //  val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
-  //    //  if (!updateStatus.valid) updateStatus.throwError
-  //    //  collectionRepository.updateState(collectionId, state)
-  //    //})
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Update the [[modules.subject.model.SubjectState State]] of a [[modules.subject.model.Collectible Collectible]].
+   * <p> Fails without WORKER rights.
+   * <p> The requesting User must be EDITOR.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectibleId id of the Collectible to update
+   * @param ticket        implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def updateState(collectibleId: Long, newState: String)(implicit ticket: Ticket): Future[Int] = {
+    try {
+      RoleAssertion.assertWorker
+      getCollectible(collectibleId) flatMap (extendedCollectible => {
+        //Check if the User can edit this Collectible
+        ViewerAssertion.assertEdit(extendedCollectible.viewers)
+        val state = CollectionLogic.parseState(newState);
+        val updateStatus = CollectibleLogic.isValidStateTransition(extendedCollectible.collectible.state, state)
+        if (!updateStatus.valid) updateStatus.throwError
+        collectibleRepository.updateState(collectibleId, state)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
-  ///**
-  // * Get a [[modules.subject.model.ExtendedCollectible ExtendedCollectible]] together with its
-  // * [[modules.core.model.Property Properties]] and [[modules.core.model.Viewer Viewers]] by id.
-  // * <p> A User (given by his ticket) can only request Collectibles he has access rights to.
-  // * <p> Fails without WORKER rights.
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // *
-  // * @param collectibleId id of the Collectible to fetch
-  // * @param ticket        implicit authentication ticket
-  // * @return Future[CollectionHeader]
-  // */
-  //def getCollectible(collectibleId: Long)(implicit ticket: Ticket): Future[ExtendedCollectible] = {
-  //  try {
-  //    RoleAssertion.assertWorker
-  //    //val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
-  //    //collectionRepository.getSlimCollection(collectionId, accessedGroupIds) map (collectionOption => {
-  //    //  if (collectionOption.isEmpty) throw new Exception("Collection does not exist or missing rights")
-  //    //  collectionOption.get
-  //    //})
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Get a [[modules.subject.model.ExtendedCollectible ExtendedCollectible]] together with its
+   * [[modules.core.model.Property Properties]] and [[modules.core.model.Viewer Viewers]] by id.
+   * <p> A User (given by his ticket) can only request Collectibles he has access rights to.
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectibleId id of the Collectible to fetch
+   * @param ticket        implicit authentication ticket
+   * @return Future[ExtendedCollectible]
+   */
+  def getCollectible(collectibleId: Long)(implicit ticket: Ticket): Future[ExtendedCollectible] = {
+    try {
+      RoleAssertion.assertWorker
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
+      collectibleRepository.getExtendedCollectible(collectibleId) map (extendedCollectibleOption => {
+        if(extendedCollectibleOption.isEmpty) throw new Exception("No such a Collectible found")
+        val extendedCollectible = extendedCollectibleOption.get
+        ViewerAssertion.assertView(extendedCollectible.viewers)
+        extendedCollectible
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   ///**
   // * Delete a [[modules.subject.model.Collectible Collectible]].

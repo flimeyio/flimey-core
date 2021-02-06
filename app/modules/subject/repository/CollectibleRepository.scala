@@ -21,7 +21,9 @@ package modules.subject.repository
 import com.google.inject.Inject
 import modules.core.model.{Constraint, FlimeyEntity, Property}
 import modules.core.repository._
-import modules.subject.model.Collectible
+import modules.subject.model.{Collectible, ExtendedCollectible, SubjectState}
+import modules.user.model.ViewerCombinator
+import modules.user.repository.GroupTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -40,10 +42,13 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
   implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val collectibles = TableQuery[CollectibleTable]
+  val collections = TableQuery[CollectionTable]
   val entities = TableQuery[FlimeyEntityTable]
   val entityTypes = TableQuery[TypeTable]
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
+  val viewers = TableQuery[ViewerTable]
+  val groups = TableQuery[GroupTable]
 
   /**
    * Add a new [[modules.subject.model.Collectible Collectible]] with [[modules.core.model.Property Properties]] to the db.<br />
@@ -82,6 +87,53 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
       _ <- constraints.filter(_.typeId === id).delete
       _ <- entityTypes.filter(_.id === id).delete
     } yield ()).transactionally)
+  }
+
+  /**
+   * Get the [[modules.subject.model.Collectible Collectible]] of given id.
+   * <p> The [[modules.subject.model.ExtendedCollectible ExtendedCollectible]] with all [[modules.core.model.Property Properties]]
+   * and [[modules.core.model.Viewer Viewers]] is returned.
+   *
+   * @param id of the collectible
+   * @return Future Option[ExtendedCollectible]
+   */
+  def getExtendedCollectible(id: Long): Future[Option[ExtendedCollectible]] = {
+
+    val collectibleQuery = collectibles.filter(_.id === id)
+
+    val viewerQuery = collectibleQuery join collections on (_.collectionId === _.id) join
+      viewers on (_._2.entityId === _.targetId) join
+      groups on (_._2.viewerId === _.id)
+
+    val propertyQuery = collectibleQuery joinLeft properties on (_.id === _.parentId)
+
+    for {
+      viewerResult <- db.run(viewerQuery.result)
+      propertyResult <- db.run(propertyQuery.result)
+    } yield {
+      val collectibleWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
+      if(collectibleWithProperties.isEmpty){
+        None
+      }else {
+        val collectible = collectibleWithProperties.get._1
+        //Note: only viewers of that particular collectible (parent) are in the result
+        val viewerRelations = viewerResult.map(value => (value._2, value._1._2))
+        val viewerCombinator = ViewerCombinator.fromRelations(viewerRelations)
+
+        Some(ExtendedCollectible(collectible, collectibleWithProperties.get._2.map(_.get), viewerCombinator))
+      }
+    }
+  }
+
+  /**
+   * Update the state attribute of a [[modules.subject.model.Collectible Collectible]].
+   *
+   * @param collectibleId if of the collectible.
+   * @param newState new [[modules.subject.model.SubjectState]] value
+   * @return Future[Int]
+   */
+  def updateState(collectibleId: Long, newState: SubjectState.State): Future[Int] = {
+    db.run(collectibles.filter(_.id === collectibleId).map(_.state).update(newState.toString))
   }
 
   /**
