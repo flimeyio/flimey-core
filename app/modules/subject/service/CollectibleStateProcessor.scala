@@ -18,9 +18,18 @@
 
 package modules.subject.service
 
-import modules.core.util.PropertyProcessor
-import modules.user.service.ViewerProcessor
+import modules.subject.model.SubjectState
+import modules.util.messages.{ERR, OK, Status}
 
-object CollectibleLogic extends CollectibleConstraintProcessor with PropertyProcessor with ViewerProcessor with CollectibleStateProcessor {
+/**
+ * Trait which provides functionality for parsing and processing the [[modules.subject.model.SubjectState SubjectState]].
+ */
+trait CollectibleStateProcessor extends SubjectStateProcessor {
+
+  override def isValidStateTransition(oldState: SubjectState.State, newState: SubjectState.State): Status = {
+    if(newState == SubjectState.CREATED) return ERR("This state can not be entered again")
+    if(newState == SubjectState.ARCHIVED) return ERR("Collectibles can not be archived independently from their Collection")
+    OK()
+  }
 
 }
