@@ -90,6 +90,12 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     } yield ()).transactionally)
   }
 
+  /**
+   * TODO add doc
+   * @param collectionId
+   * @param newState
+   * @return
+   */
   def updateState(collectionId: Long, newState: SubjectState.State): Future[Int] = {
     db.run(collections.filter(_.id === collectionId).map(_.status).update(newState.toString))
   }
