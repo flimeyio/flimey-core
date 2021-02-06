@@ -25,7 +25,7 @@ import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.Constraint
-import modules.core.repository.TypeRepository
+import modules.core.repository.{FlimeyEntityRepository, TypeRepository}
 import modules.subject.model._
 import modules.subject.repository.CollectibleRepository
 import modules.user.util.ViewerAssertion
@@ -43,7 +43,8 @@ import scala.concurrent.Future
  */
 class CollectibleService @Inject()(typeRepository: TypeRepository,
                                    collectibleRepository: CollectibleRepository,
-                                   collectionService: CollectionService) {
+                                   collectionService: CollectionService,
+                                   entityRepository: FlimeyEntityRepository) {
 
   /**
    * Add a new [[modules.subject.model.Collectible Collectible]].
@@ -88,59 +89,45 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
     }
   }
 
-  ///**
-  // * Update a [[modules.subject.model.Collectible Collectible]] with its [[modules.core.model.Property Properties]].
-  // * <p> All Properties (if updated or not) must be passed, else the configuration can not be verified.
-  // * <p> Fails without WORKER rights.
-  // * <p> If Properties are changed, EDITOR rights are required.
-  // * <p> This is a safe implementation and can be used by controller classes.
-  // *
-  // * @param collectibleId      id of the Collectible to update
-  // * @param propertyUpdateData all Properties of the changed Collectible (can contain updated values)
-  // * @param ticket             implicit authentication ticket
-  // * @return Future[Unit]
-  // */
-  //def updateCollectible(collectibleId: Long, propertyUpdateData: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
-  //  try {
-  //    RoleAssertion.assertWorker
-  //    //getSlimCollection(collectionId) flatMap (collectionHeader => {
-  //    //
-  //    //  //Check if the User can edit this Collection
-  //    //  ViewerAssertion.assertEdit(collectionHeader.viewers)
-  //    //
-  //    //  //Parse updated properties and verify the configuration
-  //    //  val properties = collectionHeader.properties
-  //    //  val oldConfig = properties
-  //    //  val newConfig = CollectionLogic.mapConfigurations(oldConfig, propertyUpdateData)
-  //    //
-  //    //  //check if the EntityType of the Collection is active (else it can not be edited)
-  //    //  typeRepository.getComplete(collectionHeader.collection.typeId) flatMap (typeData => {
-  //    //    val (head, constraints) = typeData
-  //    //    if (!(head.isDefined && head.get.active)) throw new Exception("The selected Collection Type is not active")
-  //    //    val configurationStatus = CollectionLogic.isModelConfiguration(constraints, newConfig)
-  //    //    if (!configurationStatus.valid) configurationStatus.throwError
-  //    //
-  //    //    groupService.getAllGroups flatMap (groups => {
-  //    //
-  //    //      val (viewersToDelete, viewersToInsert) = CollectionLogic.getViewerChanges(
-  //    //        maintainers.toSet + GroupStats.SYSTEM_GROUP,
-  //    //        editors.toSet,
-  //    //        viewers.toSet,
-  //    //        collectionHeader.viewers,
-  //    //        groups,
-  //    //        collectionHeader.collection.id)
-  //    //
-  //    //      if (viewersToDelete.nonEmpty || viewersToInsert.nonEmpty) {
-  //    //        ViewerAssertion.assertMaintain(collectionHeader.viewers)
-  //    //      }
-  //    //      entityRepository.update(newConfig, viewersToDelete, viewersToInsert)
-  //    //    })
-  //    //  })
-  //    //})
-  //  } catch {
-  //    case e: Throwable => Future.failed(e)
-  //  }
-  //}
+  /**
+   * Update a [[modules.subject.model.Collectible Collectible]] with its [[modules.core.model.Property Properties]].
+   * <p> All Properties (if updated or not) must be passed, else the configuration can not be verified.
+   * <p> Fails without WORKER rights.
+   * <p> If Properties are changed, EDITOR rights are required.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param collectibleId      id of the Collectible to update
+   * @param propertyUpdateData all Properties of the changed Collectible (can contain updated values)
+   * @param ticket             implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def updateCollectible(collectibleId: Long, propertyUpdateData: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
+    try {
+      RoleAssertion.assertWorker
+      getCollectible(collectibleId) flatMap (extendedCollectible => {
+
+        //Check if the User can edit this Collectible
+        ViewerAssertion.assertEdit(extendedCollectible.viewers)
+
+        //Parse updated properties and verify the configuration
+        val properties = extendedCollectible.properties
+        val oldConfig = properties
+        val newConfig = CollectibleLogic.mapConfigurations(oldConfig, propertyUpdateData)
+
+        //check if the EntityType of the Collectible is active (else it can not be edited)
+        typeRepository.getComplete(extendedCollectible.collectible.typeId) flatMap (typeData => {
+          val (head, constraints) = typeData
+          if (!(head.isDefined && head.get.active)) throw new Exception("The selected Collectible Type is not active")
+          val configurationStatus = CollectibleLogic.isModelConfiguration(constraints, newConfig)
+          if (!configurationStatus.valid) configurationStatus.throwError
+
+          entityRepository.update(newConfig, Set(), Set())
+        })
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
 
   /**
    * Update the [[modules.subject.model.SubjectState State]] of a [[modules.subject.model.Collectible Collectible]].
@@ -184,7 +171,7 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
       RoleAssertion.assertWorker
       val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
       collectibleRepository.getExtendedCollectible(collectibleId) map (extendedCollectibleOption => {
-        if(extendedCollectibleOption.isEmpty) throw new Exception("No such a Collectible found")
+        if (extendedCollectibleOption.isEmpty) throw new Exception("No such a Collectible found")
         val extendedCollectible = extendedCollectibleOption.get
         ViewerAssertion.assertView(extendedCollectible.viewers)
         extendedCollectible
