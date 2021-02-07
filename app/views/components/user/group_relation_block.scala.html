@@ -19,29 +19,23 @@
 @import views.html.components.user.group_relation_tile
 @(groupViewerCombinator: ViewerCombinator, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<h2>Maintainers</h2>
+<div class="tag bg-maintain">Maintainers</div>
 @for(maintainer <- groupViewerCombinator.maintainers){
     <div>
-        <hr>
         @group_relation_tile(maintainer, groupId)
-        <hr>
     </div>
 }
 
-<h2>Editors</h2>
+<div class="tag bg-edit">Editors</div>
 @for(editor <- groupViewerCombinator.editors){
     <div>
-        <hr>
         @group_relation_tile(editor, groupId)
-        <hr>
     </div>
 }
 
-<h2>Viewers</h2>
+<div class="tag bg-view">Viewers</div>
 @for(viewer <- groupViewerCombinator.viewers){
     <div>
-        <hr>
         @group_relation_tile(viewer, groupId)
-        <hr>
     </div>
 }

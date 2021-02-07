@@ -36,9 +36,9 @@
     @message_box_error(msg)
     <div class="scroll-container padding-10">
         @group_detail_view(group)
-        <div>New Member</div>
+        <div class="h6">New Member</div>
         @new_group_member_form(group.id, newGroupMemberForm)
-        <div>Members</div>
+        <div class="h6">Members</div>
         @group_member_block(members, group.id)
     </div>
 }()
