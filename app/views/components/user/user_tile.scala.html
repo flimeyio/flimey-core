@@ -19,7 +19,9 @@
 @import views.html.components.user.user_detail_view
 @(user: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
+<div class="tile">
     @user_detail_view(user)
-    <a href="@routes.ManagementController.getUserEditor(user.id)">Edit</a>
+    <div class="button border-button no-margin align-horizontal">
+        <a class="no-hover" href="@routes.ManagementController.getUserEditor(user.id)">Edit</a>
+    </div>
 </div>
