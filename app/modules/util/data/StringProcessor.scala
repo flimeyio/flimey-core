@@ -42,12 +42,13 @@ trait StringProcessor {
    * @return result
    */
   def isNumericString(value: String): Boolean = {
-    value.isEmpty ||
+    value.isBlank ||
     value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
   }
 
   def isDateTimeString(value: String): Boolean = {
-    value.matches("^((\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}))$".r.regex)
+    value.isBlank ||
+    value.matches("^(\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2})$".r.regex)
   }
 
   /**
