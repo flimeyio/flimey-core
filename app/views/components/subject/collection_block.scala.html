@@ -24,6 +24,6 @@
 <div class="meta-entity-root scroll-container">
     @meta_typedef(collectionTypes)
     @for(collection <- collections){
-        @collection_tile(collection)
+        @collection_tile(collection, collectionTypes.map(_.entityType).filter(_.id == collection.collection.typeId).head.value)
     }
 </div>
