@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020-2021 Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.formdata
+package modules.subject.service
 
-import play.api.data.Form
-import play.api.data.Forms._
+import modules.subject.model.SubjectState
+import modules.util.messages.{ERR, OK, Status}
 
-object SelectTypeForm {
+/**
+ * Trait which provides functionality for parsing and processing the [[modules.subject.model.SubjectState SubjectState]].
+ */
+trait SubjectStateProcessor {
+  
+  def parseState(value: String): SubjectState.State = {
+    try{
+      SubjectState.withName(value)
+    }catch {
+      case e: Throwable => throw new Exception("Invalid state value")
+    }
+  }
 
-  case class Data(value: String)
-
-  val form = Form(
-    mapping(
-      "value" -> nonEmptyText
-    )(Data.apply)(Data.unapply)
-  )
+  def isValidStateTransition(oldState: SubjectState.State, newState: SubjectState.State): Status = {
+    if(newState == SubjectState.CREATED) return ERR("This state can not be entered again")
+    OK()
+  }
 
 }

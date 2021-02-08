@@ -1,0 +1,47 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.core.model.Property
+@(typeId: Long, properties: Seq[Property], subEntities: Option[Seq[(Long, Seq[Property])]])
+<div class="meta-entity" hidden>
+    <div class="meta-entity-type-id">@typeId</div>
+    <list class="meta-entity-properties">
+    @for(property <- properties) {
+        <li class="meta-property">
+            <div class="meta-property-key">@property.key</div>
+            <div class="meta-property-value">@property.value</div>
+        </li>
+    }
+    </list>
+    <div class="meta-sub-entities">
+    @if(subEntities.isDefined) {
+        @for(subEntity <- subEntities.get) {
+            <div class="meta-sub-entity">
+                <div class="meta-sub-entity-type-id">@subEntity._1</div>
+                <list class="meta-sub-entity-properties">
+                @for(property <- subEntity._2) {
+                    <li class="meta-property">
+                        <div class="meta-property-key">@property.key</div>
+                        <div class="meta-property-value">@property.value</div>
+                    </li>
+                }
+                </list>
+            </div>
+        }
+    }
+    </div>
+</div>

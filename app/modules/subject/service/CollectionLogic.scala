@@ -21,6 +21,6 @@ package modules.subject.service
 import modules.core.util.PropertyProcessor
 import modules.user.service.ViewerProcessor
 
-object CollectionLogic extends CollectionConstraintProcessor with PropertyProcessor with ViewerProcessor {
+object CollectionLogic extends CollectionConstraintProcessor with PropertyProcessor with ViewerProcessor with SubjectStateProcessor {
 
 }

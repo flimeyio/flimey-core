@@ -61,6 +61,24 @@ GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetCon
 POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
 POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
 
+GET     /collection                                         controllers.CollectionController.index()
+POST    /collection/query                                   controllers.CollectionController.findByQuery()
+
+GET     /collection/query                                   controllers.CollectionController.getCollections(typeSelector: Option[String] = None, groupSelector: Option[String] = None)
+
+POST    /collection/new                                     controllers.CollectionController.requestNewCollectionEditor()
+GET     /collection/:typeId/new                             controllers.CollectionController.getNewCollectionEditor(typeId: Long)
+POST    /collection/:typeId/new                             controllers.CollectionController.addNewCollection(typeId: Long)
+
+GET     /collection/:collectionId                           controllers.CollectionController.getCollection(collectionId: Long)
+
+GET     /collection/editor/:collectionId                    controllers.CollectionController.getCollectionEditor(collectionId: Long)
+POST    /collection/editor/:collectionId                    controllers.CollectionController.postCollection(collectionId: Long)
+POST    /collection/editor/:collectionId/delete             controllers.CollectionController.deleteCollection(collectionId: Long)
+
+GET     /collection/editor/:collectionId/state              controllers.CollectionController.getStateEditor(collectionId: Long)
+POST    /collection/editor/:collectionId/state              controllers.CollectionController.postState(collectionId: Long)
+
 GET     /management                                         controllers.ManagementController.index()
 
 GET     /management/invitations                             controllers.ManagementController.getInvitedUsers()

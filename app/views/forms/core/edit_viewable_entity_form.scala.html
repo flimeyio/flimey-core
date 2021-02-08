@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,23 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
-@import modules.asset.model.ExtendedAsset
-@import views.html.forms.asset.delete_asset_form
 @import modules.user.model.Group
 @import modules.auth.model.Ticket
+@import modules.core.formdata.EntityForm
 @import modules.user.util.ViewerAssertion
 @import modules.core.model.EntityType
-@(assetType: EntityType,
-        asset: ExtendedAsset,
+@import modules.user.model.ViewerCombinator
+@import views.html.forms.core.delete_entity_form
+@(entityType: EntityType,
+        entityId: Long,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+        viewers: ViewerCombinator,
+        entityForm: Form[EntityForm.Data],
+        editAction: Call,
+        deleteAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @key(index: Int) = @{
     val (key, _) = propertyKeys(index)
@@ -51,10 +54,10 @@
 }
 
 @sizeOfFormSeq(name: String) = @{
-    newAssetForm.data.keys.count(_.startsWith(name))
+    entityForm.data.keys.count(_.startsWith(name))
 }
 
-@helper.form(action = routes.AssetController.postAsset(assetType.id, asset.asset.id)) {
+@helper.form(action = editAction) {
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
@@ -64,7 +67,7 @@
             <div class="">
                 @datatype(i)
             </div>
-            <input type="text" name="@{"values[" + i + "]"}" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values["+i+"]")"/>
+            <input type="text" name="@{"values[" + i + "]"}" placeholder="@placeholder(i)" value="@entityForm.data.get("values["+i+"]")"/>
         }
         <span>Maintainers:</span>
         <div id="edit-asset-maintainers">
@@ -72,7 +75,7 @@
             <select name="@{"maintainers[" + i + "]"}">
                 <option>none</option>
                 @for(group <- groups) {
-                    <option @if(group.name == newAssetForm.data.get("maintainers[" + i + "]").get) {
+                    <option @if(group.name == entityForm.data.get("maintainers[" + i + "]").get) {
                         selected="selected"}>
                     @group.name
                     </option>
@@ -86,7 +89,7 @@
             <select name="@{"editors[" + i + "]"}">
                 <option>none</option>
                 @for(group <- groups) {
-                    <option @if(group.name == newAssetForm.data.get("editors[" + i + "]").get) {
+                    <option @if(group.name == entityForm.data.get("editors[" + i + "]").get) {
                         selected="selected"}>
                     @group.name
                     </option>
@@ -100,7 +103,7 @@
             <select name="@{"viewers[" + i + "]"}">
                 <option>none</option>
                 @for(group <- groups) {
-                    <option @if(group.name == newAssetForm.data.get("viewers[" + i + "]").get) {
+                    <option @if(group.name == entityForm.data.get("viewers[" + i + "]").get) {
                         selected="selected"}>
                     @group.name
                     </option>
@@ -114,7 +117,7 @@
     }
 }
 
-@if(ViewerAssertion.canMaintain(asset.viewers, ticket.accessRights)) {
+@if(ViewerAssertion.canMaintain(viewers, ticket.accessRights)) {
 
     <button id="edit-asset-maintainers-add">+Maintainer</button>
     <button id="edit-asset-editors-add">+Editor</button>
@@ -171,6 +174,6 @@
     </script>
 }
 
-@if(ViewerAssertion.canMaintain(asset.viewers, ticket.accessRights)){
-    @delete_asset_form(assetType.id, asset.asset.id)
+@if(ViewerAssertion.canMaintain(viewers, ticket.accessRights)){
+    @delete_entity_form(entityType.id, entityId, deleteAction)
 }

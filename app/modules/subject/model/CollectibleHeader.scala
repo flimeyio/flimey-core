@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.asset.formdata
+package modules.subject.model
 
-import play.api.data.Form
-import play.api.data.Forms.{mapping, seq, text}
+import modules.core.model.Property
 
-object NewAssetForm {
-
-  case class Data(values: Seq[String], maintainers: Seq[String], editors: Seq[String], viewers: Seq[String])
-
-  val form = Form(
-    mapping(
-      "values" -> seq(text),
-      "maintainers" -> seq(text),
-      "editors" -> seq(text),
-      "viewers" -> seq(text)
-    )(Data.apply)(Data.unapply)
-  )
-
-}
+/**
+ * The CollectibleHeader class wraps a [[modules.subject.model.Collectible Collectible]] together with with all its objectified
+ * [[modules.core.model.Property Properties]].
+ *
+ * @param collectible Collectible (contains only id and type reference)
+ * @param properties  all Properties of the Collectible
+ */
+case class CollectibleHeader(collectible: Collectible,
+                             properties: Seq[Property])

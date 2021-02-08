@@ -23,16 +23,17 @@ import modules.core.model.Property
 import modules.user.model.ViewerCombinator
 
 /**
- * The extended [[Collection]] class how it is commonly used with all its objectified properties.
+ * The extended [[modules.subject.model.Collection Collection]] class how it is commonly used with all its objectified
+ * [[modules.core.model.Property Properties]] and all available child data.
  *
  * @param collection   Collection head (contains only id and type reference)
- * @param collectibles child Collectibles
- * @param properties   all SubjectProperties of the Collection
- * @param attachments  all attached Assets of the Collection (not of the Collectibles)
- * @param viewers      ViewerCombinator
+ * @param collectibles child [[modules.subject.model.ExtendedCollectible ExtendedCollectibles]]
+ * @param properties   all Properties of the Collection
+ * @param attachments  all attached [[modules.asset.model.Asset Assets]] of the Collection (not of the Collectibles)
+ * @param viewers      [[modules.user.model.ViewerCombinator ViewerCombinator]] with Viewer rights
  */
 case class ExtendedCollection(collection: Collection,
                               collectibles: Seq[ExtendedCollectible],
                               properties: Seq[Property],
                               attachments: Seq[Asset],
-                              viewers: ViewerCombinator) extends ExtendedSubject
+                              viewers: ViewerCombinator)

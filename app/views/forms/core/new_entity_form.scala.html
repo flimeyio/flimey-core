@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,17 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.NewAssetForm
 @import views.html.helper.CSRF
 @import modules.auth.model.Ticket
+@import modules.core.formdata.EntityForm
 @import modules.user.model.Group
 @import modules.core.model.EntityType
 @(assetType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newAssetForm: Form[NewAssetForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+        newEntityForm: Form[EntityForm.Data],
+        submitAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @key(index: Int) = @{
     val (key, _) = propertyKeys(index)
@@ -47,10 +48,10 @@
 }
 
 @sizeOfFormSeq(name: String) = @{
-    newAssetForm.data.keys.count(_.startsWith(name))
+    newEntityForm.data.keys.count(_.startsWith(name))
 }
 
-@helper.form(action = routes.AssetController.addNewAsset(assetType.id)) {
+@helper.form(action = submitAction) {
     <div>
         @CSRF.formField
         @if(propertyKeys.nonEmpty) {
@@ -59,15 +60,15 @@
                 <div class="">@datatype(i)</div>
                 <input type="text" name="@{
                     "values[" + i + "]"
-                }" class="" placeholder="@placeholder(i)" value="@newAssetForm.data.get("values[" + i + "]")"/>
+                }" class="" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
             }
             <span>Maintainers (Groups which can edit, view, delete and change groups of this asset)</span>
-            <div id="new-asset-maintainers">
+            <div id="new-entity-maintainers">
             @for(i <- 0 to sizeOfFormSeq("maintainer")-1) {
                 <select name="@{"maintainers[" + i + "]"}">
                     <option>none</option>
                     @for(group <- groups) {
-                        <option @if(group.name == newAssetForm.data.get("maintainers[" + i + "]").get) {
+                        <option @if(group.name == newEntityForm.data.get("maintainers[" + i + "]").get) {
                             selected="selected"}>
                         @group.name
                         </option>
@@ -76,12 +77,12 @@
             }
             </div>
             <span>Editors (Groups which can edit and view this asset)</span>
-            <div id="new-asset-editors">
+            <div id="new-entity-editors">
             @for(i <- 0 to sizeOfFormSeq("editors")-1) {
                 <select name="@{"editors[" + i + "]"}">
                     <option>none</option>
                     @for(group <- groups) {
-                        <option @if(group.name == newAssetForm.data.get("editors[" + i + "]").get) {
+                        <option @if(group.name == newEntityForm.data.get("editors[" + i + "]").get) {
                             selected="selected"}>
                         @group.name
                         </option>
@@ -90,12 +91,12 @@
             }
             </div>
             <span>Viewers (Groups which can only view this asset)</span>
-            <div id="new-asset-viewers">
+            <div id="new-entity-viewers">
             @for(i <- 0 to sizeOfFormSeq("viewer")-1) {
                 <select name="@{"viewers[" + i + "]"}">
                     <option>none</option>
                     @for(group <- groups) {
-                        <option @if(group.name == newAssetForm.data.get("viewers[" + i + "]").get) {
+                        <option @if(group.name == newEntityForm.data.get("viewers[" + i + "]").get) {
                             selected="selected"}>
                         @group.name
                         </option>
@@ -109,11 +110,11 @@
         }
     </div>
 }
-<button id="new-asset-maintainers-add">+Maintainer</button>
-<button id="new-asset-editors-add">+Editor</button>
-<button id="new-asset-viewers-add">+Viewer</button>
+<button id="new-entity-maintainers-add">+Maintainer</button>
+<button id="new-entity-editors-add">+Editor</button>
+<button id="new-entity-viewers-add">+Viewer</button>
 
-<ol hidden id="new-asset-group-options">
+<ol hidden id="new-entity-group-options">
     <li>none</li>
     @for(group <- groups){
         <li>@group.name</li>
@@ -121,13 +122,13 @@
 </ol>
 
 <script type="application/javascript">
-        let maintainerIndex = $("#new-asset-maintainers").length;
-        let editorIndex = $("#new-asset-editors").length;
-        let viewerIndex = $("#new-asset-viewers").length;
+        let maintainerIndex = $("#new-entity-maintainers").length;
+        let editorIndex = $("#new-entity-editors").length;
+        let viewerIndex = $("#new-entity-viewers").length;
 
         let options = [];
 
-        $('#new-asset-group-options li').each(function (index, value) {
+        $('#new-entity-group-options li').each(function (index, value) {
             options.push($(value).text());
         });
 
@@ -137,27 +138,27 @@
             })
         }
 
-        $("#new-asset-maintainers-add").click(function () {
+        $("#new-entity-maintainers-add").click(function () {
             let name = "maintainers[" + maintainerIndex + "]";
             maintainerIndex++;
             let selector = $("<select/>").attr({name: name});
             buildOptions(selector)
-            let _ = selector.appendTo("#new-asset-maintainers").focus()
+            let _ = selector.appendTo("#new-entity-maintainers").focus()
         });
 
-        $("#new-asset-editors-add").click(function () {
+        $("#new-entity-editors-add").click(function () {
             let name = "editors[" + editorIndex + "]";
             editorIndex++;
             let selector = $("<select/>").attr({name: name});
             buildOptions(selector)
-            let _ = selector.appendTo("#new-asset-editors").focus()
+            let _ = selector.appendTo("#new-entity-editors").focus()
         });
 
-        $("#new-asset-viewers-add").click(function () {
+        $("#new-entity-viewers-add").click(function () {
             let name = "viewers[" + viewerIndex + "]";
             viewerIndex++;
             let selector = $("<select/>").attr({name: name});
             buildOptions(selector)
-            let _ = selector.appendTo("#new-asset-viewers").focus()
+            let _ = selector.appendTo("#new-entity-viewers").focus()
         });
 </script>

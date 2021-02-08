@@ -1,0 +1,51 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.subject.model.ExtendedCollection
+@import views.html.components.core.{meta_entity, viewer_tag_box}
+@(data: ExtendedCollection)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+<div class="meta-entity-container card relative-container tile">
+    <div class="float-top-right">
+        <a href="@routes.CollectionController.getCollectionEditor(data.collection.id)">
+            <i class="material-icons">create</i>
+        </a>
+    </div>
+    <div class="tag bg-sec-dark cell-small-1">
+        entity type
+    </div>
+    @if(data.properties.exists(_.key == "Name")) {
+        <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
+    }
+    <p>status: @data.collection.status
+        <a href="@routes.CollectionController.getStateEditor(data.collection.id)">
+            <i class="material-icons">swap_horiz</i>
+        </a>
+    </p>
+    <p> created at: @data.collection.created.toString</p>
+    <hr/>
+    @for(property <- data.properties) {
+        @if(property.key != "Name") {
+            <p>@{
+                property.key + ": " + property.value
+            }</p>
+        }
+    }
+    @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeId, c.properties))))
+    <div class="meta-viewport"></div>
+    @viewer_tag_box(data.viewers)
+</div>

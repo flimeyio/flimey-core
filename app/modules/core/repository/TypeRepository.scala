@@ -19,8 +19,8 @@
 package modules.core.repository
 
 import com.google.inject.Inject
-import modules.asset.repository.{AssetRepository, AssetTable}
-import modules.core.model.{Constraint, EntityType}
+import modules.asset.repository.AssetRepository
+import modules.core.model.{Constraint, EntityType, ExtendedEntityType}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -41,7 +41,6 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
 
   val types = TableQuery[TypeTable]
   val constraints = TableQuery[ConstraintTable]
-  val assets = TableQuery[AssetTable]
   val properties = TableQuery[PropertyTable]
 
   /**
@@ -92,6 +91,25 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
     } else {
       db.run(types.filter(_.typeOf === derivesFrom.get).result)
     }
+  }
+
+  /**
+   * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]].
+   *
+   * @param derivesFrom optional parent type specification
+   * @return Future Seq[ExtendedEntityType]
+   */
+  def getAllExtended(derivesFrom: Option[String] = None): Future[Seq[ExtendedEntityType]] = {
+    var query = types joinLeft constraints on (_.id === _.typeId)
+    if (derivesFrom.isDefined) {
+      query = types.filter(_.typeOf === derivesFrom.get) joinLeft constraints on (_.id === _.typeId)
+    }
+    db.run((for {
+      (c, s) <- query
+    } yield (c, s)).result) map (res => {
+      res.groupBy(_._1).mapValues(v => v.filter(_._2.isDefined).map(_._2.get)).map(typeWithConstraints =>
+        ExtendedEntityType(typeWithConstraints._1, typeWithConstraints._2)).toSeq
+    })
   }
 
   /**

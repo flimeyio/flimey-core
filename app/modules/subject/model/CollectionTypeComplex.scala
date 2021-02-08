@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021  Karl Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
 
 package modules.subject.model
 
+import modules.core.model.ExtendedEntityType
+
 /**
- * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
+ * The CollectionTypeComplex is a helper class to wrap several [[modules.subject.model.CollectionHeader CollectionHeaders]]
+ * together with all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define [[modules.subject.model.Collection Collections]].
+ *
+ * @param collections   CollectionHeaders
+ * @param collectionTypes all EntityTypes which define Collections
  */
-object SubjectStatus extends Enumeration {
-
-  type Status = Value
-
-  val OPEN, CLOSED, ARCHIVED = Value
-
-}
+case class CollectionTypeComplex(collections: Seq[CollectionHeader], collectionTypes: Seq[ExtendedEntityType])

@@ -18,16 +18,14 @@
 
 package modules.subject.model
 
-import modules.asset.model.Asset
-import modules.core.model.Property
-import modules.user.model.ViewerCombinator
-
 /**
- * Common base class for [[ExtendedCollection]] and [[ExtendedCollectible]].
- * <p> Contains attributes all subjects have in common.
+ * Enumeration to represent the rights a Group has in a viewer relation to another Group, Asset or Collection.
  */
-abstract class ExtendedSubject {
-  val properties: Seq[Property]
-  val attachments: Seq[Asset]
-  val viewers: ViewerCombinator
+object SubjectState extends Enumeration {
+
+  type State = Value
+
+  val CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED = Value
+
+  def getAll: Seq[SubjectState.State] = Seq(CREATED, OPEN, PAUSED, CLOSED_SUCCESS, CLOSED_FAILURE, ARCHIVED)
 }

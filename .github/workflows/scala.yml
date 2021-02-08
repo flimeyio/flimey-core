@@ -11,9 +11,42 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    # Service containers to run with `runner-job`
+    services:
+      postgres:
+        image: postgres 
+        env:
+          POSTGRES_USER: developer 
+          POSTGRES_PASSWORD: developer
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
     steps:
     - uses: actions/checkout@v2
       
+    - name: Create data test database
+      run: |
+         PGPASSWORD=developer createdb -h localhost -p 5432 -U developer flimey_data_test
+    - name: Create session test database
+      run: |
+         PGPASSWORD=developer createdb -h localhost -p 5432 -U developer flimey_session_test
+    
+    - name: Creat dummy db conf (which is overritten by the test setup later)
+      run: |
+        echo 'data_url="x"' > ./conf/db.conf
+        echo 'data_user="x"' >> ./conf/db.conf
+        echo 'data_password="x"' >> ./conf/db.conf
+        echo 'session_url="x"' >> ./conf/db.conf
+        echo 'session_user="x"' >> ./conf/db.conf
+        echo 'session_password="x"' >> ./conf/db.conf
+    
     - name: Cache SBT
       uses: actions/cache@v2
       with:

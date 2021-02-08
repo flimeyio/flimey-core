@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,27 +66,6 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
       _ <- (assets returning assets.map(_.id)) += Asset(0, entityId, asset.typeId)
       _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
       _ <- viewers ++= newViewers.map(v => Viewer(0, entityId, v.viewerId, v.role))
-    } yield ()).transactionally)
-  }
-
-  /**
-   * Update Asset properties and Viewers.
-   * <p> Updates the value field of all given AssetProperties.
-   * <p> Deletes all given deleted Viewers.
-   * <p> Inserts all given new Viewers. The new Viewer objects must be complete and must already contain the target id.
-   *
-   * @param propertiesUpdate Properties to update the value field
-   * @param deletedViewers Group ids of Viewers to delete
-   * @param newViewers Viewers to add - id must be 0
-   * @return Future[Unit]
-   **/
-  def update(propertiesUpdate: Seq[Property], deletedViewers: Set[Long], newViewers: Set[Viewer]): Future[Unit] = {
-    db.run((for {
-      _ <- DBIO.sequence(propertiesUpdate.map(update => {
-        properties.filter(_.id === update.id).map(_.value).update(update.value)
-      }))
-      _ <- viewers.filter(_.viewerId.inSet(deletedViewers)).delete
-      _ <- viewers ++= newViewers
     } yield ()).transactionally)
   }
 
@@ -166,22 +145,31 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
       (c, s) <- assets.filter(_.typeId === typeId) join
         viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
     } yield (c, s)).groupBy(_._1.id).map(_._1)
-    //FIXME basically, the limit should be applied here and not in the main query...
-    // but MYSQL is not able to support that and throws a runtime error. Maybe try with Postgres again.
+
+    val accessableAssets = assets.filter(_.id in subQuery).sortBy(_.id.desc).drop(offset).take(limit)
 
     //main query to fetch all data from the by the sub-query specified assets
-    db.run((for {
-      (c, s) <- ((assets.filter(_.id in subQuery).sortBy(_.id.desc).drop(offset).take(limit) join
-        properties on (_.entityId === _.parentId)) join
-        viewers on (_._1.entityId === _.targetId)) join
-        groups on (_._2.viewerId === _.id)
-    } yield (c, s)).result).map(res => {
-      val assets = res.groupBy(_._1._1._1)
-      assets.keys.map(asset => {
-        val parameters = assets(asset)
-        extendedAssetFromRaw(asset, parameters)
-      }).toSeq.sortBy(-_.asset.id)
-    })
+    val propertyQuery = for {
+      c <- accessableAssets join properties on (_.entityId === _.parentId)
+    } yield c
+
+    val viewerQuery = for {
+      c <- accessableAssets join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
+    } yield c
+
+    for {
+      propertyResult <- db.run(propertyQuery.result)
+      viewerResult <- db.run(viewerQuery.result)
+    } yield {
+        val assetsWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2))
+        val assetsWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2))
+
+        assetsWithProperties.keys.map(asset => {
+          val properties = assetsWithProperties(asset)
+          val viewerRelations = assetsWithViewers(asset)
+          ExtendedAsset(asset, properties, ViewerCombinator.fromRelations(viewerRelations))
+        }) toSeq
+      }
   }
 
   /**

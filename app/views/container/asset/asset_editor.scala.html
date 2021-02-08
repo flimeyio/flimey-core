@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,20 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.asset.formdata.NewAssetForm
 @import modules.auth.model.Ticket
 @import views.html.components.utils.{message_box_error, navbar_category_closeable}
-@import views.html.forms.asset.edit_asset_form
 @import modules.asset.model.ExtendedAsset
+@import modules.core.formdata.EntityForm
 @import views.html.components.utils.message_box_success
 @import modules.user.model.Group
 @import modules.core.model.EntityType
+@import views.html.forms.core.edit_viewable_entity_form
 @(selectedType: EntityType,
         selectedAsset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
         groups: Seq[Group],
-        newAssetForm: Form[NewAssetForm.Data],
+        newAssetForm: Form[EntityForm.Data],
         msg: Option[String] = None,
         successMsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
@@ -37,6 +37,8 @@
     @message_box_error(msg)
     @message_box_success(successMsg)
     <div class="scroll-container">
-        @edit_asset_form(selectedType, selectedAsset, propertyKeys, obligatoryKeys, groups, newAssetForm)
+        @edit_viewable_entity_form(selectedType, selectedAsset.asset.id, propertyKeys, obligatoryKeys, groups,
+            selectedAsset.viewers, newAssetForm, routes.AssetController.postAsset(selectedType.id, selectedAsset.asset.id),
+            routes.AssetController.deleteAsset(selectedType.id, selectedAsset.asset.id))
     </div>
 }()()
