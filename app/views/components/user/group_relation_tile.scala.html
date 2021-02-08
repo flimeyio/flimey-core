@@ -19,10 +19,10 @@
 @import modules.user.model.Group
 @(relatedGroup: Group, targetGroupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
+<div class="tile">
     <p>@relatedGroup.name</p>
     <form role="form" action='@routes.ManagementController.deleteGroupRelation(targetGroupId, relatedGroup.id)' method="post">
         @CSRF.formField
-        <button type="submit" class="">X</button>
+        <button type="submit" class="button button-small border-button delete-button">Delete</button>
     </form>
 </div>

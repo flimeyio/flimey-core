@@ -30,5 +30,7 @@
 }{
     @navbar_category_closeable(Seq("Group Management"), routes.ManagementController.index())
     @message_box_error(msg)
+    <div class="scroll-container">
     @group_block(groups)
+    </div>
 }()

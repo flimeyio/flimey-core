@@ -17,6 +17,7 @@
 * *@
 @import modules.user.model.Group
 @(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<table>
-    <tr><td>Name</td><td>@group.name</td></tr>
-</table>
+<div class="flex-container horizontal margin-bottom-10">
+    <div class="col-3">Name:</div>
+    <div class="col-7">@group.name</div>
+</div>

@@ -35,9 +35,14 @@
 }{
     @navbar_category_closeable(Seq("Group Relation Editor"), routes.ManagementController.getGroups())
     @message_box_error(msg)
-    @group_detail_view(group)
-    <h1>New Relation</h1>
-    @new_group_relation_form(group.id, newGroupViewerForm, None)
-    <h1>Relations</h1>
-    @group_relation_block(groupViewerCombinator, group.id)
+    <div class="scroll-container">
+        <div class="padding-10">
+            @group_detail_view(group)
+            <div class="h6">New Relation</div>
+            @new_group_relation_form(group.id, newGroupViewerForm, None)
+            <div class="h6">Relations</div>
+            @group_relation_block(groupViewerCombinator, group.id)
+        </div>
+    </div>
+
 }()

@@ -19,10 +19,8 @@
 @import views.html.components.user.user_tile
 @(users: Seq[User])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
+<div class="scroll-container">
 @for(user <- users){
-    <div>
-        <hr>
         @user_tile(user)
-        <hr>
-    </div>
 }
+</div>
