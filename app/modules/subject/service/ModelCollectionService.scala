@@ -35,10 +35,10 @@ import scala.concurrent.Future
  * [[modules.subject.model.Collection Collections]].
  * <p> Normally, this class is used with dependency injection in controller classes or as helper in other services.
  *
- * @param typeRepository injected [[modules.core.repository.TypeRepository TypeRepository]]
+ * @param typeRepository       injected [[modules.core.repository.TypeRepository TypeRepository]]
  * @param constraintRepository injected [[modules.core.repository.ConstraintRepository ConstraintRepository]]
  * @param collectionRepository injected [[modules.subject.repository.CollectionRepository]]
- * @param entityTypeService injected [[modules.core.service.EntityTypeService EntityTypeService]]
+ * @param entityTypeService    injected [[modules.core.service.EntityTypeService EntityTypeService]]
  */
 class ModelCollectionService @Inject()(typeRepository: TypeRepository,
                                        constraintRepository: ConstraintRepository,
@@ -251,6 +251,29 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
     try {
       RoleAssertion.assertModeler
       collectionRepository.deleteCollectionType(id)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Get all possible children of a [[modules.subject.model.Collection Collection]].
+   * <p> Only the by CanContain [[modules.core.model.Constraint Constraints]] defined string values are used
+   * without checking, if such a [[modules.core.model.EntityType EntityType]] exists actually.
+   * <p> Fails without WORKER rights
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param typeId id of the paren EntityType
+   * @param ticket implicit authentication ticket
+   * @return Future Seq[EntityType]
+   */
+  def getChildren(typeId: Long)(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
+    try {
+      RoleAssertion.assertWorker
+      typeRepository.getComplete(typeId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
+        val childValues = CollectionLogic.findChildren(typeData._2)
+        typeRepository.getAllExtended(childValues)
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }
