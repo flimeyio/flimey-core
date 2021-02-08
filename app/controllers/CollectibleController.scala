@@ -46,95 +46,113 @@ class CollectibleController @Inject()(cc: ControllerComponents,
                                       modelCollectibleService: ModelCollectibleService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
-  ///**
-  // * Endpoint to delete a Collectible.<br />
-  // * The Collectible is deleted permanently and can not be restored!
-  // *
-  // * @param collectibleId id of the parent Collectible
-  // * @return
-  // */
-  //def deleteCollectible(collectibleId: Long): Action[AnyContent] =
-  //  withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-  //    withTicket { implicit ticket =>
-  //      collectibleService.deleteCollection(collectionId) map (_ =>
-  //        Redirect(routes.CollectionController.getCollections())
-  //        ) recoverWith {
-  //        case e =>
-  //          logger.error(e.getMessage, e)
-  //          Future.successful(Redirect(routes.CollectionController.getCollectionEditor(collectionId)).flashing("error" -> e.getMessage))
-  //      }
-  //    }
-  //  }
-
-  ///**
-  // * Endpoint to get the Collectible editor with preloaded data.
-  // *
-  // * @return collectible editor page with preloaded Collectible data
-  // */
-  //def getCollectibleEditor(collectionId: Long, collectibleId: Long): Action[AnyContent] =
-  //  withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-  //    withTicket { implicit ticket =>
-  //      val error = request.flash.get("error")
-  //      updateCollectibleEditorFactory(collectionId, None, error)
-  //    }
-  //  }
-
-  ///**
-  // * Endpoint to post (update) the data of the currently edited Collectible.
-  // *
-  // * @param collectionId id of the Collection to edit
-  // * @return editor view result future
-  // */
-  //def postCollectible(collectionId: Long, collectibleId: Long): Action[AnyContent] =
-  //  withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-  //    withTicket { implicit ticket =>
-  //      EntityForm.form.bindFromRequest fold(
-  //        errorForm => updateCollectibleEditorFactory(collectibleId, Option(errorForm)),
-  //        data => {
-  //          collectionService.updateCollection(collectionId, data.values, data.maintainers, data.editors, data.viewers) flatMap (_ => {
-  //            updateCollectionEditorFactory(collectionId, Some(EntityForm.form.fill(data)), None, Option("Changes saved successfully"))
-  //          }) recoverWith {
-  //            case e: Throwable =>
-  //              logger.error(e.getMessage, e)
-  //              val newAssetForm = EntityForm.form.fill(data)
-  //              updateCollectionEditorFactory(collectionId, Some(newAssetForm), Option(e.getMessage))
-  //          }
-  //        })
-  //    }
-  //  }
-
-  ////TODO add doc
-  //def getStateEditor(collectionId: Long): Action[AnyContent] =
-  //  withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-  //    withTicket { implicit ticket =>
-  //      collectionService.getSlimCollection(collectionId) map (collectionHeader => {
-  //        val error = request.flash.get("error")
-  //        val succmsg = request.flash.get("succ")
-  //        Ok(views.html.container.subject.collection_status_graph(collectionHeader.collection, error, succmsg))
-  //      }) recoverWith {
-  //        case e: Throwable => Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
-  //      }
-  //    }
-  //  }
-
-  ////TODO add doc
-  //def postState(collectionId: Long): Action[AnyContent] =
-  //  withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-  //    withTicket { implicit ticket =>
-  //      SelectValueForm.form.bindFromRequest fold(
-  //        errorForm => Future.successful(Redirect(routes.CollectionController.getStateEditor(collectionId)).flashing("error" -> "Invalid form data")),
-  //        data => {
-  //          collectionService.updateState(collectionId, data.value) map (_ => {
-  //            Redirect(routes.CollectionController.getStateEditor(collectionId)).flashing("succ" -> "Changes saved successfully")
-  //          }) recoverWith {
-  //            case e: Throwable => Future.successful(Redirect(routes.CollectionController.getStateEditor(collectionId)).flashing("error" -> e.getMessage))
-  //          }
-  //        })
-  //    }
-  //  }
+  /**
+   * Endpoint to delete a [[modules.subject.model.Collectible Collectible]].
+   * <p> The Collectible is deleted permanently and can not be restored!
+   *
+   * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
+   * @param collectibleId id of the Collectible to delete
+   * @return redirect to the parent Collection view
+   */
+  def deleteCollectible(collectionId: Long, collectibleId: Long): Action[AnyContent] =
+    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        collectibleService.deleteCollectible(collectibleId) map (_ =>
+          Redirect(routes.CollectionController.getCollection(collectionId))
+          ) recoverWith {
+          case e =>
+            logger.error(e.getMessage, e)
+            Future.successful(
+              Redirect(routes.CollectibleController.getCollectibleEditor(collectionId, collectibleId)
+              ).flashing("error" -> e.getMessage))
+        }
+      }
+    }
 
   /**
-   * Endpoint to redirect to a new [[modules.subject.model.Collectible collectible]] editor of the specified type
+   * Endpoint to get the [[modules.subject.model.Collectible Collectible]] editor with preloaded data.
+   *
+   * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
+   * @param collectibleId id of the Collectible to delete
+   * @return collectible editor page with preloaded Collectible data
+   */
+  def getCollectibleEditor(collectionId: Long, collectibleId: Long): Action[AnyContent] =
+    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        val error = request.flash.get("error")
+        updateCollectibleEditorFactory(collectionId, collectibleId, None, error)
+      }
+    }
+
+  /**
+   * Endpoint to post (update) the data of the currently edited [[modules.subject.model.Collectible Collectible]].
+   *
+   * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
+   * @param collectibleId id of the Collectible to edit
+   * @return collectible editor page with preloaded Collectible data with success or error message
+   */
+  def postCollectible(collectionId: Long, collectibleId: Long): Action[AnyContent] =
+    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        EntityForm.form.bindFromRequest fold(
+          errorForm => updateCollectibleEditorFactory(collectionId, collectibleId, Option(errorForm)),
+          data => {
+            collectibleService.updateCollectible(collectibleId, data.values) flatMap (_ => {
+              updateCollectibleEditorFactory(collectionId, collectibleId, Some(EntityForm.form.fill(data)), None, Option("Changes saved successfully"))
+            }) recoverWith {
+              case e: Throwable =>
+                logger.error(e.getMessage, e)
+                val newEntityForm = EntityForm.form.fill(data)
+                updateCollectibleEditorFactory(collectionId, collectibleId, Some(newEntityForm), Option(e.getMessage))
+            }
+          })
+      }
+    }
+
+  /**
+   * Endpoint to get the state editor of a [[modules.subject.model.Collectible Collectible]].
+   *
+   * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
+   * @param collectibleId id of the Collectible to edit
+   * @return collectible state editor page
+   */
+  def getStateEditor(collectionId: Long, collectibleId: Long): Action[AnyContent] =
+    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        collectibleService.getCollectible(collectibleId) map (extendedCollectible => {
+          val error = request.flash.get("error")
+          val succmsg = request.flash.get("succ")
+          Ok(views.html.container.subject.collectible_state_graph(extendedCollectible.collectible, error, succmsg))
+        }) recoverWith {
+          case e: Throwable => Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
+        }
+      }
+    }
+
+  /**
+   * Endpoint to update the state of a [[modules.subject.model.Collectible Collectible]].
+   *
+   * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
+   * @param collectibleId id of the Collectible to edit
+   * @return Collectible state editor page (on error) or redirect to Collection overview
+   */
+  def postState(collectionId: Long, collectibleId: Long): Action[AnyContent] =
+    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        SelectValueForm.form.bindFromRequest fold(
+          errorForm => Future.successful(Redirect(routes.CollectibleController.getStateEditor(collectionId, collectibleId)).flashing("error" -> "Invalid form data")),
+          data => {
+            collectibleService.updateState(collectibleId, data.value) map (_ => {
+              Redirect(routes.CollectibleController.getStateEditor(collectionId, collectibleId)).flashing("succ" -> "Changes saved successfully")
+            }) recoverWith {
+              case e: Throwable => Future.successful(Redirect(routes.CollectionController.getStateEditor(collectionId)).flashing("error" -> e.getMessage))
+            }
+          })
+      }
+    }
+
+  /**
+   * Endpoint to redirect to a new [[modules.subject.model.Collectible Collectible]] editor of the specified type
    * (by a post request via form submit)
    * <p> Redirects to the equivalent get endpoint with prepared typeId.
    *
@@ -211,11 +229,11 @@ class CollectibleController @Inject()(cc: ControllerComponents,
    * Helper function to build a 'new collectible editor' view based on different configuration parameters.
    *
    * @param collectionId id of the parent [[modules.subject.model.Collection Collection]]
-   * @param typeId  id of the [[modules.core.model.EntityType EntityType]]
-   * @param form    NewEntityForm, which can be already filled
-   * @param errmsg  optional error message
-   * @param succmsg optional positive message
-   * @param request implicit request context
+   * @param typeId       id of the [[modules.core.model.EntityType EntityType]]
+   * @param form         NewEntityForm, which can be already filled
+   * @param errmsg       optional error message
+   * @param succmsg      optional positive message
+   * @param request      implicit request context
    * @return new entity editor result future (view)
    */
   private def newCollectibleEditorFactory(collectionId: Long, typeId: Long, form: Form[EntityForm.Data], errmsg: Option[String] = None,
@@ -235,43 +253,39 @@ class CollectibleController @Inject()(cc: ControllerComponents,
       Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
   }
 
-  ///**
-  // * Helper function to build a 'collection editor' view based on different configuration parameters.
-  // *
-  // * @param collectionId id of the Collection to edit
-  // * @param form         optional prepared form data
-  // * @param msg          optional error message
-  // * @param request      implicit request context
-  // * @return collection editor page
-  // */
-  //private def updateCollectionEditorFactory(collectionId: Long, form: Option[Form[EntityForm.Data]],
-  //                                          msg: Option[String] = None, successMsg: Option[String] = None)(
-  //                                           implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-  //  for {
-  //    collectionHeader <- collectionService.getSlimCollection(collectionId)
-  //    typeData <- modelCollectionService.getCompleteType(collectionHeader.collection.typeId)
-  //    groups <- groupService.getAllGroups
-  //  } yield {
-  //    val (entityType, constraints) = typeData
-  //    val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
-  //      EntityForm.Data(
-  //        collectionHeader.properties.map(_.value),
-  //        collectionHeader.viewers.maintainers.toSeq.map(_.name),
-  //        collectionHeader.viewers.editors.toSeq.map(_.name),
-  //        collectionHeader.viewers.viewers.toSeq.map(_.name)))
-  //
-  //    Ok(views.html.container.subject.collection_editor(entityType,
-  //      collectionHeader,
-  //      collectionService.getCollectionPropertyKeys(constraints),
-  //      collectionService.getObligatoryPropertyKeys(constraints),
-  //      groups,
-  //      editForm, msg, successMsg))
-  //  }
-  //} recoverWith {
-  //  case e =>
-  //    logger.error(e.getMessage, e)
-  //    Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
-  //}
+  /**
+   * Helper function to build a 'collectible editor' view based on different configuration parameters.
+   *
+   * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
+   * @param collectibleId id of the [[modules.subject.model.Collectible Collectible]] to edit
+   * @param form          optional prepared form data
+   * @param msg           optional error message
+   * @param request       implicit request context
+   * @return collection editor page
+   */
+  private def updateCollectibleEditorFactory(collectionId: Long, collectibleId: Long, form: Option[Form[EntityForm.Data]],
+                                             msg: Option[String] = None, successMsg: Option[String] = None)(
+                                              implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
+    for {
+      extendedCollectible <- collectibleService.getCollectible(collectibleId)
+      typeData <- modelCollectibleService.getCompleteType(extendedCollectible.collectible.typeId)
+    } yield {
+      val (entityType, constraints) = typeData
+      val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
+        EntityForm.Data(
+          extendedCollectible.properties.map(_.value), Seq(), Seq(), Seq()))
+
+      Ok(views.html.container.subject.collectible_editor(entityType,
+        extendedCollectible,
+        collectibleService.getCollectiblePropertyKeys(constraints),
+        collectibleService.getObligatoryPropertyKeys(constraints),
+        editForm, msg, successMsg))
+    }
+  } recoverWith {
+    case e =>
+      logger.error(e.getMessage, e)
+      Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
+  }
 
 }
 
