@@ -121,7 +121,7 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
       RoleAssertion.assertWorker
       typeRepository.getComplete(id, derivesFrom) map (typeData => {
         val (entityType, constraints) = typeData
-        if (entityType.isEmpty) throw new Exception("Invalid asset type")
+        if (entityType.isEmpty) throw new Exception("Invalid entity type")
         (entityType.get, constraints)
       })
     } catch {

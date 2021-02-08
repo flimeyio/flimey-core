@@ -87,11 +87,11 @@ class ConstraintRepository @Inject()(@NamedDatabase("flimey_data") protected val
    */
   def getAssociated(typeId: Long, derivesFrom: Option[String] = None): Future[Seq[Constraint]] = {
     if(derivesFrom.isEmpty) {
-      db.run(constraints.filter(_.typeId === typeId).sortBy(_.id).result)
+      db.run(constraints.filter(_.typeId === typeId).sortBy(_.id.asc).result)
     }else{
       db.run((for {
-        (c, s) <- constraints.filter(_.typeId === typeId).sortBy(_.id) join entityTypes.filter(_.typeOf === derivesFrom.get)
-      } yield (c, s)).result) map (res => res.map(_._1))
+        (c, s) <- constraints.filter(_.typeId === typeId).sortBy(_.id.asc) join entityTypes.filter(_.typeOf === derivesFrom.get)
+      } yield (c, s)).result) map (res => res.map(_._1).sortBy(_.id))
     }
   }
 

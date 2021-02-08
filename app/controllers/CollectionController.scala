@@ -34,7 +34,6 @@ import scala.concurrent.Future
 
 /**
  * Controller to provide all required endpoints to manage [[modules.subject.model.Collection Collections]]
- * FIXME update documentation of defined endpoints
  *
  * @param cc                     injected ControllerComponents (provides methods and implicits)
  * @param withAuthentication     injected [[middleware.AuthenticationFilter AuthenticationFilter]] to handle session verification
@@ -43,8 +42,10 @@ import scala.concurrent.Future
  * @param groupService           injected [[modules.user.service.GroupService GroupService]]
  */
 @Singleton
-class CollectionController @Inject()(cc: ControllerComponents, withAuthentication: AuthenticationFilter,
-                                     collectionService: CollectionService, modelCollectionService: ModelCollectionService,
+class CollectionController @Inject()(cc: ControllerComponents,
+                                     withAuthentication: AuthenticationFilter,
+                                     collectionService: CollectionService,
+                                     modelCollectionService: ModelCollectionService,
                                      groupService: GroupService) extends
   AbstractController(cc) with I18nSupport with Logging with Authentication {
 
@@ -55,7 +56,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
    * an empty collection page is returned
    * <p> 2. In all other cases the getCollections() is redirected, with or without not recursive error
    *
-   * @return asset overview page
+   * @return redirect to getCollections() or empty error overview page
    */
   def index: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -101,7 +102,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to get all [[modules.subject.model.Collection Collection]] the requesting user can access.
+   * Endpoint to get all [[modules.subject.model.Collection Collections]] the requesting user can access.
    *
    * @param typeSelector  FIXME: this is ignored right now
    * @param groupSelector FIXME: this is ignored right now
@@ -132,8 +133,11 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
   def getCollection(collectionId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       val error = request.flash.get("error")
-      collectionService.getCollection(collectionId) map (data => {
-        Ok(views.html.container.subject.collection_detail_page(data._2, data._1, error))
+      (for {
+        data <- collectionService.getCollection(collectionId)
+        childTypes <- modelCollectionService.getChildren(data._1.collection.typeId)
+      } yield {
+        Ok(views.html.container.subject.collection_detail_page(data._2, childTypes, data._1, error))
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
@@ -143,11 +147,13 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
   }
 
   /**
-   * Endpoint to delete a Collection.<br />
-   * The Collection is deleted permanently and can not be restored!
+   * Endpoint to delete a [[modules.subject.model.Collection Collection]].
+   * <p> The Collection is deleted permanently and can not be restored!
+   * <p> All contained data will be deleted!
    *
-   * @param collectionId id of the parent Collection
-   * @return
+   * @see [[modules.subject.service.CollectionService#deleteCollection]]
+   * @param collectionId id of the Collection to delete
+   * @return redirect to getCollections()
    */
   def deleteCollection(collectionId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -163,8 +169,9 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to get the Collection editor with preloaded data.
+   * Endpoint to get the [[modules.subject.model.Collection Collection]] editor with preloaded data.
    *
+   * @param collectionId id of the Collection to edit
    * @return collection editor page with preloaded Collection data
    */
   def getCollectionEditor(collectionId: Long): Action[AnyContent] =
@@ -176,10 +183,10 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to post (update) the data of the currently edited Collection.
+   * Endpoint to post (update) the data of the currently edited [[modules.subject.model.Collection Collection]].
    *
    * @param collectionId id of the Collection to edit
-   * @return editor view result future
+   * @return editor view with success or error message
    */
   def postCollection(collectionId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -199,21 +206,32 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
       }
     }
 
-  //TODO add doc
+  /**
+   * Endpoint to get the state editor of a selected [[modules.subject.model.Collection Collection]].
+   * <p> There, the state attribute of the collection can be changed
+   *
+   * @param collectionId id of the parent collection
+   * @return collection state editor page
+   */
   def getStateEditor(collectionId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         collectionService.getSlimCollection(collectionId) map (collectionHeader => {
           val error = request.flash.get("error")
           val succmsg = request.flash.get("succ")
-          Ok(views.html.container.subject.collection_status_graph(collectionHeader.collection, error, succmsg))
+          Ok(views.html.container.subject.collection_state_graph(collectionHeader.collection, error, succmsg))
         }) recoverWith {
           case e: Throwable => Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
         }
       }
     }
 
-  //TODO add doc
+  /**
+   * Endpoint to change the state of a selected [[modules.subject.model.Collection Collection]].
+   *
+   * @param collectionId id of the parent collection
+   * @return collection state editor with error or success message
+   */
   def postState(collectionId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
@@ -230,10 +248,10 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to redirect to a new collection editor of the specified type (by a post request via form submit)
-   * redirects to the equivalent get endpoint.
+   * Endpoint to redirect to a new collection editor of the specified type (by a post request via form submit).
+   * <p> Redirects to the equivalent get endpoint with the prepared typeId.
    *
-   * @return redirect to getNewCollectionEditor or form with errors
+   * @return redirect to getNewCollectionEditor() or form with errors
    */
   def requestNewCollectionEditor(): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -258,14 +276,13 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
 
   /**
    * Endpoint to get an editor to create new [[modules.subject.model.Collection Collections]].
-   * <p> The Editor will only accept Collections  of the previously selected Entity(Collection)Type.
+   * <p> The Editor will only accept Collections of the previously selected Entity(Collection)Type.
    *
-   * @return new collection editor
+   * @return new collection editor page
    */
   def getNewCollectionEditor(typeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        Future.successful(Redirect(routes.CollectionController.index()).flashing("error" -> "Not Implemented yet"))
         val newEntityForm = EntityForm.form.fill(EntityForm.Data(Seq(), Seq(), Seq(), Seq()))
         val error = request.flash.get("error")
         val success = request.flash.get("success")
@@ -274,11 +291,11 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
     }
 
   /**
-   * Endpoint to add a new [[modules.subject.model.Collection Collection]].<br />
-   * The Collection must be of the selected Collection EntityType.<br />
-   * The incoming form data seq must be in the same order as the previously sent property keys.
+   * Endpoint to add a new [[modules.subject.model.Collection Collection]].
+   * <p> The Collection must be of the selected Collection [[modules.core.model.EntityType EntityType]].
+   * <p> The incoming form data seq must be in the same order as the previously sent property keys.
    *
-   * @return new collection editor (clean or with errors)
+   * @return new collection editor page (clean or with errors)
    */
   def addNewCollection(typeId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
@@ -302,7 +319,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
   /**
    * Helper function to build a 'new collection editor' view based on different configuration parameters.
    *
-   * @param typeId  id of the EntityType
+   * @param typeId  id of the [[modules.core.model.EntityType EntityType]]
    * @param form    NewEntityForm, which can be already filled
    * @param errmsg  optional error message
    * @param succmsg optional positive message
@@ -310,13 +327,14 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
    * @return new entity editor result future (view)
    */
   private def newCollectionEditorFactory(typeId: Long, form: Form[EntityForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
-                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
+                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
+  = {
     for {
       groups <- groupService.getAllGroups
       typeData <- modelCollectionService.getCompleteType(typeId)
     } yield {
-      val (assetType, constraints) = typeData
-      Ok(views.html.container.subject.new_collection_editor(assetType,
+      val (collectionType, constraints) = typeData
+      Ok(views.html.container.subject.new_collection_editor(collectionType,
         collectionService.getCollectionPropertyKeys(constraints),
         collectionService.getObligatoryPropertyKeys(constraints),
         groups,
@@ -331,7 +349,7 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
   /**
    * Helper function to build a 'collection editor' view based on different configuration parameters.
    *
-   * @param collectionId id of the Collection to edit
+   * @param collectionId id of the [[modules.subject.model.Collection Collection]] to edit
    * @param form         optional prepared form data
    * @param msg          optional error message
    * @param request      implicit request context
@@ -339,7 +357,9 @@ class CollectionController @Inject()(cc: ControllerComponents, withAuthenticatio
    */
   private def updateCollectionEditorFactory(collectionId: Long, form: Option[Form[EntityForm.Data]],
                                             msg: Option[String] = None, successMsg: Option[String] = None)(
-                                             implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
+                                             implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
+
+  = {
     for {
       collectionHeader <- collectionService.getSlimCollection(collectionId)
       typeData <- modelCollectionService.getCompleteType(collectionHeader.collection.typeId)

@@ -16,15 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.model
+package modules.subject.service
 
-import modules.core.model.Property
+import modules.subject.model.SubjectState
+import modules.util.messages.{ERR, OK, Status}
 
 /**
- * The CollectibleHeader class wraps a [[modules.subject.model.Collectible Collectible]] together with with all its objectified
- * [[modules.core.model.Property Properties]].
- *
- * @param collectible Collectible (contains only id and type reference)
- * @param properties  all Properties of the Collectible
+ * Trait which provides functionality for parsing and processing the [[modules.subject.model.SubjectState SubjectState]].
  */
-case class CollectibleHeader(collectible: Collectible, properties: Seq[Property])
+trait CollectibleStateProcessor extends SubjectStateProcessor {
+
+  override def isValidStateTransition(oldState: SubjectState.State, newState: SubjectState.State): Status = {
+    if(newState == SubjectState.CREATED) return ERR("This state can not be entered again")
+    if(newState == SubjectState.ARCHIVED) return ERR("Collectibles can not be archived independently from their Collection")
+    OK()
+  }
+
+}

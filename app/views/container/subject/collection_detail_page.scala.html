@@ -16,20 +16,17 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.auth.model.Ticket
-@import modules.core.model.EntityType
-@import views.html.forms.subject.collection_query_form
 @import views.html.components.utils.message_box_error
-@import views.html.components.subject.collection_block
-@import modules.subject.model.CollectionHeader
-@import views.html.components.utils.navbar_category_searchable
 @import modules.core.model.ExtendedEntityType
-@import views.html.forms.core.select_type_form
 @import modules.subject.model.ExtendedCollection
 @import views.html.components.utils.navbar_category_closeable
 @import views.html.components.core.meta_typedef
 @import views.html.components.utils.navbar_category
 @import views.html.components.subject.collection_detail_tile
-@(collectionTypes: Seq[ExtendedEntityType],
+@import views.html.components.subject.collectible_block
+@import views.html.forms.core.select_type_form
+@(collectionType: ExtendedEntityType,
+        collectibleTypes: Seq[ExtendedEntityType],
         collectionData: ExtendedCollection,
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
@@ -37,14 +34,14 @@
     @navbar_category_closeable(Seq("Collection Details"), routes.CollectionController.index())
     @message_box_error(msg)
     <div class="meta-entity-root scroll-container">
-        @meta_typedef(collectionTypes)
-        @collection_detail_tile(collectionData)
+        @meta_typedef(Seq(collectionType))
+        @collection_detail_tile(collectionData, collectionType.entityType.value)
     </div>
 }{
     @navbar_category(Seq("Collectibles"))
-    <!-- TODO show new collectible request from here -->
-    <div class="meta-entity-root">
-        @meta_typedef(collectionTypes)
-        <!-- TODO show collectible block here (also move meta to collectible block) -->
+    @select_type_form(None, collectibleTypes.map(_.entityType), routes.CollectibleController.requestNewCollectibleEditor(collectionData.collection.id), "New")
+    <div class="meta-entity-root scroll-container">
+        @meta_typedef(collectibleTypes)
+        @collectible_block(collectibleTypes, collectionData.collectibles)
     </div>
 }()

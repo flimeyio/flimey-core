@@ -1,0 +1,65 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import views.html.helper.CSRF
+@import modules.auth.model.Ticket
+@import modules.core.formdata.EntityForm
+@import modules.core.model.EntityType
+@(selectedType: EntityType,
+        propertyKeys: Seq[(String, String)],
+        obligatoryKeys: Map[String, String],
+        newEntityForm: Form[EntityForm.Data],
+        submitAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@key(index: Int) = @{
+    val (key, _) = propertyKeys(index)
+    key
+}
+
+@datatype(index: Int) = @{
+    val (_, datatype) = propertyKeys(index)
+    datatype
+}
+
+@placeholder(index: Int) = @{
+    val k = key(index)
+    val rule = obligatoryKeys.get(k)
+    if(rule.isDefined) {
+        "obligatory (" + rule.get + ")"
+    } else {
+        ""
+    }
+}
+
+@helper.form(action = submitAction) {
+    <div>
+        @CSRF.formField
+        @if(propertyKeys.nonEmpty) {
+            @for(i <- propertyKeys.indices) {
+                <div class="">@key(i)</div>
+                <div class="">@datatype(i)</div>
+                <input type="text" name="@{
+                    "values[" + i + "]"
+                }" class="" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+            }
+            <div class="">
+                <button class="">Save</button>
+            </div>
+        }
+    </div>
+}
+

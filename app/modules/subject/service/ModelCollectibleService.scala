@@ -22,31 +22,33 @@ import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.{Constraint, ConstraintType, EntityType, ExtendedEntityType}
-import modules.core.repository.{ConstraintRepository, TypeRepository}
+import modules.core.repository.{ConstraintRepository, TypeRepository, ViewerRepository}
 import modules.core.service.{EntityTypeService, ModelEntityService}
-import modules.subject.model.CollectionConstraintSpec
-import modules.subject.repository.CollectionRepository
+import modules.subject.model.CollectibleConstraintSpec
+import modules.subject.repository.CollectibleRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
  * The service class to provide safe functionality to work with [[modules.core.model.EntityType EntityTypes]] of
- * [[modules.subject.model.Collection Collections]].
+ * [[modules.subject.model.Collectible Collectibles]].
  * <p> Normally, this class is used with dependency injection in controller classes or as helper in other services.
  *
  * @param typeRepository       injected [[modules.core.repository.TypeRepository TypeRepository]]
  * @param constraintRepository injected [[modules.core.repository.ConstraintRepository ConstraintRepository]]
- * @param collectionRepository injected [[modules.subject.repository.CollectionRepository]]
+ * @param collectibleRepository
+ * @param viewerRepository
  * @param entityTypeService    injected [[modules.core.service.EntityTypeService EntityTypeService]]
  */
-class ModelCollectionService @Inject()(typeRepository: TypeRepository,
-                                       constraintRepository: ConstraintRepository,
-                                       collectionRepository: CollectionRepository,
-                                       entityTypeService: EntityTypeService) extends ModelEntityService {
+class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
+                                        constraintRepository: ConstraintRepository,
+                                        collectibleRepository: CollectibleRepository,
+                                        viewerRepository: ViewerRepository,
+                                        entityTypeService: EntityTypeService) extends ModelEntityService {
 
   /**
-   * Get all CollectionTypes.
+   * Get all [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityTypes]].
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -54,12 +56,12 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    * @return Future Seq[EntityType]
    */
   override def getAllTypes()(implicit ticket: Ticket): Future[Seq[EntityType]] = {
-    entityTypeService.getAllTypes(Option(CollectionConstraintSpec.COLLECTION))
+    entityTypeService.getAllTypes(Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
    * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define
-   * [[modules.subject.model.Collection Collections]].
+   * [[modules.subject.model.Collectible Collectibles]].
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -67,49 +69,49 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    * @return Future Seq[EntityType]
    */
   def getAllExtendedTypes()(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
-    entityTypeService.getAllExtendedTypes(Option(CollectionConstraintSpec.COLLECTION))
+    entityTypeService.getAllExtendedTypes(Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
-   * Get an CollectionType by its ID.
+   * Get an [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]] by its ID.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     idd the CollectionType
+   * @param id     idd the Collectible Type
    * @param ticket implicit authentication ticket
    * @return Future Option[EntityType]
    */
   override def getType(id: Long)(implicit ticket: Ticket): Future[Option[EntityType]] = {
-    entityTypeService.getType(id, Option(CollectionConstraintSpec.COLLECTION))
+    entityTypeService.getType(id, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
-   * Get a complete CollectionType (Head + Constraints).
+   * Get a complete [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]] (Head + Constraints).
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     od the CollectionType
+   * @param id     od the Collectible Type
    * @param ticket implicit authentication ticket
    * @return Future (EntityType, Seq[Constraint])
    */
   override def getCompleteType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
-    entityTypeService.getCompleteType(id, Option(CollectionConstraintSpec.COLLECTION))
+    entityTypeService.getCompleteType(id, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
-   * Get an CollectionType by its value (name) field.
+   * Get an [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]] by its value (name) field.
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param value  value filed (name) of the searched CollectionType
+   * @param value  value filed (name) of the searched Collectible Type
    * @param ticket implicit authentication ticket
-   * @return Future Option[CollectionType]
+   * @return Future Option[EntityType]
    */
   override def getTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[EntityType]] = {
-    entityTypeService.getEntityTypeByValue(value, Option(CollectionConstraintSpec.COLLECTION))
+    entityTypeService.getEntityTypeByValue(value, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
-   * Update an already existing CollectionType entity. This includes 'value' (name) and 'active'.
+   * Update an already existing [[modules.core.model.EntityType EntityType]] entity. This includes 'value' (name) and 'active'.
    * <p> To change the 'active' property to true, the Constraint model must be valid!
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
@@ -121,10 +123,10 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
   override def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
-      if (!CollectionLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
+      if (!CollectibleLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
       if (active) {
         getConstraintsOfType(id) flatMap (constraints => {
-          val status = CollectionLogic.isConstraintModel(constraints)
+          val status = CollectibleLogic.isConstraintModel(constraints)
           if (!status.valid) status.throwError
           typeRepository.update(EntityType(id, value, "", active))
         })
@@ -137,24 +139,24 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Get all Constraints associated to an CollectionType.
+   * Get all Constraints associated to an [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]].
    * <p> Fails without WORKER rights.
    * <p>This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the CollectionType
+   * @param id     of the Collectible Type
    * @param ticket implicit authentication ticket
    * @return Future Seq[Constraint]
    */
   override def getConstraintsOfType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
-    entityTypeService.getConstraintsOfEntityType(id, Option(CollectionConstraintSpec.COLLECTION))
+    entityTypeService.getConstraintsOfEntityType(id, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
-   * Delete a CollectionConstraint by its ID.
-   * <p> By deleting a Constraint, the associated ACollectionType model must stay valid.
+   * Delete a [[modules.subject.model.Collectible Collectible]] [[modules.core.model.Constraint Constraint]] by its ID.
+   * <p> By deleting a Constraint, the associated [[modules.core.model.EntityType EntityType]] model must stay valid.
    * If the removal of the Constraint will invalidate the model, the future will fail.
    * <p> <strong>The removal of a HasProperty or UsesPlugin Constraint leads to the system wide removal of all corresponding
-   * Collection data properties!</strong>
+   * Collectible data properties!</strong>
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -169,21 +171,21 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
         if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
         val constraint = constraintOption.get
 
-        getType(constraint.typeId) flatMap (collectionType => {
-          if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
-          val typeId = collectionType.get.id
+        getType(constraint.typeId) flatMap (collectibleType => {
+          if (collectibleType.isEmpty) throw new Exception("No corresponding EntityType found")
+          val typeId = collectibleType.get.id
 
           getConstraintsOfType(typeId) flatMap (constraints => {
-            val deletedConstraints = CollectionLogic.removeConstraint(constraint, constraints)
+            val deletedConstraints = CollectibleLogic.removeConstraint(constraint, constraints)
             val remainingConstraints = constraints.filter(c => !deletedConstraints.contains(c))
 
-            val status = CollectionLogic.isConstraintModel(remainingConstraints)
+            val status = CollectibleLogic.isConstraintModel(remainingConstraints)
             if (!status.valid) status.throwError
 
             val deletedPropertyConstraints = deletedConstraints.filter(_.c == ConstraintType.HasProperty)
             val deletedOtherConstraints = deletedConstraints diff deletedPropertyConstraints
 
-            collectionRepository.deleteConstraints(typeId, deletedPropertyConstraints, deletedOtherConstraints)
+            collectibleRepository.deleteConstraints(typeId, deletedPropertyConstraints, deletedOtherConstraints)
           })
         })
       })
@@ -193,9 +195,9 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Add a Constraint to a CollectionType.
-   * <p> ID must be 0 (else the future will fail). If the addition of the Constraint will invalidate the model,
-   * the future will fail.
+   * Add a [[modules.core.model.Constraint Constraint]] to a [[modules.subject.model.Collectible Collectible]]
+   * [[modules.core.model.EntityType EntityType]].
+   * <p> If adding the Constraint will invalidate the model, the future will fail.
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -211,25 +213,25 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
       RoleAssertion.assertModeler
       //FIXME the ConstraintType.find() needs a check before, the rules can be empty and lead to a unspecified exception
       val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
-      val constraintStatus = CollectionLogic.isValidConstraint(newConstraint)
+      val constraintStatus = CollectibleLogic.isValidConstraint(newConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
 
-      getType(newConstraint.typeId) flatMap (collectionType => {
-        if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
-        val typeId = collectionType.get.id
+      getType(newConstraint.typeId) flatMap (collectibleType => {
+        if (collectibleType.isEmpty) throw new Exception("No corresponding EntityType found")
+        val typeId = collectibleType.get.id
 
         getConstraintsOfType(newConstraint.typeId) flatMap (constraints => {
 
-          val newConstraints = CollectionLogic.applyConstraint(newConstraint)
+          val newConstraints = CollectibleLogic.applyConstraint(newConstraint)
           val newConstraintModel = constraints ++ newConstraints
 
-          val modelStatus = CollectionLogic.isConstraintModel(newConstraintModel)
+          val modelStatus = CollectibleLogic.isConstraintModel(newConstraintModel)
           if (!modelStatus.valid) modelStatus.throwError
 
           val newPropertyConstraints = newConstraints.filter(_.c == ConstraintType.HasProperty)
           val newOtherConstraints = newConstraints diff newPropertyConstraints
 
-          collectionRepository.addConstraints(typeId, newPropertyConstraints, newOtherConstraints)
+          collectibleRepository.addConstraints(typeId, newPropertyConstraints, newOtherConstraints)
         })
       })
     } catch {
@@ -238,42 +240,19 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Delete a CollectionType.
-   * <p> <strong> This operation will also delete all associated Constraints and all Collections which have this type! </strong>
+   * Delete a [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]].
+   * <p> <strong> This operation will also delete all associated Constraints and all Collectibles which have this type! </strong>
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the CollectionType
+   * @param id     of the Collectible Type
    * @param ticket implicit authentication ticket
    * @return Future[Unit]
    */
   override def deleteType(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
-      collectionRepository.deleteCollectionType(id)
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
-  }
-
-  /**
-   * Get all possible children of a [[modules.subject.model.Collection Collection]].
-   * <p> Only the by CanContain [[modules.core.model.Constraint Constraints]] defined string values are used
-   * without checking, if such a [[modules.core.model.EntityType EntityType]] exists actually.
-   * <p> Fails without WORKER rights
-   * <p> This is a safe implementation and can be used by controller classes.
-   *
-   * @param typeId id of the paren EntityType
-   * @param ticket implicit authentication ticket
-   * @return Future Seq[EntityType]
-   */
-  def getChildren(typeId: Long)(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
-    try {
-      RoleAssertion.assertWorker
-      typeRepository.getComplete(typeId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
-        val childValues = CollectionLogic.findChildren(typeData._2)
-        typeRepository.getAllExtended(childValues)
-      })
+      collectibleRepository.deleteCollectibleType(id)
     } catch {
       case e: Throwable => Future.failed(e)
     }

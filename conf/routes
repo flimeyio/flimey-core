@@ -33,13 +33,13 @@ POST    /auth                                               controllers.AuthCont
 GET     /account                                            controllers.AccountController.index()
 GET     /account/overview                                   controllers.AccountController.getAccountOverview()
 
+
 GET     /model                                              controllers.ModelController.index()
+
 
 POST    /model/asset                                        controllers.ModelController.addType
 POST    /model/asset/delete/:id                             controllers.ModelController.deleteType(id: Long)
 
-# search for and open asset type editor
-# FIXME
 POST    /model/asset/search                                 controllers.ModelController.searchEntityType
 
 GET     /model/asset/editor/:id                             controllers.ModelController.getTypeEditor(id: Long)
@@ -47,10 +47,10 @@ POST    /model/asset/editor/asset/:id                       controllers.ModelCon
 POST    /model/asset/editor/:id/constraint                  controllers.ModelController.addConstraint(id: Long)
 POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelController.deleteConstraint(id: Long, cid: Long)
 
+
 GET     /asset                                              controllers.AssetController.index()
 POST    /asset/type                                         controllers.AssetController.changeAssetType
 
-# FIXME
 POST    /asset/search                                       controllers.AssetController.searchAssets
 
 GET     /asset/:assetTypeId                                 controllers.AssetController.getAssets(assetTypeId: Long, pageNumber: Int, groupSelector: Option[String] = None)
@@ -60,6 +60,7 @@ POST    /asset/:assetTypeId/new                             controllers.AssetCon
 GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.getAssetEditor(assetTypeId: Long, assetId: Long)
 POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
 POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
+
 
 GET     /collection                                         controllers.CollectionController.index()
 POST    /collection/query                                   controllers.CollectionController.findByQuery()
@@ -78,6 +79,19 @@ POST    /collection/editor/:collectionId/delete             controllers.Collecti
 
 GET     /collection/editor/:collectionId/state              controllers.CollectionController.getStateEditor(collectionId: Long)
 POST    /collection/editor/:collectionId/state              controllers.CollectionController.postState(collectionId: Long)
+
+
+POST    /collection/:collectionId/collectible/new           controllers.CollectibleController.requestNewCollectibleEditor(collectionId: Long)
+GET     /collection/:collectionId/collectible/:typeId/new   controllers.CollectibleController.getNewCollectibleEditor(collectionId: Long, typeId: Long)
+POST    /collection/:collectionId/collectible/:typeId/new   controllers.CollectibleController.addNewCollectible(collectionId: Long, typeId: Long)
+
+GET     /collection/editor/:collectionId/collectible/:collectibleId         controllers.CollectibleController.getCollectibleEditor(collectionId: Long, collectibleId: Long)
+POST    /collection/editor/:collectionId/collectible/:collectibleId         controllers.CollectibleController.postCollectible(collectionId: Long, collectibleId: Long)
+POST    /collection/editor/:collectionId/collectible/:collectibleId/delete  controllers.CollectibleController.deleteCollectible(collectionId: Long, collectibleId: Long)
+
+GET     /collection/editor/:collectionId/collectible/:collectibleId/state   controllers.CollectibleController.getStateEditor(collectionId: Long, collectibleId: Long)
+POST    /collection/editor/:collectionId/collectible/:collectibleId/state   controllers.CollectibleController.postState(collectionId: Long, collectibleId: Long)
+
 
 GET     /management                                         controllers.ManagementController.index()
 

@@ -65,4 +65,8 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
     OK()
   }
 
+  def findChildren(constraints : Seq[Constraint]): Seq[String] = {
+    constraints.filter(_.c == ConstraintType.CanContain).map(_.v1)
+  }
+
 }

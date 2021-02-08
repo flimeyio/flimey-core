@@ -25,7 +25,7 @@ import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.{Constraint, ExtendedEntityType}
-import modules.core.repository.{FlimeyEntityRepository, PropertyRepository, TypeRepository}
+import modules.core.repository.{FlimeyEntityRepository, TypeRepository}
 import modules.subject.model._
 import modules.subject.repository.CollectionRepository
 import modules.user.model.GroupStats
@@ -41,14 +41,12 @@ import scala.concurrent.Future
  *
  * @param typeRepository         injected [[modules.core.repository.TypeRepository TypeRepository]]
  * @param collectionRepository   injected [[modules.subject.repository.CollectionRepository CollectionRepository]]
- * @param propertyRepository     injected [[modules.core.repository.PropertyRepository PropertyRepository]]
  * @param entityRepository
  * @param modelCollectionService injected [[modules.subject.service.ModelCollectionService]]
  * @param groupService           injected [[modules.user.service.GroupService]]
  */
 class CollectionService @Inject()(typeRepository: TypeRepository,
                                   collectionRepository: CollectionRepository,
-                                  propertyRepository: PropertyRepository,
                                   entityRepository: FlimeyEntityRepository,
                                   modelCollectionService: ModelCollectionService,
                                   groupService: GroupService) {
@@ -190,17 +188,17 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * @param ticket       implicit authentication ticket
    * @return Future[(ExtendedCollection, ExtendedEntityType)]
    */
-  def getCollection(collectionId: Long)(implicit ticket: Ticket): Future[(ExtendedCollection, Seq[ExtendedEntityType])] = {
+  def getCollection(collectionId: Long)(implicit ticket: Ticket): Future[(ExtendedCollection, ExtendedEntityType)] = {
     try {
       RoleAssertion.assertWorker
       val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
-      for {
-        collection <- collectionRepository.getCollection(collectionId, accessedGroupIds)
-        entityTypes <- modelCollectionService.getAllExtendedTypes()
-      } yield {
-        if (collection.isEmpty) throw new Exception("Collection does not exist or missing rights")
-        (collection.get, entityTypes)
-      }
+      collectionRepository.getCollection(collectionId, accessedGroupIds) flatMap (collectionData => {
+        if (collectionData.isEmpty) throw new Exception("Collection does not exist or missing rights")
+        val extendedCollection = collectionData.get
+        modelCollectionService.getCompleteType(extendedCollection.collection.typeId) map (typeData => {
+          (extendedCollection, ExtendedEntityType(typeData._1, typeData._2))
+        })
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -331,5 +329,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
     RoleAssertion.assertWorker
     CollectionLogic.getObligatoryPropertyKeys(constraints)
   }
+
+
 
 }

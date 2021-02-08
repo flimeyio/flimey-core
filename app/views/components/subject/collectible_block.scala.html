@@ -16,14 +16,11 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.subject.model.CollectionHeader
-@import views.html.components.subject.collection_tile
 @import modules.core.model.ExtendedEntityType
-@import views.html.components.core.meta_typedef
-@(collectionTypes: Seq[ExtendedEntityType], collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="meta-entity-root scroll-container">
-    @meta_typedef(collectionTypes)
-    @for(collection <- collections){
-        @collection_tile(collection, collectionTypes.map(_.entityType).filter(_.id == collection.collection.typeId).head.value)
-    }
-</div>
+@import modules.subject.model.CollectibleHeader
+@import views.html.components.subject.collectible_detail_tile
+@(collectibleTypes: Seq[ExtendedEntityType], collectibles: Seq[CollectibleHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@for(collectible <- collectibles){
+    @collectible_detail_tile(collectible, collectibleTypes.map(_.entityType).filter(_.id == collectible.collectible.typeId).head.value)
+}

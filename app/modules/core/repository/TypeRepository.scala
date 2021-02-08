@@ -87,10 +87,24 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
    */
   def getAll(derivesFrom: Option[String] = None): Future[Seq[EntityType]] = {
     if (derivesFrom.isEmpty) {
-      db.run(types.result)
+      db.run(types.sortBy(_.id.asc).result)
     } else {
-      db.run(types.filter(_.typeOf === derivesFrom.get).result)
+      db.run(types.filter(_.typeOf === derivesFrom.get).sortBy(_.id.asc).result)
     }
+  }
+
+  /**
+   * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] defined by their values (names).
+   *
+   * @param values names of the EntityTypes to fetch
+   * @return Future Seq[ExtendedEntityType]
+   */
+  def getAllExtended(values: Seq[String]): Future[Seq[ExtendedEntityType]] = {
+    val query = types.filter(_.value inSet values) joinLeft constraints on (_.id === _.typeId)
+    db.run(query.result).map(res => {
+      res.groupBy(_._1).mapValues(v => v.filter(_._2.isDefined).map(_._2.get)).map(typeWithConstraints =>
+        ExtendedEntityType(typeWithConstraints._1, typeWithConstraints._2)).toSeq
+    })
   }
 
   /**

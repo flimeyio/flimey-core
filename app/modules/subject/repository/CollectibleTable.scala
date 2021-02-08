@@ -16,15 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.model
+package modules.subject.repository
 
-import modules.core.model.Property
+import java.sql.Timestamp
 
-/**
- * The CollectibleHeader class wraps a [[modules.subject.model.Collectible Collectible]] together with with all its objectified
- * [[modules.core.model.Property Properties]].
- *
- * @param collectible Collectible (contains only id and type reference)
- * @param properties  all Properties of the Collectible
- */
-case class CollectibleHeader(collectible: Collectible, properties: Seq[Property])
+import modules.subject.model.Collectible
+import slick.jdbc.PostgresProfile.api._
+
+class CollectibleTable(tag: Tag) extends Table[Collectible](tag, "collectible") {
+
+  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def entityId = column[Long]("entity_id")
+  def collectionId = column[Long]("collection_id")
+  def typeId = column[Long]("type_id")
+  def state = column[String]("state")
+  def created = column[Timestamp]("created")
+
+  override def * = (id, entityId, collectionId, typeId, state, created) <> (Collectible.tupledRaw, Collectible.unapplyToRaw)
+
+}

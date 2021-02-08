@@ -18,14 +18,32 @@
 
 package modules.subject.model
 
+import java.sql.Timestamp
+
 /**
- * Collectible is a subtype of Subject. It represents a single process step and can not contain other Subjects.
- * In other words, a Collectible is a leaf of the Subject tree.
+ * Collectible is a subtype of [[modules.core.model.FlimeyEntity FlimeyEntity]]. It represents a single process step and
+ * can not contain other entities
+ * In other words, a Collectible is a leaf of the [[modules.subject.model.Collection Collection]] tree.
  * <p> Has a repository representation.
  *
- * @param id unique identifier
- * @param subjectId id of the parent Subject
+ * @param id           unique identifier
+ * @param entityId     id of the parent FlimeyEntity
  * @param collectionId id of the Collection which contains the Collectible
- * @param typeId id of the parent EntityType
+ * @param typeId       id of the parent EntityType
+ * @param state        [[modules.subject.model.SubjectState SubjectState]] of the Collectible
+ * @param created      creation timestamp
  */
-case class Collectible(id: Long, subjectId: Long, collectionId: Long, typeId: Long)
+case class Collectible(id: Long, entityId: Long, collectionId: Long, typeId: Long, state: SubjectState.State, created: Timestamp)
+
+object Collectible {
+
+  def applyRaw(id: Long, entityId: Long, collectionId: Long, typeId: Long, state: String, created: Timestamp): Collectible = {
+    Collectible(id, entityId, collectionId, typeId, SubjectState.withName(state), created)
+  }
+
+  def unapplyToRaw(arg: Collectible): Option[(Long, Long, Long, Long, String, Timestamp)] =
+    Option((arg.id, arg.entityId, arg.collectionId, arg.typeId, arg.state.toString, arg.created))
+
+  val tupledRaw: ((Long, Long, Long, Long, String, Timestamp)) => Collectible = (this.applyRaw _).tupled
+
+}

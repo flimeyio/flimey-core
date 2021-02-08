@@ -83,6 +83,7 @@ trait PropertyProcessor extends StringProcessor {
     typeName match {
       case PropertyType.StringType.name => true
       case PropertyType.NumericType.name => isNumericString(value)
+      case PropertyType.DateTimeType.name => isDateTimeString(value)
       case _ => false
     }
 
