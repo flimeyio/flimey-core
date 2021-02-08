@@ -1,0 +1,37 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.auth.model.Ticket
+@import views.html.components.utils.{message_box_error, navbar_category_closeable}
+@import modules.core.formdata.EntityForm
+@import views.html.components.utils.message_box_success
+@import modules.user.model.Group
+@import modules.core.model.EntityType
+@import views.html.forms.core.edit_viewable_entity_form
+@import modules.subject.model.CollectionHeader
+@import modules.subject.model.Collection
+@import views.html.forms.subject.change_status_form
+@import modules.subject.model.Collectible
+@(collectible: Collectible, msg: Option[String] = None, successMsg: Option[String] = None)(
+        implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@app {
+    @navbar_category_closeable(Seq("Status Graph Editor"), routes.CollectionController.getCollection(collectible.collectionId))
+    @message_box_error(msg)
+    @message_box_success(successMsg)
+    @change_status_form(collectible.state, routes.CollectibleController.postState(collectible.collectionId, collectible.id))
+}()()
