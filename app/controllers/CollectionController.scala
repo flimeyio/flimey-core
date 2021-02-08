@@ -133,8 +133,11 @@ class CollectionController @Inject()(cc: ControllerComponents,
   def getCollection(collectionId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
       val error = request.flash.get("error")
-      collectionService.getCollection(collectionId) map (data => {
-        Ok(views.html.container.subject.collection_detail_page(data._2, data._1, error))
+      (for {
+        data <- collectionService.getCollection(collectionId)
+        childTypes <- modelCollectionService.getChildren(data._1.collection.typeId)
+      } yield {
+        Ok(views.html.container.subject.collection_detail_page(data._2, childTypes, data._1, error))
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
@@ -216,7 +219,7 @@ class CollectionController @Inject()(cc: ControllerComponents,
         collectionService.getSlimCollection(collectionId) map (collectionHeader => {
           val error = request.flash.get("error")
           val succmsg = request.flash.get("succ")
-          Ok(views.html.container.subject.collection_status_graph(collectionHeader.collection, error, succmsg))
+          Ok(views.html.container.subject.collection_state_graph(collectionHeader.collection, error, succmsg))
         }) recoverWith {
           case e: Throwable => Future.successful(Redirect(routes.CollectionController.getCollection(collectionId)).flashing("error" -> e.getMessage))
         }
@@ -324,7 +327,8 @@ class CollectionController @Inject()(cc: ControllerComponents,
    * @return new entity editor result future (view)
    */
   private def newCollectionEditorFactory(typeId: Long, form: Form[EntityForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
-                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
+                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
+  = {
     for {
       groups <- groupService.getAllGroups
       typeData <- modelCollectionService.getCompleteType(typeId)
@@ -353,7 +357,9 @@ class CollectionController @Inject()(cc: ControllerComponents,
    */
   private def updateCollectionEditorFactory(collectionId: Long, form: Option[Form[EntityForm.Data]],
                                             msg: Option[String] = None, successMsg: Option[String] = None)(
-                                             implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
+                                             implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
+
+  = {
     for {
       collectionHeader <- collectionService.getSlimCollection(collectionId)
       typeData <- modelCollectionService.getCompleteType(collectionHeader.collection.typeId)
