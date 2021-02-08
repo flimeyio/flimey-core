@@ -1,0 +1,144 @@
+/*
+ * This file is part of the flimey-core software.
+ * Copyright (C) 2020  Karl Kegel
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * */
+
+/**
+ * The container element used to wrap everything which works with columns or other layouts.
+ */
+.flex-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+/**
+ * Display container elements side by side (default).
+ */
+.horizontal {
+    flex-direction: row;
+}
+
+/**
+ * Stack container children above each other, used for mobile flavours.
+ */
+.vertical {
+    flex-direction: column;
+}
+
+/**
+ * Left align child elements inside a container (gravity left).
+ */
+.left-align {
+    justify-content: flex-start;
+}
+
+/**
+ * Right align child elements inside a container (gravity right).
+ */
+.right-align {
+    justify-content: flex-end;
+}
+
+/**
+ * Center align child elements inside a container (gravity center).
+ */
+.center-align {
+    justify-content: center;
+}
+
+.stretched {
+    justify-content: stretch;
+}
+
+.weight-1 {
+    flex-grow: 1;
+}
+
+.weight-2 {
+    flex-grow: 2;
+}
+
+.weight-3 {
+    flex-grow: 3;
+}
+
+.weight-4 {
+    flex-grow: 4;
+}
+
+.weight-5 {
+    flex-grow: 5;
+}
+
+/**
+ * Centers child elements with auto margin within parent container.
+ */
+.fill {
+    margin: auto;
+}
+
+/**
+ * Stretches all child elements of a container spaced to maximum width.
+ */
+.symmetric {
+    justify-content: space-between;
+}
+
+
+/**
+ * Predefined column sizes, which can be used inside a container, or every other parent element.
+ * The parent should be full-width to make this work as expected.
+ */
+
+.col-1 {
+    width: 10%;
+}
+
+.col-2 {
+    width: 20%;
+}
+
+.col-3 {
+    width: 30%;
+}
+
+.col-4 {
+    width: 40%;
+}
+
+.col-5 {
+    width: 50%;
+}
+
+.col-6 {
+    width: 60%;
+}
+
+.col-7 {
+    width: 70%;
+}
+
+.col-8 {
+    width: 80%;
+}
+
+.col-9 {
+    width: 90%;
+}
+
+.col-10 {
+    width: 100%;
+}

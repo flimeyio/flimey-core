@@ -19,17 +19,22 @@
 @import views.html.helper.CSRF
 @(invitedUser: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div>
-    <table>
-        <tr><td>Username</td><td>@invitedUser.username</td></tr>
+<div class="tile flex-container vertical">
+    <div class="flex-container horizontal full-width">
+        <div class="col-3">Username</div>
+        <div class="col-7"> @invitedUser.username</div>
+    </div>
         <!-- FIXME: the value of the key must somehow be hidden by default (like a password) and...
              FIXME: ...only be shown, if the user clicks some "show" button or eye-icon -->
-        <tr><td>Key</td><td>@invitedUser.key.get</td></tr>
-        <tr><td>
-            <form role="form" action='@routes.ManagementController.deleteInvitation(invitedUser.id)' method="post">
-                @CSRF.formField
-                <button type="submit" class="">X</button>
-            </form>
-        </td></tr>
-    </table>
+    <div class="flex-container horizontal full-width">
+        <div class="col-3">Key</div>
+        <div class="col-7" >@invitedUser.key.get</div>
+    </div>
+    <div>
+        <form class="" role="form" action='@routes.ManagementController.deleteInvitation(invitedUser.id)' method="post">
+            @CSRF.formField
+        <button type="submit" class="delete-button button-small button no-margin">Delete</button>
+        </form>
+    </div>
+
 </div>

@@ -31,15 +31,25 @@
     @navbar_category_closeable(Seq("User Editor"), routes.ManagementController.getGroups())
     @message_box_error(msg)
     @user_detail_view(user)
-    <h1>Edit</h1>
-    @edit_user_form(user.id, editUserForm)
-    <h1>Actions</h1>
-    <form role="form" action='@routes.ManagementController.logUserOut(user.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">Force Log Out</button>
-    </form>
-    <form role="form" action='@routes.ManagementController.deleteUser(user.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="">Delete Account</button>
-    </form>
+    <div class="padding-10">
+    <div>Edit</div>
+    <div class="margin-bottom-10">
+        @edit_user_form(user.id, editUserForm)
+    </div>
+    <div class="margin-bottom-10">Actions</div>
+    <div class="flex-container horizontal">
+        <form class="col-5" role="form" action='@routes.ManagementController.logUserOut(user.id)' method="post">
+            @CSRF.formField
+            <button type="submit" class="button no-margin align-horizontal">
+                <div>Force&nbsp</div>
+                <div>Log&nbsp</div>
+                <div>out</div>
+            </button>
+        </form>
+        <form class="col-5" role="form" action='@routes.ManagementController.deleteUser(user.id)' method="post">
+            @CSRF.formField
+            <button type="submit" class="button border-button delete-button align-horizontal no-margin"><div>Delete</div><div>&nbspAccount</div></button>
+        </form>
+    </div>
+    </div>
 }()

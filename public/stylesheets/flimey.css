@@ -24,6 +24,7 @@ html, body {
     max-height: 100vh;
     margin: 0;
     overflow: hidden;
+    overflow-wrap: break-word;
 }
 
 body::-webkit-scrollbar {

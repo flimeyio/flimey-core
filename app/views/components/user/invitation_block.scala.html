@@ -18,17 +18,13 @@
 @import modules.user.model.User
 @import views.html.components.user.invitation_tile
 @(invitedUsers: Seq[User])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-
-<div>
+<div class="scroll-container">
     @if(invitedUsers.isEmpty){
         No pending Invitations!
     }else{
         <!-- TODO: maybe some fancy javascript to filter the shown tiles? -->
         @for(invitedUser <- invitedUsers) {
-            <!-- FIXME: the <hr> can be removed, they are just here to make it even more ugly-->
-            <hr>
             @invitation_tile(invitedUser)
-            <hr>
         }
     }
 </div>

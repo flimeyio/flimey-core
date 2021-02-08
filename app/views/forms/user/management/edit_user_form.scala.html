@@ -21,6 +21,13 @@
 
 @helper.form(action = routes.ManagementController.postUser(userId)) {
     @CSRF.formField
-    <input type="text" name="role" placeholder="New Role" value="@editUserForm.data("role")"/>
-    <button class="">Update</button>
+    <div class="flex-container horizontal">
+        <div class="col-7">
+            <input type="text" name="role" placeholder="New Role" value="@editUserForm.data("role")"/>
+        </div>
+        <div class="col-3">
+            <button class="button button-small no-margin">Update</button>
+        </div>
+    </div>
+
 }
