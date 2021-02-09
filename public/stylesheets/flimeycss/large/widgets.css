@@ -31,6 +31,65 @@
     z-index: 1000;
 }
 
+.navbar-global {
+    height: 100px;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+}
+
+.navbar-global-scrolled {
+    height: 60px;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+}
+
+.root-navigation {
+    height: 50px;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+}
+
+.navbar-global-scrolled .root-navigation {
+    height: 30px;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+}
+
+.navbar-global-scrolled .button {
+    background-color: white !important;
+    color: black;
+}
+
+.navbar-layout{
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+    padding: 4px;
+    background-color: var(--color-prim-dark);
+    color: white;
+    height: 50px;
+}
+
+.navbar-layout-scrolled {
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+    padding: 4px;
+    background-color: white;
+    color: black;
+    height: 30px;
+}
+
+.main-content {
+    padding-top: 110px;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+}
+
+.main-content-scrolled {
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+   padding-top: 80px;
+}
+
 .top-bar .menu{
     background-color:var(--color-sec) ;
 }
@@ -86,13 +145,6 @@ a {
 
 .navbar-title{
     font-size: 20px;
-}
-
-.navbar-layout{
-    padding: 4px;
-    background-color: var(--color-prim-dark);
-    color: white;
-    height: 50px;
 }
 
 tbody tr:nth-child(even){

@@ -18,14 +18,15 @@
 * *@
 @import modules.auth.model.Ticket
 @import views.html.components.page.{footer, navbar_main}
-@(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
+@(navbarLocalLeft: Html = Html(""))(leftContainer: Html = Html(""))(
+        navbarLocalRight: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
 @main {
     <div class="flex-container vertical">
-        <div class="sticky-headbar height-50 width-90vw margin-5vw-side">
-        @navbar_main()
+        <div class="sticky-headbar navbar-global width-90vw margin-5vw-side">
+        @navbar_main(navbarLocalLeft, navbarLocalRight)
         </div>
-        <div class="flex-container horizontal padding-top-50 width-90vw margin-5vw-side">
+        <div class="flex-container horizontal main-content width-90vw margin-5vw-side">
             <div class="col-5">
             @leftContainer
             </div>

@@ -31,7 +31,8 @@
 
 @app {
     @navbar_category_closeable(Seq("Status Graph Editor"), routes.CollectionController.getCollection(collectible.collectionId))
+}{
     @message_box_error(msg)
     @message_box_success(successMsg)
     @change_status_form(collectible.state, routes.CollectibleController.postState(collectible.collectionId, collectible.id))
-}()()
+}()()()

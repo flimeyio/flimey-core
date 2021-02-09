@@ -17,21 +17,31 @@
 * *@
 @import modules.auth.model.Ticket
 @import modules.user.model.Role
-@()(implicit ticket: Ticket)
+@(navbarLocalLeft: Html = Html(""), navbarLocalRight: Html = Html(""))(implicit ticket: Ticket)
 
-<div class="flex-container horizontal">
-    <a href="@routes.ApplicationController.index()" class=""><div class="">Overview</div></a>
-    <a href="@routes.CollectionController.index()" class=""><div class="">Collections</div></a>
-    <a href="@routes.AssetController.index()" class=""><div class="">Assets</div></a>
+<div class="flex-container vertical full-width">
+    <div class="flex-container horizontal full-width root-navigation stretched">
+        <a href="@routes.ApplicationController.index()" class=""><div class="">Overview</div></a>
+        <a href="@routes.CollectionController.index()" class=""><div class="">Collections</div></a>
+        <a href="@routes.AssetController.index()" class=""><div class="">Assets</div></a>
 
-    @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-        <a href="@routes.ModelController.index()" class=""><div class="">Model</div></a>
-    }
+        @if(Role.isAtLeastModeler(ticket.authSession.role)) {
+            <a href="@routes.ModelController.index()" class=""><div class="">Model</div></a>
+        }
 
-    @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
-        <a href="@routes.ManagementController.index()" class=""><div class="">Admin</div></a>
-    }
+        @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
+            <a href="@routes.ManagementController.index()" class=""><div class="">Admin</div></a>
+        }
 
-    <a href="@routes.AccountController.getAccountOverview()" class=""><div class="">Account</div></a>
+        <a href="@routes.AccountController.getAccountOverview()" class=""><div class="">Account</div></a>
+    </div>
+    <div class="flex-container horizontal full-width">
+        <div class="col-5">
+            @navbarLocalLeft
+        </div>
+        <div class="col-5 padding-left-10">
+            @navbarLocalRight
+        </div>
+    </div>
 </div>
 

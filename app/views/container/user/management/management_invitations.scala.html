@@ -26,9 +26,11 @@
 
 @app {
     @navbar_category(Seq("Admin Area"))
+}{
     @management_nav()
 }{
     @navbar_category_closeable(Seq("Pending Invitations"), routes.ManagementController.index())
+}{
     @message_box_error(msg)
     @invitation_block(invitedUsers)
 }()

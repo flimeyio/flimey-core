@@ -22,15 +22,6 @@ html, body {
     max-height: 100vh;
     margin: 0;
     overflow-wrap: break-word;
-    scrollbar-width: thin;
     scroll-behavior: auto;
     overflow-y: auto;
-}
-
-body::-webkit-scrollbar {
-    width: 5px;
-}
-
-body {
-    scrollbar-color: var(--color-sec) var(--color-sec-light);
 }

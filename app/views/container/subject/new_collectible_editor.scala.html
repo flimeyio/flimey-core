@@ -31,10 +31,11 @@
 
 @app {
     @navbar_category_closeable(Seq("New", selectedType.value), routes.CollectionController.getCollection(collectionId))
+}{
     @message_box_error(errmsg)
     @message_box_success(succmsg)
     <div class="scroll-container">
         @new_pure_entity_form(selectedType, propertyKeys, obligatoryKeys, newEntityForm,
             routes.CollectibleController.addNewCollectible(collectionId, selectedType.id))
     </div>
-}()()
+}()()()

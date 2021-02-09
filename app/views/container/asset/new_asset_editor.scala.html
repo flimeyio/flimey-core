@@ -32,9 +32,10 @@
 
 @app {
     @navbar_category_closeable(Seq("New", selectedType.value), routes.AssetController.getAssets(selectedType.id, 0))
+}{
     @message_box_error(errmsg)
     @message_box_success(succmsg)
     <div class="scroll-container">
         @new_entity_form(selectedType, propertyKeys, obligatoryKeys, groups, newAssetForm, routes.AssetController.addNewAsset(selectedType.id))
     </div>
-}()()
+}()()()

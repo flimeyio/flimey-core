@@ -19,6 +19,7 @@
 @import views.html.container.asset.asset_view_container
 @import modules.asset.model.ExtendedAsset
 @import modules.core.model.EntityType
+@import views.html.components.utils.navbar_category_searchable
 @(selectedType: Option[EntityType],
         assetTypes: Seq[EntityType],
         assetData: Seq[ExtendedAsset],
@@ -26,5 +27,7 @@
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
+    @navbar_category_searchable(Seq("Assets"), routes.AssetController.searchAssets)
+}{
     @asset_view_container(selectedType, assetTypes, assetData, pageNumber, None, msg)
-}()()
+}()()()
