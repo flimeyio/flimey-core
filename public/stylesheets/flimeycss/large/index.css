@@ -17,10 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-@import "flimeycss/core/index.css";
-
-@import 'flimeycss/small/index.css' only screen and (max-width: 768px);
-
-@import 'flimeycss/medium/index.css' only screen and (min-width: 768px);
-
-@import 'flimeycss/large/index.css' only screen and (min-width: 1200px);
+@import "page.css";
+@import "columns.css";
+@import "text.css";
+@import "widgets.css";
+@import "spacing.css";
+@import "container.css";
+@import "buttons.css";

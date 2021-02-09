@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,27 +16,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-.headline-text {
-    font-size: larger;
-    font-style: normal;
+.full-size-container{
+    height: 100%;
+    width: 100%;
+    margin:0;
 }
 
-a {
-    text-decoration: none;
-    text-underline: none;
+.grid-container{
+    height: 100%;
+    width: 100%;
+    margin-bottom: 5%;
 }
 
-a:visited {
-    text-decoration: none;
-    text-underline: none;
+.view-container{
+    max-height: 92%!important;
 }
 
-a:hover {
-    text-decoration: none;
-    text-underline: none;
+.full-height{
+    min-height: 100vh;
+    max-height: 100vh;
 }
 
-a:active {
-    text-decoration: none;
-    text-underline: none;
+.scroll-container{
+    scrollbar-width: thin;
+    scroll-behavior: auto;
+    overflow-y: auto;
+    padding-top: 10px;
+}
+
+.relative-container {
+    position: relative;
+}
+
+.form-container{
+    padding: 10px;
 }

@@ -1,0 +1,53 @@
+/*
+ * This file is part of the flimey-core software.
+ * Copyright (C) 2020-2021 Julia Kegel
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * */
+
+.button{
+    color: #ffffff;
+    background-color: var(--color-prim);
+    height: 40px;
+    width: min-content;
+}
+
+.button:hover{
+    background-color: var(--color-prim-dark);
+}
+
+.button-small{
+    width: fit-content;
+    min-width: 60px;
+    /*box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);*/
+    padding: 3px;
+}
+
+.border-button{
+    background-color: white;
+    border-color: var(--color-prim);
+    color: var(--color-prim);
+    position: relative;
+}
+
+.border-button:hover{
+    background-color: var(--color-prim-dark);
+    border-color: var(--color-prim-dark);
+    color: white;
+}
+
+.delete-button:hover{
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+}
