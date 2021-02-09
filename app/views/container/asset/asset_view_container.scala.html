@@ -32,7 +32,6 @@
     selectedAsset.isDefined && selectedAsset.get == id
 }
 
-@navbar_category_searchable(Seq("Assets"), routes.AssetController.searchAssets)
 @message_box_error(msg)
     <div class="select-bar menu relative-container">
 @select_type_form(selectedType, assetTypes, routes.AssetController.changeAssetType(), "Show")

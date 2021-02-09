@@ -34,10 +34,12 @@
 
 @app {
     @navbar_category_searchable(Seq("Model Types"), routes.ModelController.searchEntityType)
+}{
     @type_block(allTypes)
-} {
-            @navbar_category_closeable(Seq("Type Model Editor"), routes.ModelController.index())
-            @message_box_error(msg)
-            @type_editor(editedType, assetConstraints, editAssetTypeForm, newAssetConstraintForm)
+}{
+    @navbar_category_closeable(Seq("Type Model Editor"), routes.ModelController.index())
+}{
+    @message_box_error(msg)
+    @type_editor(editedType, assetConstraints, editAssetTypeForm, newAssetConstraintForm)
 }()
 

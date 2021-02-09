@@ -31,9 +31,11 @@
 
 @app {
     @navbar_category(Seq("Admin Area"))
+}{
     @management_nav()
 }{
     @navbar_category_closeable(Seq("Group Relation Editor"), routes.ManagementController.getGroups())
+}{
     @message_box_error(msg)
     <div class="scroll-container">
         <div class="padding-10">

@@ -1,0 +1,127 @@
+/*
+ * This file is part of the flimey-core software.
+ * Copyright (C) 2020-2021 Julia Kegel
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * */
+
+.height-50 {
+    min-height: 50px;
+    max-height: 50px;
+}
+
+.height-25 {
+    min-height: 25px;
+    max-height: 25px;
+}
+
+.padding-top-50 {
+    padding-top: 50px;
+}
+
+.padding-left-10 {
+    padding-left: 10px;
+}
+
+.margin-right-10 {
+    margin-right: 10px;
+}
+
+.margin-10-side{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.margin-5vw-side{
+    margin-left: 5vw;
+    margin-right: 5vw;
+}
+
+.width-90vw {
+    min-width: 90vw;
+    max-width: 90vw;
+}
+
+.no-margin{
+    margin: 0 !important;
+}
+
+.margin-top-15{
+    margin-top: 15px;
+}
+
+.right{
+    position: absolute;
+    right: 20px;
+    top:10px;
+}
+
+.bit-right{
+    position: absolute;
+    right: 80px;
+    top:10px;
+}
+
+.float-top-right {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.align-horizontal{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.small-margin-top{
+    margin-top: 1px;
+    margin-bottom: 0;
+}
+
+.bottom-right{
+    float: right;
+}
+
+.margin-bottom-10{
+    margin-bottom: 10px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.padding-bottom{
+    padding-top: 0;
+}
+
+.no-padding{
+    padding: 0 !important;
+}
+
+.margin-top-5{
+    margin-top: 5px;
+}
+
+.padding-10{
+    padding: 10px 10px 10px 10px;
+}
+
+.padding-left-right{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 5px;
+    padding-right:5px;
+}

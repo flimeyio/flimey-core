@@ -17,27 +17,25 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.auth.model.Ticket
-@import views.html.components.page.{footer, navbar_left}
-@import views.html.components.utils.message_box_error
-@(leftContainer: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
+@import views.html.components.page.{footer, navbar_main}
+@(navbarLocalLeft: Html = Html(""))(leftContainer: Html = Html(""))(
+        navbarLocalRight: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
-    @main {
-            <div class="grid-x main full-height">
-                <div class="cell small-1 full-height margin-10-side">
-                    <div class="margin-top-15">
-                     @navbar_left()
-                    </div>
-                </div>
-                <div class="cell large-5 full-height margin-10-side" >
-                    <div  class="card view-container margin-top-15">
-                    @leftContainer
-                    </div>
-                </div>
-                <div class="cell large-4 full-height margin-10-side">
-                @if(!rightContainer.equals(Html(""))) {
-                   <div class="card view-container margin-top-15">@rightContainer</div>
-                }</div>
+@main {
+    <div class="flex-container vertical">
+        <div class="sticky-headbar navbar-global width-90vw margin-5vw-side">
+        @navbar_main(navbarLocalLeft, navbarLocalRight)
+        </div>
+        <div class="flex-container horizontal main-content width-90vw margin-5vw-side">
+            <div class="col-5">
+            @leftContainer
             </div>
-        @footer()
-
-    }
+            <div class="col-5 padding-left-10">
+            @if(!rightContainer.equals(Html(""))) {
+                @rightContainer
+            }
+            </div>
+        </div>
+    </div>
+    @footer()
+}

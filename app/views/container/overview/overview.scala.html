@@ -28,7 +28,8 @@
 
 @app {
     @navbar_category_searchable(Seq("Overview"), routes.CollectionController.index())
+}{
     @message_box_error(msg)
     <p>Go to <a href="@routes.CollectionController.index()" class="">Collections</a></p>
     <p>Go to <a href="@routes.AssetController.index()" class="">Assets</a></p>
-}()()
+}()()()

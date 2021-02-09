@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  * Copyright (C) 2020 Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-@import './colors.css';
-@import "./font.css";
-@import "./text.css";
-@import "components.css";
-@import "columns.css";
+html, body {
+    min-height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    overflow-wrap: break-word;
+    scroll-behavior: auto;
+    overflow-y: auto;
+}

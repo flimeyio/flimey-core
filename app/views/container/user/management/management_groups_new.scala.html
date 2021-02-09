@@ -26,8 +26,10 @@
 
 @app {
     @navbar_category(Seq("Admin Area"))
+}{
     @management_nav()
 }{
     @navbar_category_closeable(Seq("New Group"), routes.ManagementController.index())
+}{
     @new_group_form(newGroupForm, msg)
 }()

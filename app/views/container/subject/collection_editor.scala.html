@@ -34,6 +34,7 @@
 
 @app {
     @navbar_category_closeable(Seq("Collection Editor"), routes.CollectionController.getCollection(collectionData.collection.id))
+}{
     @message_box_error(msg)
     @message_box_success(successMsg)
     <div class="scroll-container">
@@ -41,4 +42,4 @@
             collectionData.viewers, entityForm, routes.CollectionController.postCollection(collectionData.collection.id),
             routes.CollectionController.deleteCollection(collectionData.collection.id))
     </div>
-}()()
+}()()()

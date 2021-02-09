@@ -21,7 +21,7 @@
 
 @(titles: Seq[String], searchAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="top-bar navbar-layout">
+<div class="navbar-local top-bar navbar-layout">
     <section class="top-bar-left">
         @for(title <- titles) {
             <div class="navbar-title">@title</div>

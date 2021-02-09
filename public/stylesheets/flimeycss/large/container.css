@@ -1,7 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020-2021 Karl Kegel
- * Copyright (C) 2020 Julia Kegel
+ * Copyright (C) 2020-2021 Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-@import "flimeycss/core/index.css";
+.full-size-container{
+    height: 100%;
+    width: 100%;
+    margin:0;
+}
 
-@import 'flimeycss/small/index.css' only screen and (max-width: 768px);
+.grid-container{
+    height: 100%;
+    width: 100%;
+    margin-bottom: 5%;
+}
 
-@import 'flimeycss/medium/index.css' only screen and (min-width: 768px);
+.view-container{
+    max-height: 92%!important;
+}
 
-@import 'flimeycss/large/index.css' only screen and (min-width: 1200px);
+.relative-container {
+    position: relative;
+}
+
+.form-container{
+    padding: 10px;
+}
