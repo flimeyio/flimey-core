@@ -58,6 +58,23 @@
 .navbar-global-scrolled .button {
     background-color: white !important;
     color: black;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+}
+
+.navbar-item {
+    font-size: x-large;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
+    margin-top: 5px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.navbar-global-scrolled .navbar-item {
+    font-size: medium;
+    -webkit-transition: all 0.8s ease;
+    transition: all 0.8s ease;
 }
 
 .navbar-layout{
@@ -79,7 +96,7 @@
 }
 
 .main-content {
-    padding-top: 110px;
+    padding-top: 130px;
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
 }

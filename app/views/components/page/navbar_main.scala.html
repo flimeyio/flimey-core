@@ -21,19 +21,21 @@
 
 <div class="flex-container vertical full-width">
     <div class="flex-container horizontal full-width root-navigation stretched">
-        <a href="@routes.ApplicationController.index()" class=""><div class="">Overview</div></a>
-        <a href="@routes.CollectionController.index()" class=""><div class="">Collections</div></a>
-        <a href="@routes.AssetController.index()" class=""><div class="">Assets</div></a>
+        <div class="flex-container horizontal left-align weight-1">
+        <a href="@routes.ApplicationController.index()" class="navbar-item margin-right-10"><div class="">Overview</div></a>
+        <a href="@routes.CollectionController.index()" class="navbar-item margin-right-10"><div class="">Collections</div></a>
+        <a href="@routes.AssetController.index()" class="navbar-item margin-right-10"><div class="">Assets</div></a>
 
+        </div>
+        <div class="flex-container horizontal right-align">
         @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-            <a href="@routes.ModelController.index()" class=""><div class="">Model</div></a>
+            <a href="@routes.ModelController.index()" class="navbar-item margin-right-10"><div class="">Model</div></a>
         }
-
         @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
-            <a href="@routes.ManagementController.index()" class=""><div class="">Admin</div></a>
+            <a href="@routes.ManagementController.index()" class="navbar-item margin-right-10"><div class="">Admin</div></a>
         }
-
-        <a href="@routes.AccountController.getAccountOverview()" class=""><div class="">Account</div></a>
+        <a href="@routes.AccountController.getAccountOverview()" class="navbar-item"><div class="">Account</div></a>
+        </div>
     </div>
     <div class="flex-container horizontal full-width">
         <div class="col-5">

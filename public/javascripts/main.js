@@ -22,13 +22,13 @@ let scroll_open = true;
 
 document.addEventListener('scroll', function (event) {
     let pos = $("body").scrollTop()
-    if(pos > 100 && scroll_open){
+    if(pos > 10 && scroll_open){
         scroll_open = false;
         $( ".main-content" ).addClass( "main-content-scrolled" );
         $( ".navbar-global" ).addClass( "navbar-global-scrolled" );
         $( ".navbar-layout" ).addClass( "navbar-layout-scrolled" );
         console.log("set closed");
-    }else if(pos < 100 && !scroll_open){
+    }else if(pos < 10 && !scroll_open){
         scroll_open = true
         $( ".main-content" ).removeClass( "main-content-scrolled" );
         $( ".navbar-global" ).removeClass( "navbar-global-scrolled" );
