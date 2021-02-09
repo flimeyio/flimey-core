@@ -16,9 +16,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
+.height-50 {
+    min-height: 50px;
+    max-height: 50px;
+}
+
+.height-25 {
+    min-height: 25px;
+    max-height: 25px;
+}
+
+.padding-top-50 {
+    padding-top: 50px;
+}
+
+.padding-left-10 {
+    padding-left: 10px;
+}
+
 .margin-10-side{
     margin-left: 10px;
     margin-right: 10px;
+}
+
+.margin-5vw-side{
+    margin-left: 5vw;
+    margin-right: 5vw;
+}
+
+.width-90vw {
+    min-width: 90vw;
+    max-width: 90vw;
 }
 
 .no-margin{

@@ -32,18 +32,6 @@
     max-height: 92%!important;
 }
 
-.full-height{
-    min-height: 100vh;
-    max-height: 100vh;
-}
-
-.scroll-container{
-    scrollbar-width: thin;
-    scroll-behavior: auto;
-    overflow-y: auto;
-    padding-top: 10px;
-}
-
 .relative-container {
     position: relative;
 }

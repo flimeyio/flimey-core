@@ -21,8 +21,10 @@ html, body {
     min-height: 100vh;
     max-height: 100vh;
     margin: 0;
-    overflow: hidden;
     overflow-wrap: break-word;
+    scrollbar-width: thin;
+    scroll-behavior: auto;
+    overflow-y: auto;
 }
 
 body::-webkit-scrollbar {
