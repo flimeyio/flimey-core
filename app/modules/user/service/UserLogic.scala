@@ -68,8 +68,9 @@ object UserLogic extends CredentialProcessor with PasswordProcessor {
   def isValidInvitationData(userName: String, role: String): Status = {
     try{
       val roleT: Role = Role.withName(role)
+      if(roleT == Role.SYSTEM) throw new Exception("System users can not be created")
     } catch {
-      case e: Throwable => ERR(e.getMessage)
+      case e: Throwable => return ERR(e.getMessage)
     }
     validateUsername(userName)
   }
