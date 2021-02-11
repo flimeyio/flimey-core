@@ -42,7 +42,7 @@
     @navbar_category(Seq("Collectibles"))
 }{
     @select_type_form(None, collectibleTypes.map(_.entityType), routes.CollectibleController.requestNewCollectibleEditor(collectionData.collection.id), "New")
-    <div class="meta-entity-root scroll-container">
+    <div class="meta-entity-root scroll-container margin-top-15">
         @meta_typedef(collectibleTypes)
         @collectible_block(collectibleTypes, collectionData.collectibles)
     </div>
