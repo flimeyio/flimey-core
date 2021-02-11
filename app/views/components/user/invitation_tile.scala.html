@@ -19,7 +19,7 @@
 @import views.html.helper.CSRF
 @(invitedUser: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="tile flex-container vertical">
+<div class="card tile flex-container vertical">
     <div class="flex-container horizontal full-width">
         <div class="col-3">Username</div>
         <div class="col-7"> @invitedUser.username</div>

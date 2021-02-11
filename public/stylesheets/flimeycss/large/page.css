@@ -24,4 +24,5 @@ html, body {
     overflow-wrap: break-word;
     scroll-behavior: auto;
     overflow-y: auto;
+    background-color: var(--color-background);
 }
