@@ -33,7 +33,7 @@
 }
 
 @message_box_error(msg)
-    <div class="select-bar menu relative-container">
+    <div class="menu relative-container">
 @select_type_form(selectedType, assetTypes, routes.AssetController.changeAssetType(), "Show")
 @if(selectedType.isDefined) {
     <div class="padding-left-right">
@@ -57,5 +57,6 @@
     </div>
 }
     </div>
-
+    <div class="margin-top-15">
     @asset_block(assetData)
+    </div>

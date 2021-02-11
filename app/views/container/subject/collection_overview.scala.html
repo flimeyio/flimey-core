@@ -34,5 +34,7 @@
     @message_box_error(msg)
     @select_type_form(None, collectionTypes.map(_.entityType), routes.CollectionController.requestNewCollectionEditor(), "New")
     <!--@collection_query_form()-->
+    <div class="margin-top-15">
     @collection_block(collectionTypes, collectionData)
+    </div>
 }()()()

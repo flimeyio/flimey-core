@@ -32,6 +32,7 @@
 }
 
 .navbar-global {
+    background-color: var(--color-background);
     height: 100px;
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
@@ -63,16 +64,18 @@
 }
 
 .navbar-item {
-    font-size: x-large;
+    font-size: 14pt;
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
     margin-top: 5px;
     padding-left: 3px;
     padding-right: 3px;
+    color: black;
+    font-weight: bolder;
 }
 
 .navbar-global-scrolled .navbar-item {
-    font-size: medium;
+    font-size: 12pt;
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
 }
@@ -90,9 +93,10 @@
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
     padding: 4px;
-    background-color: white;
+    background-color: var(--color-background);
+    border-bottom: 5px solid var(--color-prim-dark);
     color: black;
-    height: 30px;
+    height: 50px;
 }
 
 .main-content {
@@ -104,7 +108,7 @@
 .main-content-scrolled {
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
-   padding-top: 80px;
+   padding-top: 90px;
 }
 
 .top-bar .menu{
@@ -169,10 +173,10 @@ tbody tr:nth-child(even){
 }
 
 .tile{
-    margin: 10px;
-    padding: 10px;
-    width: calc(100% - 20px);
-    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2), 0 2px 8px 0 rgba(0, 0, 0, 0.01);
+    padding: 8px;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 3px 0px 0 rgba(0, 0, 0, 0.2);
 }
 
 .tile table th, td {
@@ -196,15 +200,6 @@ tbody tr:nth-child(even){
     margin: 2px;
     color:white;
     font-size: small;
-}
-
-.select-bar{
-    margin: 10px;
-    width: 100%;
-}
-
-.select-bar .input-group{
-    width: 300px;
 }
 
 .big-icon{
