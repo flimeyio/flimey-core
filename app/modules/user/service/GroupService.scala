@@ -209,11 +209,11 @@ class GroupService @Inject()(groupRepository: GroupRepository,
       groupRepository.getById(groupId) flatMap (groupOption => {
         if (groupOption.isEmpty) throw new Exception("Invalid Group")
         val group = groupOption.get
-        if (group.name == "public") throw new Exception("No user can be removed from this group")
+        if (group.name == GroupStats.PUBLIC_GROUP) throw new Exception("No user can be removed from this group")
         userRepository.getById(userId) flatMap (userOption => {
           if (userOption.isEmpty) throw new Exception("Invalid User")
           val user = userOption.get
-          if (Role.isAtLeastSystem(user.role) && group.name == "system") {
+          if (Role.isAtLeastSystem(user.role) && group.name == GroupStats.SYSTEM_GROUP) {
             throw new Exception("The SYSTEM user can not be removed from this group")
           }
           groupMembershipRepository.delete(userId, groupId)

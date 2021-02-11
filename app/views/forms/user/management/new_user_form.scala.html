@@ -24,6 +24,9 @@
 @helper.form(action = routes.ManagementController.postNewInvitation()) {
     @CSRF.formField
 
+    @if(newUserForm.error("userName").isDefined){
+        <div>@message_box_error(Option("Invalid username"))</div>
+    }
     <!--Errors that are thrown by the server logic-->
     <div>@message_box_error(msg)</div>
     <div class="form-container">
