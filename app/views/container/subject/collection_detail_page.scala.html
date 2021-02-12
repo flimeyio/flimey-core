@@ -23,10 +23,11 @@
 @import views.html.components.core.meta_typedef
 @import views.html.components.utils.navbar_category
 @import views.html.components.subject.collection_detail_tile
-@import views.html.components.subject.collectible_block
+@import modules.core.model.EntityType
 @import views.html.forms.core.select_type_form
+@import views.html.components.subject.collectible_block
 @(collectionType: ExtendedEntityType,
-        collectibleTypes: Seq[ExtendedEntityType],
+        collectibleTypes: Seq[EntityType],
         collectionData: ExtendedCollection,
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
@@ -41,9 +42,8 @@
 }{
     @navbar_category(Seq("Collectibles"))
 }{
-    @select_type_form(None, collectibleTypes.map(_.entityType), routes.CollectibleController.requestNewCollectibleEditor(collectionData.collection.id), "New")
+    @select_type_form(None, collectibleTypes, routes.CollectibleController.requestNewCollectibleEditor(collectionData.collection.id), "New")
     <div class="meta-entity-root scroll-container margin-top-15">
-        @meta_typedef(collectibleTypes)
-        @collectible_block(collectibleTypes, collectionData.collectibles)
+        @collectible_block(collectionData.collectibles)
     </div>
 }()

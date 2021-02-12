@@ -273,7 +273,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         collectionHeaders <- getCollectionHeaders(typeSelector, groupSelector)
         extendedEntityTypes <- modelCollectionService.getAllExtendedTypes()
       } yield {
-        CollectionTypeComplex(collectionHeaders, extendedEntityTypes)
+        CollectionTypeComplex(collectionHeaders, extendedEntityTypes.map(_.entityType))
       }
     } catch {
       case e: Throwable => Future.failed(e)
