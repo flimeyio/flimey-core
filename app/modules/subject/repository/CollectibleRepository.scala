@@ -45,6 +45,7 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
   val collections = TableQuery[CollectionTable]
   val entities = TableQuery[FlimeyEntityTable]
   val entityTypes = TableQuery[TypeTable]
+  val typeVersions = TableQuery[TypeVersionTable]
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
   val viewers = TableQuery[ViewerTable]
@@ -63,29 +64,43 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
     db.run((for {
       entityId <- (entities returning entities.map(_.id)) += FlimeyEntity(0)
       _ <- (collectibles returning collectibles.map(_.id)) +=
-        Collectible(0, entityId, collectible.collectionId, collectible.typeId, collectible.state, collectible.created)
+        Collectible(0, entityId, collectible.collectionId, collectible.typeVersionId, collectible.state, collectible.created)
       _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
     } yield ()).transactionally)
   }
 
   /**
    * Delete a [[modules.core.model.EntityType EntityType]] of a [[modules.subject.model.Collectible Collectible]].
+   * <p> This deletes all subsidiary [[modules.core.model.TypeVersion TypeVersions]] of this type.
    * <p> To ensure integrity, this operation deletes:
    * <p> 1. all [[modules.core.model.Constraint Constraints]] of the type.
    * <p> 2. all [[modules.core.model.FlimeyEntity Entities (Collectibles)]] which use this type...
    * <p> 3. ... with all their [[modules.core.model.Property Properties]].
    *
-   * @param id of the EntityType (Collectible Type) to delete
+   * @param typeId of the EntityType (Collectible Type) to delete
    * @return Future[Unit]
    */
-  def deleteCollectibleType(id: Long): Future[Unit] = {
-    val entitiesOfType = collectibles.filter(_.typeId === id).map(_.entityId)
+  def deleteCollectibleType(typeId: Long): Future[Unit] = {
+    val typeVersionsToDeleteIds = typeVersions.filter(_.typeId === typeId).map(_.id)
+    val collectiblesOfTypeEntityIds = collectibles.filter(_.typeVersionId in typeVersionsToDeleteIds).map(_.entityId)
     db.run((for {
-      _ <- properties.filter(_.parentId in entitiesOfType).delete
-      _ <- collectibles.filter(_.typeId === id).delete
-      _ <- entities.filter(_.id in entitiesOfType).delete
-      _ <- constraints.filter(_.typeId === id).delete
-      _ <- entityTypes.filter(_.id === id).delete
+      _ <- properties.filter(_.parentId in collectiblesOfTypeEntityIds).delete
+      _ <- collectibles.filter(_.entityId in collectiblesOfTypeEntityIds).delete
+      _ <- entities.filter(_.id in collectiblesOfTypeEntityIds).delete
+      _ <- constraints.filter(_.typeVersionId in typeVersionsToDeleteIds).delete
+      _ <- typeVersions.filter(_.id in typeVersionsToDeleteIds).delete
+      _ <- entityTypes.filter(_.id === typeId).delete
+    } yield ()).transactionally)
+  }
+
+  def deleteCollectibleTypeVersion(typeVersionId: Long): Future[Unit] = {
+    val collectiblesOfTypeEntityIds = collectibles.filter(_.typeVersionId === typeVersionId).map(_.entityId)
+    db.run((for {
+      _ <- properties.filter(_.parentId in collectiblesOfTypeEntityIds).delete
+      _ <- collectibles.filter(_.entityId in collectiblesOfTypeEntityIds).delete
+      _ <- entities.filter(_.id in collectiblesOfTypeEntityIds).delete
+      _ <- constraints.filter(_.typeVersionId === typeVersionId).delete
+      _ <- typeVersions.filter(_.id === typeVersionId).delete
     } yield ()).transactionally)
   }
 
@@ -161,17 +176,17 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
    * [[modules.core.repository.ConstraintRepository#addConstraint]]) will lead to loosing the integrity of the type
    * system. </strong>
    *
-   * @param typeId              id of the EntityType (of a Collectible) to add the new Constraints to.
+   * @param typeVersionId              id of the TypeVersion (of a Collectible) to add the new Constraints to.
    * @param propertyConstraints new Constraints of HasProperty type
    * @param otherConstraints    new Constraints NOT of HasProperty type
    * @return Future[Unit]
    */
-  def addConstraints(typeId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
+  def addConstraints(typeVersionId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
 
-    val allConstraints = (propertyConstraints ++ otherConstraints) map (c => Constraint(c.id, c.c, c.v1, c.v2, c.byPlugin, typeId))
+    val allConstraints = (propertyConstraints ++ otherConstraints) map (c => Constraint(c.id, c.c, c.v1, c.v2, c.byPlugin, typeVersionId))
 
     db.run((for {
-      entityIDsWithType <- collectibles.filter(_.typeId === typeId).map(_.entityId).result
+      entityIDsWithType <- collectibles.filter(_.typeVersionId === typeVersionId).map(_.entityId).result
       _ <- DBIO.sequence(propertyConstraints.map(propertyConstraint => {
         properties ++= entityIDsWithType.map(entityId => Property(0, propertyConstraint.v1, "", entityId))
       }))
@@ -189,17 +204,17 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
    * calling [[modules.core.repository.ConstraintRepository#deleteConstraint]]) the type system of the database will
    * be damaged and the system becomes unusable!</strong>
    *
-   * @param typeId              id of the parent EntityType
+   * @param typeVersionId              id of the parent TypeVersion
    * @param propertyConstraints Constraints to delete of the HasProperty type
    * @param otherConstraints    Constraints to delete NOT of the HasProperty type
    * @return Future[Unit]
    */
-  def deleteConstraints(typeId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
+  def deleteConstraints(typeVersionId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
 
     val deletedPropertyKeys = propertyConstraints.map(_.v1) toSet
     val deletedConstraintIds = propertyConstraints ++ otherConstraints map (_.id) toSet
 
-    val entityIDsWithType = collectibles.filter(_.typeId === typeId).map(_.entityId)
+    val entityIDsWithType = collectibles.filter(_.typeVersionId === typeVersionId).map(_.entityId)
 
     db.run((for {
       _ <- properties.filter(_.parentId in entityIDsWithType).filter(_.key.inSet(deletedPropertyKeys)).delete

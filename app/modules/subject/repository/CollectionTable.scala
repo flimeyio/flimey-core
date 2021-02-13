@@ -26,10 +26,10 @@ class CollectionTable(tag: Tag) extends Table[Collection](tag, "collection") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
   def entityId = column[Long]("entity_id")
-  def typeId = column[Long]("type_id")
+  def typeVersionId = column[Long]("type_version_id")
   def status = column[String]("status")
   def created = column[Timestamp]("created")
 
-  override def * = (id, entityId, typeId, status, created) <> (Collection.tupledRaw, Collection.unapplyToRaw)
+  override def * = (id, entityId, typeVersionId, status, created) <> (Collection.tupledRaw, Collection.unapplyToRaw)
 
 }

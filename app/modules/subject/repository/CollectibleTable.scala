@@ -28,10 +28,10 @@ class CollectibleTable(tag: Tag) extends Table[Collectible](tag, "collectible") 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
   def entityId = column[Long]("entity_id")
   def collectionId = column[Long]("collection_id")
-  def typeId = column[Long]("type_id")
+  def typeVersionId = column[Long]("type_version_id")
   def state = column[String]("state")
   def created = column[Timestamp]("created")
 
-  override def * = (id, entityId, collectionId, typeId, state, created) <> (Collectible.tupledRaw, Collectible.unapplyToRaw)
+  override def * = (id, entityId, collectionId, typeVersionId, state, created) <> (Collectible.tupledRaw, Collectible.unapplyToRaw)
 
 }

@@ -21,7 +21,7 @@ package modules.subject.repository
 import com.google.inject.Inject
 import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
 import modules.core.repository._
-import modules.subject.model.{Collectible, CollectibleHeader, Collection, CollectionHeader, ExtendedCollection, SubjectState}
+import modules.subject.model._
 import modules.user.model.ViewerCombinator
 import modules.user.repository.GroupTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -45,6 +45,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   val collectibles = TableQuery[CollectibleTable]
   val entities = TableQuery[FlimeyEntityTable]
   val entityTypes = TableQuery[TypeTable]
+  val typeVersions = TableQuery[TypeVersionTable]
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
   val viewers = TableQuery[ViewerTable]
@@ -63,7 +64,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   def add(collection: Collection, newProperties: Seq[Property], newViewers: Seq[Viewer]): Future[Unit] = {
     db.run((for {
       entityId <- (entities returning entities.map(_.id)) += FlimeyEntity(0)
-      _ <- (collections returning collections.map(_.id)) += Collection(0, entityId, collection.typeId, collection.status, collection.created)
+      _ <- (collections returning collections.map(_.id)) += Collection(0, entityId, collection.typeVersionId, collection.status, collection.created)
       _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
       _ <- viewers ++= newViewers.map(v => Viewer(0, entityId, v.viewerId, v.role))
     } yield ()).transactionally)
@@ -92,6 +93,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
 
   /**
    * TODO add doc
+   *
    * @param collectionId
    * @param newState
    * @return
@@ -141,7 +143,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
         val collectiblesOption = collectionsWithCollectibleData.get(collection)
 
         var collectibles: Seq[CollectibleHeader] = Seq()
-        if(collectiblesOption.isDefined) collectibles = parseCollectibles(collectiblesOption.get)
+        if (collectiblesOption.isDefined) collectibles = parseCollectibles(collectiblesOption.get)
 
         CollectionHeader(collection, collectibles, properties, ViewerCombinator.fromRelations(viewerRelations))
 
@@ -162,7 +164,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * <p> If the id does not exists or there are no access rights, nothing is returned.
    *
    * @param collectionId id of the Collection to get
-   * @param groupIds Group ids of which at least one must have access to the Collection
+   * @param groupIds     Group ids of which at least one must have access to the Collection
    * @return Future Option[ExtendedCollection]
    */
   def getCollection(collectionId: Long, groupIds: Set[Long]): Future[Option[ExtendedCollection]] = {
@@ -190,12 +192,12 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
       val collectionWithCollectibleData = collectibleResult.groupBy(_._1).mapValues(values =>
         values.map(_._2).groupBy(_._1).mapValues(cValues => cValues.map(_._2)))
 
-      if(collectionWithViewers.isEmpty){
+      if (collectionWithViewers.isEmpty) {
         None
-      }else{
+      } else {
         val collection = collectionWithProperties.get._1
         var collectibles: Seq[CollectibleHeader] = Seq()
-        if(collectionWithCollectibleData.contains(collection)) collectibles = parseCollectibles(collectionWithCollectibleData(collection))
+        if (collectionWithCollectibleData.contains(collection)) collectibles = parseCollectibles(collectionWithCollectibleData(collection))
         Some(ExtendedCollection(
           collection,
           collectibles,
@@ -212,7 +214,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * <p> If the id does not exists or there are no access rights, nothing is returned.
    *
    * @param collectionId id of the Collection to get
-   * @param groupIds Group ids of which at least one must have access to the Collection
+   * @param groupIds     Group ids of which at least one must have access to the Collection
    * @return Future Option[CollectionHeader]
    */
   def getSlimCollection(collectionId: Long, groupIds: Set[Long]): Future[Option[CollectionHeader]] = {
@@ -238,9 +240,9 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
       val collectionWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
       val collectionWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
 
-      if(collectionWithProperties.isEmpty){
+      if (collectionWithProperties.isEmpty) {
         None
-      }else{
+      } else {
         Some(CollectionHeader(
           collectionWithProperties.get._1,
           Seq(), //No Collectibles here - that's the slim part ;)
@@ -258,18 +260,32 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * <p> 3. ... with all their [[modules.core.model.Property Properties]].
    * <p> 4. all to Entities of this type associated [[modules.core.model.Viewer Viewers]].
    *
-   * @param id of the EntityType (CollectionType) to delete
+   * @param typeId of the EntityType (CollectionType) to delete
    * @return Future[Unit]
    */
-  def deleteCollectionType(id: Long): Future[Unit] = {
-    val entitiesOfType = collections.filter(_.typeId === id).map(_.entityId)
+  def deleteCollectionType(typeId: Long): Future[Unit] = {
+    val typeVersionsToDeleteIds = typeVersions.filter(_.typeId === typeId).map(_.id)
+    val collectionsOfTypeEntityIds = collections.filter(_.typeVersionId in typeVersionsToDeleteIds).map(_.entityId)
     db.run((for {
-      _ <- properties.filter(_.parentId in entitiesOfType).delete
-      _ <- viewers.filter(_.targetId in entitiesOfType).delete
-      _ <- collections.filter(_.typeId === id).delete
-      _ <- entities.filter(_.id in entitiesOfType).delete
-      _ <- constraints.filter(_.typeId === id).delete
-      _ <- entityTypes.filter(_.id === id).delete
+      _ <- properties.filter(_.parentId in collectionsOfTypeEntityIds).delete
+      _ <- viewers.filter(_.targetId in collectionsOfTypeEntityIds).delete
+      _ <- collections.filter(_.entityId in collectionsOfTypeEntityIds).delete
+      _ <- entities.filter(_.id in collectionsOfTypeEntityIds).delete
+      _ <- constraints.filter(_.typeVersionId in typeVersionsToDeleteIds).delete
+      _ <- typeVersions.filter(_.id in typeVersionsToDeleteIds).delete
+      _ <- entityTypes.filter(_.id === typeId).delete
+    } yield ()).transactionally)
+  }
+
+  def deleteCollectionTypeVersion(typeVersionId: Long): Future[Unit] = {
+    val collectionsToDeleteEntityIds = collections.filter(_.typeVersionId === typeVersionId).map(_.entityId)
+    db.run((for {
+      _ <- properties.filter(_.parentId in collectionsToDeleteEntityIds).delete
+      _ <- viewers.filter(_.targetId in collectionsToDeleteEntityIds).delete
+      _ <- collections.filter(_.entityId in collectionsToDeleteEntityIds).delete
+      _ <- entities.filter(_.id in collectionsToDeleteEntityIds).delete
+      _ <- constraints.filter(_.typeVersionId === typeVersionId).delete
+      _ <- typeVersions.filter(_.id === typeVersionId).delete
     } yield ()).transactionally)
   }
 
@@ -283,17 +299,17 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * [[modules.core.repository.ConstraintRepository#addConstraint]]) will lead to loosing the integrity of the type
    * system. </strong>
    *
-   * @param typeId              id of the EntityType (of a Collection) to add the new Constraints to.
+   * @param typeVersionId       id of the TypeVersion (of a Collection) to add the new Constraints to.
    * @param propertyConstraints new Constraints of HasProperty type
    * @param otherConstraints    new Constraints NOT of HasProperty type
    * @return Future[Unit]
    */
-  def addConstraints(typeId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
+  def addConstraints(typeVersionId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
 
-    val allConstraints = (propertyConstraints ++ otherConstraints) map (c => Constraint(c.id, c.c, c.v1, c.v2, c.byPlugin, typeId))
+    val allConstraints = (propertyConstraints ++ otherConstraints) map (c => Constraint(c.id, c.c, c.v1, c.v2, c.byPlugin, typeVersionId))
 
     db.run((for {
-      entityIDsWithType <- collections.filter(_.typeId === typeId).map(_.entityId).result
+      entityIDsWithType <- collections.filter(_.typeVersionId === typeVersionId).map(_.entityId).result
       _ <- DBIO.sequence(propertyConstraints.map(propertyConstraint => {
         properties ++= entityIDsWithType.map(entityId => Property(0, propertyConstraint.v1, "", entityId))
       }))
@@ -311,17 +327,17 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * calling [[modules.core.repository.ConstraintRepository#deleteConstraint]]) the type system of the database will
    * be damaged and the system becomes unusable!</strong>
    *
-   * @param typeId              id of the parent EntityType
+   * @param typeVersionId       id of the parent TypeVersion
    * @param propertyConstraints Constraints to delete of the HasProperty type
    * @param otherConstraints    Constraints to delete NOT of the HasProperty type
    * @return Future[Unit]
    */
-  def deleteConstraints(typeId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
+  def deleteConstraints(typeVersionId: Long, propertyConstraints: Seq[Constraint], otherConstraints: Seq[Constraint]): Future[Unit] = {
 
     val deletedPropertyKeys = propertyConstraints.map(_.v1) toSet
     val deletedConstraintIds = propertyConstraints ++ otherConstraints map (_.id) toSet
 
-    val entitiesIDsWithType = collections.filter(_.typeId === typeId).map(_.entityId)
+    val entitiesIDsWithType = collections.filter(_.typeVersionId === typeVersionId).map(_.entityId)
 
     db.run((for {
       _ <- properties.filter(_.parentId in entitiesIDsWithType).filter(_.key.inSet(deletedPropertyKeys)).delete

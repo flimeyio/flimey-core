@@ -29,20 +29,20 @@ import java.sql.Timestamp
  * @param id           unique identifier
  * @param entityId     id of the parent FlimeyEntity
  * @param collectionId id of the Collection which contains the Collectible
- * @param typeId       id of the parent EntityType
+ * @param typeVersionId       id of the parent TypeVersion
  * @param state        [[modules.subject.model.SubjectState SubjectState]] of the Collectible
  * @param created      creation timestamp
  */
-case class Collectible(id: Long, entityId: Long, collectionId: Long, typeId: Long, state: SubjectState.State, created: Timestamp)
+case class Collectible(id: Long, entityId: Long, collectionId: Long, typeVersionId: Long, state: SubjectState.State, created: Timestamp)
 
 object Collectible {
 
-  def applyRaw(id: Long, entityId: Long, collectionId: Long, typeId: Long, state: String, created: Timestamp): Collectible = {
-    Collectible(id, entityId, collectionId, typeId, SubjectState.withName(state), created)
+  def applyRaw(id: Long, entityId: Long, collectionId: Long, typeVersionId: Long, state: String, created: Timestamp): Collectible = {
+    Collectible(id, entityId, collectionId, typeVersionId, SubjectState.withName(state), created)
   }
 
   def unapplyToRaw(arg: Collectible): Option[(Long, Long, Long, Long, String, Timestamp)] =
-    Option((arg.id, arg.entityId, arg.collectionId, arg.typeId, arg.state.toString, arg.created))
+    Option((arg.id, arg.entityId, arg.collectionId, arg.typeVersionId, arg.state.toString, arg.created))
 
   val tupledRaw: ((Long, Long, Long, Long, String, Timestamp)) => Collectible = (this.applyRaw _).tupled
 
