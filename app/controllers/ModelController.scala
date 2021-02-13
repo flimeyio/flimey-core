@@ -24,7 +24,6 @@ import modules.asset.model.AssetConstraintSpec
 import modules.asset.service.ModelAssetService
 import modules.auth.model.Ticket
 import modules.core.formdata.{EditTypeForm, NewConstraintForm, NewTypeForm}
-import modules.core.model.{Constraint, EntityType}
 import modules.core.service.{EntityTypeService, ModelEntityService}
 import modules.subject.model.{CollectibleConstraintSpec, CollectionConstraintSpec}
 import modules.subject.service.{ModelCollectibleService, ModelCollectionService}
@@ -95,9 +94,9 @@ class ModelController @Inject()(cc: ControllerComponents,
           },
           data => {
             val parentName = data.typeOf;
-            if(!Seq(AssetConstraintSpec.ASSET, CollectionConstraintSpec.COLLECTION, CollectibleConstraintSpec.COLLECTIBLE).contains(parentName)){
+            if (!Seq(AssetConstraintSpec.ASSET, CollectionConstraintSpec.COLLECTION, CollectibleConstraintSpec.COLLECTIBLE).contains(parentName)) {
               Future.failed(new Exception("Select a valid parent type!"))
-            }else {
+            } else {
               entityTypeService.addType(data.value, parentName) map { _ =>
                 Redirect(routes.ModelController.index())
               }
@@ -108,6 +107,27 @@ class ModelController @Inject()(cc: ControllerComponents,
             Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
           }
         }
+      }
+  }
+
+  def addVersion(typeId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Not implemented yet"))
+      }
+  }
+
+  def deleteVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Not implemented yet"))
+      }
+  }
+
+  def forkVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Not implemented yet"))
       }
   }
 
@@ -133,50 +153,42 @@ class ModelController @Inject()(cc: ControllerComponents,
   /**
    * Endpoint to get the model overview with open constraint editor.
    *
-   * @param id of the EntityType which shall be edited
+   * @param typeId of the EntityType which shall be edited
    * @return model overview page with open editor and optional error message
    *
    */
-  //FIXME the problem is, that the editor must also always render the whole left side types.
-  //FIXME unless this is somehow changed or outsourced, the weired form param flashes wont't go away..
-  def getTypeEditor(id: Long):
-  Action[AnyContent] = withAuthentication.async {
+  def getTypeEditor(typeId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+    withTicket { implicit ticket =>
+      entityTypeService.getType(typeId) map (editedType =>
+        if (editedType.nonEmpty) {
+          val preparedEditForm = EditTypeForm.form.fill(EditTypeForm.Data(editedType.get.value, editedType.get.active))
+          val error = request.flash.get("error")
+          Ok(views.html.container.core.model_type_editor(editedType.get, preparedEditForm, error))
+        } else {
+          Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
+        }) recoverWith {
+        case e: Throwable => {
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing(("error" -> e.getMessage)))
+        }
+      }
+    }
+  }
+
+  def getVersionEditor(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket {
         implicit ticket =>
-          entityTypeService.getCombinedEntity(id) map (res =>
-            ((allTypes: Seq[EntityType], editedType: Option[EntityType], constraints: Seq[Constraint]) => {
-              if (editedType.nonEmpty) {
-                //FIXME this is really strange code...
-                val preparedEditForm = EditTypeForm.form.fill(EditTypeForm.Data(editedType.get.value, editedType.get.active))
-                var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
-                val c = request.flash.get("c")
-                val v1 = request.flash.get("v1")
-                val v2 = request.flash.get("v2")
-                if (c.isDefined && v1.isDefined && v2.isDefined) {
-                  preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data(c.get, v1.get, v2.get))
-                }
-                val error = request.flash.get("error")
-                Ok(views.html.container.core.model_editor(allTypes, editedType.get, constraints, preparedEditForm, preparedConstraintForm, error))
-              } else {
-                Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
-              }
-            }).tupled(res)) recoverWith {
+          entityTypeService.getExtendedType(versionId) map (extendedEntityType => {
+            var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
+            val error = request.flash.get("error")
+            Ok(views.html.container.core.model_version_editor(extendedEntityType, preparedConstraintForm, error))
+          }) recoverWith {
             case e: Throwable => {
               logger.error(e.getMessage, e)
               Future.successful(Redirect(routes.ModelController.index()).flashing(("error" -> e.getMessage)))
             }
           }
-      }
-  }
-
-  //TODO
-  def searchEntityType(): Action[AnyContent] = withAuthentication.async {
-    implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket {
-        implicit ticket =>
-          //FIXME
-          Future.successful(Redirect(routes.ModelController.getTypeEditor(0)))
       }
   }
 
@@ -216,13 +228,12 @@ class ModelController @Inject()(cc: ControllerComponents,
    * @param typeId id of the parent EntityType
    * @return redirects to type editor with optional form presets and error message
    */
-  def addConstraint(typeId: Long): Action[AnyContent] = withAuthentication.async {
+  def addConstraint(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket {
         implicit ticket =>
           NewConstraintForm.form.bindFromRequest fold(
             errorForm => {
-              //ignore form input here, just show an error message, maybe a future FIXME
               Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing("error" -> "Invalid form data!"))
             },
             data => {
@@ -232,9 +243,7 @@ class ModelController @Inject()(cc: ControllerComponents,
             } recoverWith {
               case e => {
                 logger.error(e.getMessage, e)
-                //This should be done more elegantly... FIXME
-                Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(
-                  "error" -> e.getMessage, "c" -> data.c, "v1" -> data.v1, "v2" -> data.v2))
+                Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing("error" -> e.getMessage))
               }
             })
       }
@@ -247,7 +256,7 @@ class ModelController @Inject()(cc: ControllerComponents,
    * @param constraintId id of the Constraint to delete
    * @return redirects to getTypeEditor with optional error message
    */
-  def deleteConstraint(typeId: Long, constraintId: Long): Action[AnyContent] = withAuthentication.async {
+  def deleteConstraint(typeId: Long, versionId: Long, constraintId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket {
         implicit ticket =>

@@ -36,16 +36,19 @@ GET     /account/overview                                   controllers.AccountC
 
 GET     /model                                              controllers.ModelController.index()
 
+POST    /model/new                                          controllers.ModelController.addType
+POST    /model/:typeId/delete                               controllers.ModelController.deleteType(typeId: Long)
+POST    /model/:typeId/new                                  controllers.ModelController.addVersion(typeId: Long)
+POST    /model/:typeId/:versionId/delete                    controllers.ModelController.deleteVersion(typeId: Long, versionId: Long)
+POST    /model/:typeId/:versionId/fork                      controllers.ModelController.forkVersion(typeId: Long, versionId: Long)
 
-POST    /model/asset                                        controllers.ModelController.addType
-POST    /model/asset/delete/:id                             controllers.ModelController.deleteType(id: Long)
+GET     /model/:typeId/editor                               controllers.ModelController.getTypeEditor(typeId: Long)
+POST    /model/:typeId/editor                               controllers.ModelController.postEntityType(typeId: Long)
 
-POST    /model/asset/search                                 controllers.ModelController.searchEntityType
+GET     /model/:typeId/editor/:versionId                    controllers.ModelController.getVersionEditor(typeId: Long, versionId: Long)
 
-GET     /model/asset/editor/:id                             controllers.ModelController.getTypeEditor(id: Long)
-POST    /model/asset/editor/asset/:id                       controllers.ModelController.postEntityType(id: Long)
-POST    /model/asset/editor/:id/constraint                  controllers.ModelController.addConstraint(id: Long)
-POST    /model/asset/editor/:id/constraint/:cid/delete      controllers.ModelController.deleteConstraint(id: Long, cid: Long)
+POST    /model/:typeId/editor/:versionId/constraint                         controllers.ModelController.addConstraint(typeId: Long, versionId: Long)
+POST    /model/:typeId/editor/:versionId/constraint/:constraintId/delete    controllers.ModelController.deleteConstraint(typeId: Long, versionId: Long, constraintId: Long)
 
 
 GET     /asset                                              controllers.AssetController.index()

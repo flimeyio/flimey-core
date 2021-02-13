@@ -15,20 +15,23 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.core.model.EntityType
-@(entityType: EntityType)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import modules.core.model.VersionedEntityType
+@(versionedEntityType: VersionedEntityType)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="card relative-container tile">
-    <div class="float-top-right">
-        <a href="@routes.ModelController.getTypeEditor(entityType.id)">
-            <i class="material-icons">create</i>
-        </a>
-    </div>
-    <p>name: @entityType.value</p>
-    <p>active @entityType.active</p>
+    <a href="@routes.ModelController.getTypeEditor(versionedEntityType.entityType.id)">
+        <i class="material-icons">Edit Type</i>
+    </a>
+    <a href="@routes.ModelController.getVersionEditor(versionedEntityType.entityType.id, versionedEntityType.version.id)">
+        <i class="material-icons">Edit Version</i>
+    </a>
+    <p>name: @versionedEntityType.entityType.value | v.@versionedEntityType.version.version</p>
+    <p>active @versionedEntityType.entityType.active</p>
     <div class="tag-box">
         <div class="tag bg-maintain cell-small-1">
-        @entityType.typeOf
+        @versionedEntityType.entityType.typeOf
         </div>
     </div>
+    <a href="#">Fork Version</a>
+    <a href="#">New Version</a>
 </div>

@@ -18,12 +18,12 @@
 
 @import views.html.helper.CSRF
 
-@(id: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(entityTypeId: Long, versionId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<form role="form" action='@routes.ModelController.deleteType(id)' method="post">
+<form role="form" action='@routes.ModelController.deleteVersion(entityTypeId, versionId)' method="post">
     @CSRF.formField
     <div class="confirm-label-button">
-        <div hidden class="confirm-label">This will delete all objects which are of this type!</div>
-        <button type="submit" class="">Delete Type</button>
+        <div hidden class="confirm-label">This will delete all objects which are of this type and version!</div>
+        <button type="submit" class="">Delete Version</button>
     </div>
 </form>

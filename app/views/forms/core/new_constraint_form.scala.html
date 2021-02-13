@@ -17,9 +17,10 @@
 * *@
 @import modules.core.formdata.NewConstraintForm
 @import modules.core.model.ConstraintType
-@(assetTypeId: Long, newConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.helper.CSRF
+@(entityTypeId: Long, versionId: Long, newConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@helper.form(action = routes.ModelController.addConstraint(assetTypeId)) {
+@helper.form(action = routes.ModelController.addConstraint(entityTypeId, versionId)) {
     <div class="">
         <div class="">
             @CSRF.formField
@@ -34,4 +35,4 @@
             <button class="">New</button>
         </div>
     </div>
-}@import views.html.helper.CSRF
+}
