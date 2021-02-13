@@ -100,11 +100,11 @@ trait ModelEntityService {
    * @param c      String value of the ConstraintType
    * @param v1     first Constraint parameter
    * @param v2     second Constraint parameter
-   * @param typeId id of the parent EntityType
+   * @param typeVersionId id of the parent TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future[Long]
    */
-  abstract def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit]
+  abstract def addConstraint(c: String, v1: String, v2: String, typeVersionId: Long)(implicit ticket: Ticket): Future[Unit]
 
   /**
    * Delete an EntityType of a specific subtype.

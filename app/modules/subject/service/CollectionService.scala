@@ -26,6 +26,7 @@ import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.{Constraint, ExtendedEntityType}
 import modules.core.repository.{FlimeyEntityRepository, TypeRepository}
+import modules.core.service.EntityTypeService
 import modules.subject.model._
 import modules.subject.repository.CollectionRepository
 import modules.user.model.GroupStats
@@ -49,6 +50,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
                                   collectionRepository: CollectionRepository,
                                   entityRepository: FlimeyEntityRepository,
                                   modelCollectionService: ModelCollectionService,
+                                  entityTypeService: EntityTypeService,
                                   groupService: GroupService) {
 
   /**
@@ -70,16 +72,15 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
                     viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
-      typeRepository.getComplete(typeId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
-        val (head, constraints) = typeData
-        if (!(head.isDefined && head.get.active)) throw new Exception("The selected Collection Type is not defined or active")
-        val properties = CollectionLogic.derivePropertiesFromRawData(constraints, propertyData)
-        val configurationStatus = CollectionLogic.isModelConfiguration(constraints, properties)
+      modelCollectionService.getLatestExtendedType(typeId) flatMap (extendedEntityType => {
+        if (!extendedEntityType.entityType.active) throw new Exception("The selected Collection Type is not active")
+        val properties = CollectionLogic.derivePropertiesFromRawData(extendedEntityType.constraints, propertyData)
+        val configurationStatus = CollectionLogic.isModelConfiguration(extendedEntityType.constraints, properties)
         if (!configurationStatus.valid) configurationStatus.throwError
         groupService.getAllGroups flatMap (allGroups => {
           val aViewers = CollectionLogic.deriveViewersFromData(maintainers :+ GroupStats.SYSTEM_GROUP, editors, viewers, allGroups)
           //FIXME validate status and move creation to CollectionLogic object
-          collectionRepository.add(Collection(0, 0, typeId, SubjectState.CREATED, Timestamp.from(Instant.now())), properties, aViewers)
+          collectionRepository.add(Collection(0, 0, extendedEntityType.version.id, SubjectState.CREATED, Timestamp.from(Instant.now())), properties, aViewers)
         })
       })
     } catch {
@@ -122,10 +123,9 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         val newConfig = CollectionLogic.mapConfigurations(oldConfig, propertyUpdateData)
 
         //check if the EntityType of the Collection is active (else it can not be edited)
-        typeRepository.getComplete(collectionHeader.collection.typeId) flatMap (typeData => {
-          val (head, constraints) = typeData
-          if (!(head.isDefined && head.get.active)) throw new Exception("The selected Collection Type is not active")
-          val configurationStatus = CollectionLogic.isModelConfiguration(constraints, newConfig)
+        modelCollectionService.getExtendedType(collectionHeader.collection.typeVersionId) flatMap (extendedEntityType => {
+          if (!extendedEntityType.entityType.active) throw new Exception("The selected Collection Type is not active")
+          val configurationStatus = CollectionLogic.isModelConfiguration(extendedEntityType.constraints, newConfig)
           if (!configurationStatus.valid) configurationStatus.throwError
 
           groupService.getAllGroups flatMap (groups => {
@@ -195,8 +195,8 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
       collectionRepository.getCollection(collectionId, accessedGroupIds) flatMap (collectionData => {
         if (collectionData.isEmpty) throw new Exception("Collection does not exist or missing rights")
         val extendedCollection = collectionData.get
-        modelCollectionService.getCompleteType(extendedCollection.collection.typeId) map (typeData => {
-          (extendedCollection, ExtendedEntityType(typeData._1, typeData._2))
+        modelCollectionService.getExtendedType(extendedCollection.collection.typeVersionId) map (extendedEntityType => {
+          (extendedCollection, extendedEntityType)
         })
       })
     } catch {
@@ -258,7 +258,6 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * Get all [[modules.subject.model.CollectionHeader CollectionHeaders]] and all
    * [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define them.
    * <p> This method calls [[modules.subject.service.CollectionService#getCollectionHeaders]] (see there for more information)
-   * <p> This method calls [[modules.subject.service.ModelCollectionService#getAllExtendedTypes]] (see there for more information)
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -271,9 +270,9 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
     try {
       for {
         collectionHeaders <- getCollectionHeaders(typeSelector, groupSelector)
-        extendedEntityTypes <- modelCollectionService.getAllExtendedTypes()
+        entityTypes <- entityTypeService.getAllTypes(Some(CollectionConstraintSpec.COLLECTION))
       } yield {
-        CollectionTypeComplex(collectionHeaders, extendedEntityTypes.map(_.entityType))
+        CollectionTypeComplex(collectionHeaders, entityTypes)
       }
     } catch {
       case e: Throwable => Future.failed(e)

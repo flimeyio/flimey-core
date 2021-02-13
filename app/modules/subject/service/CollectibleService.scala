@@ -44,6 +44,8 @@ import scala.concurrent.Future
 class CollectibleService @Inject()(typeRepository: TypeRepository,
                                    collectibleRepository: CollectibleRepository,
                                    collectionService: CollectionService,
+                                   modelCollectibleService: ModelCollectibleService,
+                                   modelCollectionService: ModelCollectionService,
                                    entityRepository: FlimeyEntityRepository) {
 
   /**
@@ -64,23 +66,20 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
       collectionService.getSlimCollection(collectionId) flatMap (collectionHeader => {
         ViewerAssertion.assertEdit(collectionHeader.viewers)
         for {
-          collectionTypeData <- typeRepository.getComplete(collectionHeader.collection.typeId, Some(CollectionConstraintSpec.COLLECTION))
-          collectibleTypeData <- typeRepository.getComplete(typeId, Some(CollectibleConstraintSpec.COLLECTIBLE))
+          collectionTypeData <- modelCollectionService.getExtendedType(collectionHeader.collection.typeVersionId)
+          collectibleTypeData <- modelCollectibleService.getLatestExtendedType(typeId)
         } yield {
-          val (collectionTypeOption, collectionConstraints) = collectionTypeData
-          val (collectibleTypeOption, collectibleConstraints) = collectibleTypeData
-          if (!(collectionTypeOption.isDefined && collectionTypeOption.get.active)) throw new Exception("The selected Collection Type is not defined or active")
-          if (!(collectibleTypeOption.isDefined && collectibleTypeOption.get.active)) throw new Exception("The selected Collectible Type is not defined or active")
-          val collectibleType = collectibleTypeOption.get
-          val extensionStatus = CollectibleLogic.canBeChildOf(collectibleType.value, collectionConstraints)
+          if (! collectionTypeData.entityType.active) throw new Exception("The selected Collection Type is not defined or active")
+          if (!collectibleTypeData.entityType.active) throw new Exception("The selected Collectible Type is not defined or active")
+          val extensionStatus = CollectibleLogic.canBeChildOf(collectibleTypeData.entityType.value, collectionTypeData.constraints)
           if (!extensionStatus.valid) extensionStatus.throwError
 
-          val properties = CollectibleLogic.derivePropertiesFromRawData(collectibleConstraints, propertyData)
-          val configurationStatus = CollectibleLogic.isModelConfiguration(collectibleConstraints, properties)
+          val properties = CollectibleLogic.derivePropertiesFromRawData(collectibleTypeData.constraints, propertyData)
+          val configurationStatus = CollectibleLogic.isModelConfiguration(collectibleTypeData.constraints, properties)
           if (!configurationStatus.valid) configurationStatus.throwError
 
           collectibleRepository.add(
-            Collectible(0, 0, collectionHeader.collection.id, typeId, SubjectState.CREATED, Timestamp.from(Instant.now())), properties)
+            Collectible(0, 0, collectionHeader.collection.id, collectibleTypeData.version.id, SubjectState.CREATED, Timestamp.from(Instant.now())), properties)
 
         }
       })
@@ -115,10 +114,9 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
         val newConfig = CollectibleLogic.mapConfigurations(oldConfig, propertyUpdateData)
 
         //check if the EntityType of the Collectible is active (else it can not be edited)
-        typeRepository.getComplete(extendedCollectible.collectible.typeId) flatMap (typeData => {
-          val (head, constraints) = typeData
-          if (!(head.isDefined && head.get.active)) throw new Exception("The selected Collectible Type is not active")
-          val configurationStatus = CollectibleLogic.isModelConfiguration(constraints, newConfig)
+        modelCollectibleService.getExtendedType(extendedCollectible.collectible.typeVersionId) flatMap (extendedEntityType => {
+          if (!extendedEntityType.entityType.active) throw new Exception("The selected Collectible Type is not active")
+          val configurationStatus = CollectibleLogic.isModelConfiguration(extendedEntityType.constraints, newConfig)
           if (!configurationStatus.valid) configurationStatus.throwError
 
           entityRepository.update(newConfig, Set(), Set())

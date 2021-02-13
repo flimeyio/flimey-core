@@ -21,7 +21,7 @@ package modules.subject.service
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, ConstraintType, EntityType, ExtendedEntityType}
+import modules.core.model.{Constraint, ConstraintType, EntityType, ExtendedEntityType, VersionedEntityType}
 import modules.core.repository.{ConstraintRepository, TypeRepository, ViewerRepository}
 import modules.core.service.{EntityTypeService, ModelEntityService}
 import modules.subject.model.CollectibleConstraintSpec
@@ -59,6 +59,18 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
     entityTypeService.getAllTypes(Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
+  override def getAllVersions()(implicit ticket: Ticket): Future[Seq[VersionedEntityType]] = {
+    entityTypeService.getAllVersions(Some(CollectibleConstraintSpec.COLLECTIBLE))
+  }
+
+  override def addVersion(typeId: Long)(implicit ticket: Ticket): Future[Long] = {
+    Future.failed(new Exception("Not implemented yet"))
+  }
+
+  override def deleteVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
+    Future.failed(new Exception("Not implemented yet"))
+  }
+
   /**
    * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define
    * [[modules.subject.model.Collectible Collectibles]].
@@ -84,17 +96,25 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
     entityTypeService.getType(id, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
+  override def getVersionedType(typeVersionId: Long)(implicit ticket: Ticket): Future[Option[VersionedEntityType]] = {
+    entityTypeService.getVersionedType(typeVersionId, Some(CollectibleConstraintSpec.COLLECTIBLE))
+  }
+
   /**
    * Get a complete [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]] (Head + Constraints).
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     od the Collectible Type
+   * @param typeVersionId     od the TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future (EntityType, Seq[Constraint])
    */
-  override def getCompleteType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
-    entityTypeService.getCompleteType(id, Some(CollectibleConstraintSpec.COLLECTIBLE))
+  override def getExtendedType(typeVersionId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    entityTypeService.getExtendedType(typeVersionId, Some(CollectibleConstraintSpec.COLLECTIBLE))
+  }
+
+  override def getLatestExtendedType(typeId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    entityTypeService.getLatestExtendedType(typeId, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
@@ -143,12 +163,12 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p>This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the Collectible Type
+   * @param typeVersionId     of the TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future Seq[Constraint]
    */
-  override def getConstraintsOfType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
-    entityTypeService.getConstraintsOfEntityType(id, Some(CollectibleConstraintSpec.COLLECTIBLE))
+  override def getConstraintsOfType(typeVersionId: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
+    entityTypeService.getConstraintsOfEntityType(typeVersionId, Some(CollectibleConstraintSpec.COLLECTIBLE))
   }
 
   /**
@@ -171,11 +191,10 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
         if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
         val constraint = constraintOption.get
 
-        getType(constraint.typeId) flatMap (collectibleType => {
+        getVersionedType(constraint.typeVersionId) flatMap (collectibleType => {
           if (collectibleType.isEmpty) throw new Exception("No corresponding EntityType found")
-          val typeId = collectibleType.get.id
 
-          getConstraintsOfType(typeId) flatMap (constraints => {
+          getConstraintsOfType(constraint.typeVersionId) flatMap (constraints => {
             val deletedConstraints = CollectibleLogic.removeConstraint(constraint, constraints)
             val remainingConstraints = constraints.filter(c => !deletedConstraints.contains(c))
 
@@ -185,7 +204,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
             val deletedPropertyConstraints = deletedConstraints.filter(_.c == ConstraintType.HasProperty)
             val deletedOtherConstraints = deletedConstraints diff deletedPropertyConstraints
 
-            collectibleRepository.deleteConstraints(typeId, deletedPropertyConstraints, deletedOtherConstraints)
+            collectibleRepository.deleteConstraints(constraint.typeVersionId, deletedPropertyConstraints, deletedOtherConstraints)
           })
         })
       })
@@ -204,23 +223,22 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * @param c      String value of the ConstraintType
    * @param v1     first Constraint parameter
    * @param v2     second Constraint parameter
-   * @param typeId id of the parent EntityType
+   * @param typeVersionId id of the parent TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future[Long]
    */
-  override def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit] = {
+  override def addConstraint(c: String, v1: String, v2: String, typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
       //FIXME the ConstraintType.find() needs a check before, the rules can be empty and lead to a unspecified exception
-      val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
+      val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeVersionId)
       val constraintStatus = CollectibleLogic.isValidConstraint(newConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
 
-      getType(newConstraint.typeId) flatMap (collectibleType => {
+      getVersionedType(newConstraint.typeVersionId) flatMap (collectibleType => {
         if (collectibleType.isEmpty) throw new Exception("No corresponding EntityType found")
-        val typeId = collectibleType.get.id
 
-        getConstraintsOfType(newConstraint.typeId) flatMap (constraints => {
+        getConstraintsOfType(newConstraint.typeVersionId) flatMap (constraints => {
 
           val newConstraints = CollectibleLogic.applyConstraint(newConstraint)
           val newConstraintModel = constraints ++ newConstraints
@@ -231,7 +249,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
           val newPropertyConstraints = newConstraints.filter(_.c == ConstraintType.HasProperty)
           val newOtherConstraints = newConstraints diff newPropertyConstraints
 
-          collectibleRepository.addConstraints(typeId, newPropertyConstraints, newOtherConstraints)
+          collectibleRepository.addConstraints(typeVersionId, newPropertyConstraints, newOtherConstraints)
         })
       })
     } catch {

@@ -21,7 +21,7 @@ package modules.subject.service
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, ConstraintType, EntityType, ExtendedEntityType}
+import modules.core.model.{Constraint, ConstraintType, EntityType, ExtendedEntityType, VersionedEntityType}
 import modules.core.repository.{ConstraintRepository, TypeRepository}
 import modules.core.service.{EntityTypeService, ModelEntityService}
 import modules.subject.model.CollectionConstraintSpec
@@ -57,6 +57,18 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
     entityTypeService.getAllTypes(Option(CollectionConstraintSpec.COLLECTION))
   }
 
+  override def getAllVersions()(implicit ticket: Ticket): Future[Seq[VersionedEntityType]] = {
+    entityTypeService.getAllVersions(Option(CollectionConstraintSpec.COLLECTION))
+  }
+
+  override def addVersion(typeId: Long)(implicit ticket: Ticket): Future[Long] = {
+    Future.failed(new Exception("Not implemented yet"))
+  }
+
+  override def deleteVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
+    Future.failed(new Exception("Not implemented yet"))
+  }
+
   /**
    * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] which define
    * [[modules.subject.model.Collection Collections]].
@@ -82,17 +94,25 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
     entityTypeService.getType(id, Option(CollectionConstraintSpec.COLLECTION))
   }
 
+  override def getVersionedType(typeVersionId: Long)(implicit ticket: Ticket): Future[Option[VersionedEntityType]] = {
+    entityTypeService.getVersionedType(typeVersionId, Option(CollectionConstraintSpec.COLLECTION))
+  }
+
   /**
-   * Get a complete CollectionType (Head + Constraints).
+   * Get a complete ExtendedEntityType.
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     od the CollectionType
+   * @param typeVersionId     id of the TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future (EntityType, Seq[Constraint])
    */
-  override def getCompleteType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
-    entityTypeService.getCompleteType(id, Option(CollectionConstraintSpec.COLLECTION))
+  override def getExtendedType(typeVersionId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    entityTypeService.getExtendedType(typeVersionId, Option(CollectionConstraintSpec.COLLECTION))
+  }
+
+  override def getLatestExtendedType(typeId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    entityTypeService.getLatestExtendedType(typeId, Option(CollectionConstraintSpec.COLLECTION))
   }
 
   /**
@@ -141,12 +161,12 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p>This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the CollectionType
+   * @param typeVersionId     of the TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future Seq[Constraint]
    */
-  override def getConstraintsOfType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
-    entityTypeService.getConstraintsOfEntityType(id, Option(CollectionConstraintSpec.COLLECTION))
+  override def getConstraintsOfType(typeVersionId: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
+    entityTypeService.getConstraintsOfEntityType(typeVersionId, Option(CollectionConstraintSpec.COLLECTION))
   }
 
   /**
@@ -169,11 +189,11 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
         if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
         val constraint = constraintOption.get
 
-        getType(constraint.typeId) flatMap (collectionType => {
+        getVersionedType(constraint.typeVersionId) flatMap (collectionType => {
           if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
-          val typeId = collectionType.get.id
+          val typeVersionId = collectionType.get.version.id
 
-          getConstraintsOfType(typeId) flatMap (constraints => {
+          getConstraintsOfType(typeVersionId) flatMap (constraints => {
             val deletedConstraints = CollectionLogic.removeConstraint(constraint, constraints)
             val remainingConstraints = constraints.filter(c => !deletedConstraints.contains(c))
 
@@ -183,7 +203,7 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
             val deletedPropertyConstraints = deletedConstraints.filter(_.c == ConstraintType.HasProperty)
             val deletedOtherConstraints = deletedConstraints diff deletedPropertyConstraints
 
-            collectionRepository.deleteConstraints(typeId, deletedPropertyConstraints, deletedOtherConstraints)
+            collectionRepository.deleteConstraints(typeVersionId, deletedPropertyConstraints, deletedOtherConstraints)
           })
         })
       })
@@ -202,23 +222,22 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    * @param c      String value of the ConstraintType
    * @param v1     first Constraint parameter
    * @param v2     second Constraint parameter
-   * @param typeId id of the parent EntityType
+   * @param typeVersionId id of the parent EntityType
    * @param ticket implicit authentication ticket
    * @return Future[Long]
    */
-  override def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit] = {
+  override def addConstraint(c: String, v1: String, v2: String, typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
       //FIXME the ConstraintType.find() needs a check before, the rules can be empty and lead to a unspecified exception
-      val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
+      val newConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeVersionId)
       val constraintStatus = CollectionLogic.isValidConstraint(newConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
 
-      getType(newConstraint.typeId) flatMap (collectionType => {
+      getVersionedType(newConstraint.typeVersionId) flatMap (collectionType => {
         if (collectionType.isEmpty) throw new Exception("No corresponding EntityType found")
-        val typeId = collectionType.get.id
 
-        getConstraintsOfType(newConstraint.typeId) flatMap (constraints => {
+        getConstraintsOfType(newConstraint.typeVersionId) flatMap (constraints => {
 
           val newConstraints = CollectionLogic.applyConstraint(newConstraint)
           val newConstraintModel = constraints ++ newConstraints
@@ -229,7 +248,7 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
           val newPropertyConstraints = newConstraints.filter(_.c == ConstraintType.HasProperty)
           val newOtherConstraints = newConstraints diff newPropertyConstraints
 
-          collectionRepository.addConstraints(typeId, newPropertyConstraints, newOtherConstraints)
+          collectionRepository.addConstraints(typeVersionId, newPropertyConstraints, newOtherConstraints)
         })
       })
     } catch {
@@ -263,15 +282,15 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeId id of the paren EntityType
+   * @param typeVersionId id of the paren TypeVersion
    * @param ticket implicit authentication ticket
    * @return Future Seq[EntityType]
    */
-  def getChildren(typeId: Long)(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
+  def getChildren(typeVersionId: Long)(implicit ticket: Ticket): Future[Seq[ExtendedEntityType]] = {
     try {
       RoleAssertion.assertWorker
-      typeRepository.getComplete(typeId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
-        val childValues = CollectionLogic.findChildren(typeData._2)
+      typeRepository.getExtended(typeVersionId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
+        val childValues = CollectionLogic.findChildren(typeData.get.constraints)
         typeRepository.getAllExtended(childValues)
       })
     } catch {
