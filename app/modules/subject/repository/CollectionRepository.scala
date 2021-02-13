@@ -122,7 +122,9 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     val propertyQuery = accessableCollections joinLeft properties on (_.entityId === _.parentId)
 
     //fetch all viewers
-    val viewerQuery = accessableCollections join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
+    val viewerQuery = accessableCollections join viewers on (_.id === _.targetId) join groups on (_._2.viewerId === _.id)
+
+    val typeQuery = accessableCollections join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
 
     //fetch all collectibles with properties
     val collectibleQuery = accessableCollections join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
@@ -131,21 +133,24 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
       propertyResult <- db.run(propertyQuery.result)
       viewerResult <- db.run(viewerQuery.result)
       collectibleResult <- db.run(collectibleQuery.result)
+      typeResult <- db.run(typeQuery.result)
     } yield {
       val collectionsWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2))
-      val collectionsWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2))
+      val collectionsWithViewers = viewerResult.groupBy(_._1._1).mapValues(values => values.map(value => (value._2, value._1._2)))
       val collectionsWithCollectibleData = collectibleResult.groupBy(_._1).mapValues(values =>
         values.map(_._2).groupBy(_._1).mapValues(cValues => cValues.map(_._2)))
+      val collectionsWithTypes = typeResult.groupBy(_._1._1).mapValues(values => values.head._2)
 
       collectionsWithProperties.keys.map(collection => {
         val properties = collectionsWithProperties(collection).filter(_.isDefined).map(_.get)
         val viewerRelations = collectionsWithViewers(collection)
         val collectiblesOption = collectionsWithCollectibleData.get(collection)
+        val entityType = collectionsWithTypes.get(collection)
 
         var collectibles: Seq[CollectibleHeader] = Seq()
         if (collectiblesOption.isDefined) collectibles = parseCollectibles(collectiblesOption.get)
 
-        CollectionHeader(collection, collectibles, properties, ViewerCombinator.fromRelations(viewerRelations))
+        CollectionHeader(collection, collectibles, properties, ViewerCombinator.fromRelations(viewerRelations), Some(entityType.get))
 
       }).toSeq.sortBy(_.collection.id)
     }
@@ -154,7 +159,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   private def parseCollectibles(collectiblesData: Map[Collectible, Seq[Property]]): Seq[CollectibleHeader] = {
     collectiblesData.keys.map(collectible => {
       val properties = collectiblesData(collectible).sortBy(_.id)
-      CollectibleHeader(collectible, properties)
+      CollectibleHeader(collectible, properties, None)
     }).toSeq.sortBy(_.collectible.id)
   }
 
@@ -174,36 +179,43 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
     val collectionQuery = collections.filter(_.id in accessQuery)
-
     val propertyQuery = collectionQuery joinLeft properties on (_.entityId === _.parentId)
-
     val viewerQuery = collectionQuery join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
-
+    val typeQuery = collectionQuery join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
     //fetch all collectibles with properties
     val collectibleQuery = collectionQuery join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
+    val collectibleTypeQuery = collectionQuery join collectibles on (_.id === _.collectionId) join
+      typeVersions on (_._2.typeVersionId === _.id) join entityTypes on (_._2.typeId=== _.id)
 
     for {
       propertyResult <- db.run(propertyQuery.result)
       viewerResult <- db.run(viewerQuery.result)
       collectibleResult <- db.run(collectibleQuery.result)
+      typeResult <- db.run(typeQuery.result)
+      collectibleTypeResult <- db.run(collectibleTypeQuery.result)
     } yield {
       val collectionWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
       val collectionWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
       val collectionWithCollectibleData = collectibleResult.groupBy(_._1).mapValues(values =>
         values.map(_._2).groupBy(_._1).mapValues(cValues => cValues.map(_._2)))
+      val collectionWithType = typeResult.groupBy(_._1._1).mapValues(_.head._2)
+      val collectiblesWithTypes = collectibleTypeResult.groupBy(_._1._1._2).mapValues(_.head._2)
 
       if (collectionWithViewers.isEmpty) {
         None
       } else {
         val collection = collectionWithProperties.get._1
         var collectibles: Seq[CollectibleHeader] = Seq()
+        val entityType = collectionWithType(collection)
         if (collectionWithCollectibleData.contains(collection)) collectibles = parseCollectibles(collectionWithCollectibleData(collection))
+        collectibles = collectibles.map(value => CollectibleHeader(value.collectible, value.properties, collectiblesWithTypes.get(value.collectible)))
         Some(ExtendedCollection(
           collection,
           collectibles,
           collectionWithProperties.get._2.filter(_.isDefined).map(_.get),
           Seq(), //TODO Attachments --> May be moved to AttachmentRepository somehow
-          ViewerCombinator.fromRelations(collectionWithViewers.get._2)))
+          ViewerCombinator.fromRelations(collectionWithViewers.get._2),
+          entityType))
       }
     }
   }
@@ -247,7 +259,8 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
           collectionWithProperties.get._1,
           Seq(), //No Collectibles here - that's the slim part ;)
           collectionWithProperties.get._2,
-          ViewerCombinator.fromRelations(collectionWithViewers.get._2)))
+          ViewerCombinator.fromRelations(collectionWithViewers.get._2),
+          None))
       }
     }
   }

@@ -21,6 +21,6 @@
 @(collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 <div class="meta-entity-root scroll-container">
     @for(collection <- collections){
-        @collection_tile(collection, "fixme")
+        @collection_tile(collection)
     }
 </div>

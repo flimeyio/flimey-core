@@ -27,4 +27,4 @@ import modules.core.model.{EntityType, Property}
  * @param collectible Collectible (contains only id and type reference)
  * @param properties  all Properties of the Collectible
  */
-case class CollectibleHeader(collectible: Collectible, properties: Seq[Property], entityType: EntityType)
+case class CollectibleHeader(collectible: Collectible, properties: Seq[Property], entityType: Option[EntityType])

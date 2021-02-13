@@ -34,4 +34,4 @@ case class CollectionHeader(collection: Collection,
                             collectibles: Seq[CollectibleHeader],
                             properties: Seq[Property],
                             viewers: ViewerCombinator,
-                            entityType: EntityType)
+                            entityType: Option[EntityType])

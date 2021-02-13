@@ -22,5 +22,5 @@
 @(collectibles: Seq[CollectibleHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @for(collectible <- collectibles){
-    @collectible_detail_tile(collectible, "fixme")
+    @collectible_detail_tile(collectible)
 }

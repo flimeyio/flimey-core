@@ -137,9 +137,12 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
 
     val propertyQuery = collectibleQuery joinLeft properties on (_.entityId === _.parentId)
 
+    val typeQuery = collectibleQuery join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
+
     for {
       viewerResult <- db.run(viewerQuery.result)
       propertyResult <- db.run(propertyQuery.result)
+      typeResult <- db.run(typeQuery.result)
     } yield {
       val collectibleWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
       if(collectibleWithProperties.isEmpty){
@@ -149,8 +152,9 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
         //Note: only viewers of that particular collectible (parent) are in the result
         val viewerRelations = viewerResult.map(value => (value._2, value._1._2))
         val viewerCombinator = ViewerCombinator.fromRelations(viewerRelations)
+        val entityType = typeResult.head._2
 
-        Some(ExtendedCollectible(collectible, collectibleWithProperties.get._2.map(_.get), viewerCombinator))
+        Some(ExtendedCollectible(collectible, collectibleWithProperties.get._2.map(_.get), viewerCombinator, entityType))
       }
     }
   }
