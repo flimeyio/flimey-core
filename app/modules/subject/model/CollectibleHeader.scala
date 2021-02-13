@@ -18,7 +18,7 @@
 
 package modules.subject.model
 
-import modules.core.model.Property
+import modules.core.model.{EntityType, Property}
 
 /**
  * The CollectibleHeader class wraps a [[modules.subject.model.Collectible Collectible]] together with with all its objectified
@@ -27,4 +27,4 @@ import modules.core.model.Property
  * @param collectible Collectible (contains only id and type reference)
  * @param properties  all Properties of the Collectible
  */
-case class CollectibleHeader(collectible: Collectible, properties: Seq[Property])
+case class CollectibleHeader(collectible: Collectible, properties: Seq[Property], entityType: EntityType)

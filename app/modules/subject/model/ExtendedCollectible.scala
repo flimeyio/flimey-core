@@ -18,7 +18,7 @@
 
 package modules.subject.model
 
-import modules.core.model.Property
+import modules.core.model.{EntityType, Property}
 import modules.user.model.ViewerCombinator
 
 /**
@@ -29,4 +29,4 @@ import modules.user.model.ViewerCombinator
  * @param properties  all Properties of the Collectible
  * @param viewers     [[modules.user.model.ViewerCombinator ViewerCombinator]] of the parent [[modules.subject.model.Collection Collection]]
  */
-case class ExtendedCollectible(collectible: Collectible, properties: Seq[Property], viewers: ViewerCombinator)
+case class ExtendedCollectible(collectible: Collectible, properties: Seq[Property], viewers: ViewerCombinator, entityType: EntityType)
