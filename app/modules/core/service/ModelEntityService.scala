@@ -1,13 +1,15 @@
 package modules.core.service
 
 import modules.auth.model.Ticket
-import modules.core.model.{Constraint, EntityType}
+import modules.core.model.{Constraint, EntityType, ExtendedEntityType, VersionedEntityType}
 
 import scala.concurrent.Future
 
 trait ModelEntityService {
 
-  def getAllTypes()(implicit ticket: Ticket): Future[Seq[EntityType]]
+  abstract def getAllTypes()(implicit ticket: Ticket): Future[Seq[EntityType]]
+
+  abstract def getAllVersions()(implicit ticket: Ticket): Future[Seq[VersionedEntityType]]
 
   /**
    * Get a EntityType of the specific subtype by its ID.
@@ -18,18 +20,26 @@ trait ModelEntityService {
    * @param ticket implicit authentication ticket
    * @return Future Option[EntityType]
    */
-  def getType(id: Long)(implicit ticket: Ticket): Future[Option[EntityType]]
+  abstract def getType(id: Long)(implicit ticket: Ticket): Future[Option[EntityType]]
+
+  abstract def addVersion(typeId: Long)(implicit ticket: Ticket): Future[Long]
+
+  abstract def deleteVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit]
+
+  abstract def getVersionedType(typeVersionId: Long)(implicit ticket: Ticket): Future[Option[VersionedEntityType]]
 
   /**
-   * Get a complete EntityType (Head + Constraints) of the specific subtype.
+   * Get an ExtendedEntityType  of the specific subtype.
    * <p> Must fail without WORKER rights.
    * <p> This must be a safe implementation and can be used by controller classes.
    *
-   * @param id     od the EntityType
-   * @param ticket implicit authentication ticket
+   * @param typeVersionId od the EntityTypes TypeVersion
+   * @param ticket        implicit authentication ticket
    * @return Future (EntityType, Seq[Constraint])
    */
-  def getCompleteType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])]
+  abstract def getExtendedType(typeVersionId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType]
+
+  abstract def getLatestExtendedType(typeId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType]
 
   /**
    * Get an EntityType of the specific subtype by its value (name) field.
@@ -40,7 +50,7 @@ trait ModelEntityService {
    * @param ticket implicit authentication ticket
    * @return Future Option[CollectionType]
    */
-  def getTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[EntityType]]
+  abstract def getTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[EntityType]]
 
   /**
    * Update an already existing EntityType of the specific subtype. This includes 'value' (name) and 'active'.
@@ -52,18 +62,18 @@ trait ModelEntityService {
    * @param ticket implicit authentication ticket
    * @return Future[Int]
    */
-  def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int]
+  abstract def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int]
 
   /**
    * Get all Constraints associated to an EntityType of the specific subtype.
    * <p> Must fail without WORKER rights.
    * <p> This must be a safe implementation and can be used by controller classes.
    *
-   * @param id     of the EntityType
-   * @param ticket implicit authentication ticket
+   * @param typeVersionId of the EntityTypes typeVersion
+   * @param ticket         implicit authentication ticket
    * @return Future Seq[Constraint]
    */
-  def getConstraintsOfType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]]
+  abstract def getConstraintsOfType(typeVersionId: Long)(implicit ticket: Ticket): Future[Seq[Constraint]]
 
   /**
    * Delete a Constraint by its ID.
@@ -78,7 +88,7 @@ trait ModelEntityService {
    * @param ticket implicit authentication ticket
    * @return Future[Int]
    */
-  def deleteConstraint(id: Long)(implicit ticket: Ticket): Future[Unit]
+  abstract def deleteConstraint(id: Long)(implicit ticket: Ticket): Future[Unit]
 
   /**
    * Add a Constraint to a EntityType of a specific subtype.
@@ -94,7 +104,7 @@ trait ModelEntityService {
    * @param ticket implicit authentication ticket
    * @return Future[Long]
    */
-  def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit]
+  abstract def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit]
 
   /**
    * Delete an EntityType of a specific subtype.
@@ -106,6 +116,6 @@ trait ModelEntityService {
    * @param ticket implicit authentication ticket
    * @return Future[Unit]
    */
-  def deleteType(id: Long)(implicit ticket: Ticket): Future[Unit]
+  abstract def deleteType(id: Long)(implicit ticket: Ticket): Future[Unit]
 
 }

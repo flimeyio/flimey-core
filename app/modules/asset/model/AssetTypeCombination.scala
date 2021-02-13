@@ -18,6 +18,6 @@
 
 package modules.asset.model
 
-import modules.core.model.EntityType
+import modules.core.model.VersionedEntityType
 
-case class AssetTypeCombination(parentAssetType: Option[EntityType], allAssetTypes: Seq[EntityType], children: Seq[ExtendedAsset])
+case class AssetTypeCombination(parentAssetType: Option[VersionedEntityType], allAssetTypes: Seq[VersionedEntityType], children: Seq[ExtendedAsset])

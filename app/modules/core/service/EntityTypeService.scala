@@ -21,7 +21,7 @@ package modules.core.service
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, EntityType, ExtendedEntityType}
+import modules.core.model.{Constraint, EntityType, ExtendedEntityType, VersionedEntityType}
 import modules.core.repository.{ConstraintRepository, TypeRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -43,7 +43,7 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
   def addType(name: String, typeOf: String)(implicit ticket: Ticket): Future[Long] = {
     try {
       RoleAssertion.assertModeler
-      if(!CoreLogic.isStringIdentifier(name)) throw new Exception("Invalid identifier")
+      if (!CoreLogic.isStringIdentifier(name)) throw new Exception("Invalid identifier")
       //FIXME the input data must be validated, especially the typeOf value must match an actual type!
       typeRepository.add(EntityType(0, name, typeOf, active = false))
     } catch {
@@ -70,6 +70,24 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
   }
 
   /**
+   * Get all EntityTypes with their TypeVersions
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param derivesFrom optional parent type specification
+   * @param ticket      implicit authentication ticket
+   * @return Future Seq[VersionedEntityType]
+   */
+  def getAllVersions(derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[Seq[VersionedEntityType]] = {
+    try {
+      RoleAssertion.assertWorker
+      typeRepository.getAllVersioned(derivesFrom)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
    * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]].
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
@@ -86,7 +104,6 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
       case e: Throwable => Future.failed(e)
     }
   }
-
 
   /**
    * Get an EntityType by its ID.
@@ -107,27 +124,65 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
   }
 
   /**
-   * Get a complete EntityType (Head + Constraints).
+   * Get an EntityType by its ID.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param typeVersionId od the TypeVersion
+   * @param derivesFrom   optional parent type specification
+   * @param ticket        implicit authentication ticket
+   * @return Future Option[VersionedEntityType]
+   */
+  def getVersionedType(typeVersionId: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket):
+  Future[Option[VersionedEntityType]] = {
+    try {
+      RoleAssertion.assertWorker
+      typeRepository.getVersioned(typeVersionId, derivesFrom)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * Get an ExtendedEntityType by its TypeVersion id.
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id          id of the EntityType
-   * @param derivesFrom optional parent type specification
-   * @param ticket      implicit authentication ticket
-   * @return Future (EntityType, Seq[Constraint])
+   * @param typeVersionId id of the TypeVersion of the EntityType
+   * @param derivesFrom   optional parent type specification
+   * @param ticket        implicit authentication ticket
+   * @return Future[ExtendedEntityType]
    */
-  def getCompleteType(id: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
+  def getExtendedType(typeVersionId: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
     try {
       RoleAssertion.assertWorker
-      typeRepository.getComplete(id, derivesFrom) map (typeData => {
-        val (entityType, constraints) = typeData
-        if (entityType.isEmpty) throw new Exception("Invalid entity type")
-        (entityType.get, constraints)
+      typeRepository.getExtended(typeVersionId, derivesFrom) map (typeData => {
+        if (typeData.isEmpty) throw new Exception("Invalid entity type")
+        typeData.get
       })
     } catch {
       case e: Throwable => Future.failed(e)
     }
   }
+
+  /**
+   * Get the latest version of an ExtendedEntityType by its typeId.
+   * <p> Fails without WORKER rights.
+   * <p> This is a safe implementation and can be used by controller classes.
+   *
+   * @param typeId      id of the of the EntityType
+   * @param derivesFrom optional parent type specification
+   * @param ticket      implicit authentication ticket
+   * @return Future[ExtendedEntityType]
+   */
+  def getLatestExtendedType(typeId: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    try {
+      RoleAssertion.assertWorker
+      typeRepository.getAllExtendedVersions(typeId, derivesFrom).map(_.maxBy(_.version.version))
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
 
   /**
    * Get an EntityType by its value (name) field.
@@ -151,19 +206,19 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
   }
 
   /**
-   * Get all Constraints associated to an EntityType.
+   * Get all Constraints associated to a TypeVersion.
    * <p> Fails without WORKER rights.
    * <p>This is a safe implementation and can be used by controller classes.
    *
-   * @param id          of the EntityType
-   * @param derivesFrom optional parent type specification
-   * @param ticket      implicit authentication ticket
+   * @param typeVersionId of the TypeVersion of the EntityType
+   * @param derivesFrom   optional parent type specification
+   * @param ticket        implicit authentication ticket
    * @return Future Seq[Constraint]
    */
-  def getConstraintsOfEntityType(id: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
+  def getConstraintsOfEntityType(typeVersionId: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
     try {
       RoleAssertion.assertWorker
-      constraintRepository.getAssociated(id, derivesFrom)
+      constraintRepository.getAssociated(typeVersionId, derivesFrom)
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -187,27 +242,4 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
     }
   }
 
-  /**
-   * Get all EntityTypes, a specific EntityType and its Constraints at once.
-   * <p> This operation is just a future comprehension of different service methods.
-   * <p> Fails without WORKER rights
-   * <p> This is a safe implementation and can be used by controller classes.
-   *
-   * @param id     of an EntityType
-   * @param ticket implicit authentication ticket
-   * @return Future Tuple of all EntityTypes, a specific EntityType and its Constraints
-   */
-  def getCombinedEntity(id: Long, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[(Seq[EntityType], Option[EntityType], Seq[Constraint])] = {
-    try {
-      RoleAssertion.assertWorker
-      (for {
-        entityTypes <- getAllTypes(derivesFrom)
-        constraints <- getConstraintsOfEntityType(id, derivesFrom)
-      } yield (entityTypes, constraints)) map (res => {
-        (res._1, res._1.find(p => p.id == id), res._2)
-      })
-    } catch {
-      case e: Throwable => Future.failed(e)
-    }
-  }
 }

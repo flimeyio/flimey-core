@@ -19,7 +19,7 @@
 package modules.asset.service
 
 import com.google.inject.Inject
-import modules.asset.model.{Asset, AssetConstraintSpec, AssetTypeCombination, ExtendedAsset}
+import modules.asset.model.{Asset, AssetTypeCombination, ExtendedAsset}
 import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
@@ -70,15 +70,14 @@ class AssetService @Inject()(typeRepository: TypeRepository,
                viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
-      typeRepository.getComplete(typeId, Some(AssetConstraintSpec.ASSET)) flatMap (typeData => {
-        val (head, constraints) = typeData
-        if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not defined or active")
-        val properties = AssetLogic.derivePropertiesFromRawData(constraints, propertyData)
-        val configurationStatus = AssetLogic.isModelConfiguration(constraints, properties)
+      modelAssetService.getLatestExtendedType(typeId) flatMap (extendedEntityType => {
+        if (!extendedEntityType.entityType.active) throw new Exception("The selected Asset Type is not active")
+        val properties = AssetLogic.derivePropertiesFromRawData(extendedEntityType.constraints, propertyData)
+        val configurationStatus = AssetLogic.isModelConfiguration(extendedEntityType.constraints, properties)
         if (!configurationStatus.valid) configurationStatus.throwError
         groupService.getAllGroups map (allGroups => {
           val aViewers = AssetLogic.deriveViewersFromData(maintainers :+ GroupStats.SYSTEM_GROUP, editors, viewers, allGroups)
-          assetRepository.add(Asset(0, 0, typeId), properties, aViewers)
+          assetRepository.add(Asset(0, 0, extendedEntityType.version.id), properties, aViewers)
         })
       })
     } catch {
@@ -120,10 +119,9 @@ class AssetService @Inject()(typeRepository: TypeRepository,
         val newConfig = AssetLogic.mapConfigurations(oldConfig, propertyUpdateData)
 
         //check if the AssetType of the Asset is active (else it can not be edited)
-        typeRepository.getComplete(extendedAsset.asset.typeId) flatMap (typeData => {
-          val (head, constraints) = typeData
-          if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not active")
-          val configurationStatus = AssetLogic.isModelConfiguration(constraints, newConfig)
+        typeRepository.getExtended(extendedAsset.asset.typeVersionId) flatMap (extendedEntityType => {
+          if (extendedEntityType.isEmpty || !extendedEntityType.get.entityType.active) throw new Exception("The selected Asset Type is not defined or active")
+          val configurationStatus = AssetLogic.isModelConfiguration(extendedEntityType.get.constraints, newConfig)
           if (!configurationStatus.valid) configurationStatus.throwError
 
           groupService.getAllGroups flatMap (groups => {
@@ -180,14 +178,14 @@ class AssetService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeId        id of the AssetType every Asset must have
+   * @param typeVersionId id of the AssetTypes TypeVersion every Asset must have
    * @param pageNumber    number of the Asset page (starting with 0)
    * @param pageSize      maximum size of a page (max result size)
    * @param groupSelector groups which must contain the returned Assets (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future Seq[ExtendedAsset]
    */
-  def getAssets(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
+  def getAssets(typeVersionId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                (implicit ticket: Ticket): Future[Seq[ExtendedAsset]] = {
     try {
       RoleAssertion.assertWorker
@@ -199,7 +197,7 @@ class AssetService @Inject()(typeRepository: TypeRepository,
       if (pageNumber < 0) throw new Exception("Page number must be positive")
       val offset = pageNumber * pageSize
       val limit = pageSize
-      assetRepository.getAssetSubset(accessedGroupIds.toSet, typeId, limit, offset)
+      assetRepository.getAssetSubset(accessedGroupIds.toSet, typeVersionId, limit, offset)
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -212,25 +210,25 @@ class AssetService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeId        id of the AssetType every Asset must have
+   * @param typeVersionId id of the AssetType every Asset must have
    * @param pageNumber    number of the Asset page (starting with 0)
    * @param pageSize      maximum size of a page (max result size)
    * @param groupSelector groups which must contain the returned Assets (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future[AssetTypeCombination]
    */
-  def getAssetComplex(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
+  def getAssetComplex(typeVersionId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                      (implicit ticket: Ticket): Future[AssetTypeCombination] = {
     try {
       RoleAssertion.assertWorker
-      modelAssetService.getAllTypes flatMap (types => {
-        val selectedAssetType = types.find(_.id == typeId)
+      modelAssetService.getAllVersions() flatMap (types => {
+        val selectedAssetType = types.find(_.version.id == typeVersionId)
         if (selectedAssetType.isDefined) {
-          getAssets(typeId, pageNumber, pageSize, groupSelector) map (assetData => {
+          getAssets(typeVersionId, pageNumber, pageSize, groupSelector) map (assetData => {
             AssetTypeCombination(selectedAssetType, types, assetData)
           })
         } else {
-          throw new Exception("No such Asset Type found")
+          throw new Exception("No such Asset Type Version found")
         }
       })
     } catch {

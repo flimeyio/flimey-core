@@ -21,7 +21,7 @@ package modules.asset.repository
 import modules.asset.model.{Asset, ExtendedAsset}
 import com.google.inject.Inject
 import modules.core.model.{Constraint, FlimeyEntity, Property, Viewer}
-import modules.core.repository.{ConstraintTable, FlimeyEntityTable, PropertyTable, TypeTable, ViewerTable}
+import modules.core.repository.{ConstraintTable, FlimeyEntityTable, PropertyTable, TypeTable, TypeVersionTable, ViewerTable}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
@@ -45,6 +45,7 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
   val flimeyEntities = TableQuery[FlimeyEntityTable]
   val assets = TableQuery[AssetTable]
   val types = TableQuery[TypeTable]
+  val typeVersions = TableQuery[TypeVersionTable]
   val properties = TableQuery[PropertyTable]
   val viewers = TableQuery[ViewerTable]
   val groups = TableQuery[GroupTable]
@@ -63,7 +64,7 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
   def add(asset: Asset, newProperties: Seq[Property], newViewers: Seq[Viewer]): Future[Unit] = {
     db.run((for {
       entityId <- (flimeyEntities returning flimeyEntities.map(_.id)) += FlimeyEntity(0)
-      _ <- (assets returning assets.map(_.id)) += Asset(0, entityId, asset.typeId)
+      _ <- (assets returning assets.map(_.id)) += Asset(0, entityId, asset.typeVersionId)
       _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
       _ <- viewers ++= newViewers.map(v => Viewer(0, entityId, v.viewerId, v.role))
     } yield ()).transactionally)
@@ -86,21 +87,46 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
   }
 
   /**
-   * Delete an AssetType and all associated Constraints, Assets and their Properties.
+   * Delete an Asset [[modules.core.model.EntityType EntityType]] with all subsidiary [[modules.core.model.TypeVersion TypeVersions]]
+   * and all associated [[modules.core.model.Constraint Constraints]], [[modules.asset.model.Asset Assets]] and their
+   * [[modules.core.model.Property Properties]].
    * <p> <b>This is a highly destructive operation!</b>
    *
-   * @param id of the type to delete
+   * @param typeId of the type to delete
    * @return Future[Unit]
    */
-  def deleteAssetType(id: Long): Future[Unit] = {
-    val sub = assets.filter(_.typeId === id).map(_.entityId)
+  def deleteAssetType(typeId: Long): Future[Unit] = {
+    val versionsToDeleteIds = typeVersions.filter(_.typeId === typeId).map(_.id)
+    val assetsToDeleteEntityIds = assets.filter(_.typeVersionId in versionsToDeleteIds).map(_.entityId)
     db.run((for {
-      _ <- properties.filter(_.parentId in sub).delete
-      _ <- viewers.filter(_.targetId in sub).delete
-      _ <- assets.filter(_.typeId === id).delete
-      _ <- flimeyEntities.filter(_.id in sub).delete
-      _ <- constraints.filter(_.typeId === id).delete
-      _ <- types.filter(_.id === id).delete
+      _ <- properties.filter(_.parentId in assetsToDeleteEntityIds).delete
+      _ <- viewers.filter(_.targetId in assetsToDeleteEntityIds).delete
+      _ <- assets.filter(_.entityId in assetsToDeleteEntityIds).delete
+      _ <- flimeyEntities.filter(_.id in assetsToDeleteEntityIds).delete
+      _ <- constraints.filter(_.typeVersionId in versionsToDeleteIds).delete
+      _ <- typeVersions.filter(_.id in versionsToDeleteIds).delete
+      _ <- types.filter(_.id === typeId).delete
+    } yield ()).transactionally)
+  }
+
+  /**
+   * Delete a specific Asset [[modules.core.model.EntityType EntityType]] [[modules.core.model.TypeVersion TypeVersion]].
+   * and all associated [[modules.core.model.Constraint Constraints]], [[modules.asset.model.Asset Assets]] and their
+   * [[modules.core.model.Property Properties]].
+   * <p> <b>This is a highly destructive operation!</b>
+   *
+   * @param typeVersionId of the TypeVersion to delete
+   * @return Future[Unit]
+   */
+  def deleteAssetType(typeVersionId: Long): Future[Unit] = {
+    val assetsToDeleteEntityIds = assets.filter(_.typeVersionId === typeVersionId).map(_.entityId)
+    db.run((for {
+      _ <- properties.filter(_.parentId in assetsToDeleteEntityIds).delete
+      _ <- viewers.filter(_.targetId in assetsToDeleteEntityIds).delete
+      _ <- assets.filter(_.entityId in assetsToDeleteEntityIds).delete
+      _ <- flimeyEntities.filter(_.id in assetsToDeleteEntityIds).delete
+      _ <- constraints.filter(_.typeVersionId === typeVersionId).delete
+      _ <- typeVersions.filter(_.id === typeVersionId).delete
     } yield ()).transactionally)
   }
 
@@ -133,16 +159,16 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
    * <p> Only Assets which are part of the specified Groups can be fetched.
    *
    * @param groupIds ids of the Groups, of which at least one must have access to the Asset
-   * @param typeId   id of the AssetType, the Asset must have
+   * @param typeVersionId   id of the AssetType, the Asset must have
    * @param limit    maximum number of retrieved Assets - recommended to keep as small as possible
    * @param offset   number of Assets to skip
    * @return Future Seq[ExtendedAsset]
    */
-  def getAssetSubset(groupIds: Set[Long], typeId: Long, limit: Int, offset: Int): Future[Seq[ExtendedAsset]] = {
+  def getAssetSubset(groupIds: Set[Long], typeVersionId: Long, limit: Int, offset: Int): Future[Seq[ExtendedAsset]] = {
     //build sub-query to get all asset ids of assets of the given type which can be accessed by the given groups
     //the returned keys are limited to provide the defined number of results for the second query
     val subQuery = (for {
-      (c, s) <- assets.filter(_.typeId === typeId) join
+      (c, s) <- assets.filter(_.typeVersionId === typeVersionId) join
         viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
@@ -199,7 +225,7 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
    */
   def addPropertyConstraint(constraint: Constraint): Future[Unit] = {
     db.run((for {
-      s <- assets.filter(_.typeId === constraint.typeId).map(_.entityId).result
+      s <- assets.filter(_.typeVersionId === constraint.typeVersionId).map(_.entityId).result
       _ <- (constraints returning constraints.map(_.id)) += constraint
       _ <- properties ++= s.map(entityId => Property(0, constraint.v1, "", entityId))
     } yield ()).transactionally)
@@ -214,7 +240,7 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
    * @return Future[Unit]
    */
   def deletePropertyConstraint(constraint: Constraint): Future[Unit] = {
-    val entityIDsWithProperty = assets.filter(_.typeId === constraint.typeId).map(_.entityId)
+    val entityIDsWithProperty = assets.filter(_.typeVersionId === constraint.typeVersionId).map(_.entityId)
     db.run((for {
       _ <- properties.filter(_.parentId in entityIDsWithProperty).filter(_.key === constraint.v1).delete
       _ <- constraints.filter(_.id === constraint.id).delete
