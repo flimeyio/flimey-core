@@ -21,8 +21,9 @@
 @import views.html.components.asset.asset_block
 @import modules.core.model.EntityType
 @import views.html.forms.core.select_type_form
-@(selectedType: Option[EntityType],
-        assetTypes: Seq[EntityType],
+@import modules.core.model.VersionedEntityType
+@(selectedType: Option[VersionedEntityType],
+        assetTypes: Seq[VersionedEntityType],
         assetData: Seq[ExtendedAsset],
         pageNumber: Int,
         selectedAsset: Option[Long],
@@ -37,20 +38,20 @@
 @select_type_form(selectedType, assetTypes, routes.AssetController.changeAssetType(), "Show")
 @if(selectedType.isDefined) {
     <div class="padding-left-right">
-    <a class= "button border-button no-padding" href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">
+    <a class= "button border-button no-padding" href="@routes.AssetController.getNewAssetEditor(selectedType.get.entityType.id)">
         <i class="material-icons margin-top-5">add</i>
     </a>
     </div>
     <div>
     @if(pageNumber > 0){
         <div class="bit-right">
-        <a href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber-1)">
+        <a href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber-1)">
             <i class="material-icons big-icon">navigate_before</i>
         </a>
         </div>
     }
     <div class="right">
-    <a class="no-padding" href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber+1)">
+    <a class="no-padding" href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber+1)">
         <i class="material-icons big-icon">navigate_next</i>
     </a>
     </div>

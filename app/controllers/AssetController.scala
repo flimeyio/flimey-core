@@ -188,12 +188,11 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
                                    (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       groups <- groupService.getAllGroups
-      typeData <- modelAssetService.getCompleteType(assetTypeId)
+      typeData <- modelAssetService.getLatestExtendedType(assetTypeId)
     } yield {
-      val (assetType, constraints) = typeData
-      Ok(views.html.container.asset.new_asset_editor(assetType,
-        assetService.getAssetPropertyKeys(constraints),
-        assetService.getObligatoryPropertyKeys(constraints),
+      Ok(views.html.container.asset.new_asset_editor(typeData.entityType,
+        assetService.getAssetPropertyKeys(typeData.constraints),
+        assetService.getObligatoryPropertyKeys(typeData.constraints),
         groups,
         form, errmsg, succmsg))
     }
@@ -282,10 +281,9 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
                                 (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       extendedAsset <- assetService.getAsset(assetId)
-      typeData <- modelAssetService.getCompleteType(extendedAsset.asset.typeId)
+      typeData <- modelAssetService.getExtendedType(extendedAsset.asset.typeVersionId)
       groups <- groupService.getAllGroups
     } yield {
-      val (assetType, constraints) = typeData
       val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
         EntityForm.Data(
           extendedAsset.properties.map(_.value),
@@ -293,10 +291,10 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
           extendedAsset.viewers.editors.toSeq.map(_.name),
           extendedAsset.viewers.viewers.toSeq.map(_.name)))
 
-      Ok(views.html.container.asset.asset_editor(assetType,
+      Ok(views.html.container.asset.asset_editor(typeData.entityType,
         extendedAsset,
-        assetService.getAssetPropertyKeys(constraints),
-        assetService.getObligatoryPropertyKeys(constraints),
+        assetService.getAssetPropertyKeys(typeData.constraints),
+        assetService.getObligatoryPropertyKeys(typeData.constraints),
         groups,
         editForm, msg, successMsg))
     }

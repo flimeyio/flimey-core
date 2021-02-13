@@ -291,7 +291,7 @@ class ModelCollectionService @Inject()(typeRepository: TypeRepository,
       RoleAssertion.assertWorker
       typeRepository.getExtended(typeVersionId, Some(CollectionConstraintSpec.COLLECTION)) flatMap (typeData => {
         val childValues = CollectionLogic.findChildren(typeData.get.constraints)
-        typeRepository.getAllExtended(childValues)
+        typeRepository.getAllExtended(childValues).map(values => values.groupBy(_.entityType).mapValues(extendedTypes => extendedTypes.maxBy(_.version.version)).values toSeq)
       })
     } catch {
       case e: Throwable => Future.failed(e)

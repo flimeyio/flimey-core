@@ -239,12 +239,11 @@ class CollectibleController @Inject()(cc: ControllerComponents,
   private def newCollectibleEditorFactory(collectionId: Long, typeId: Long, form: Form[EntityForm.Data], errmsg: Option[String] = None,
                                           succmsg: Option[String] = None)(
                                            implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-    modelCollectibleService.getCompleteType(typeId) map (typeData => {
-      val (collectibleType, constraints) = typeData
+    modelCollectibleService.getLatestExtendedType(typeId) map (typeData => {
       Ok(views.html.container.subject.new_collectible_editor(collectionId,
-        collectibleType,
-        collectibleService.getCollectiblePropertyKeys(constraints),
-        collectibleService.getObligatoryPropertyKeys(constraints),
+        typeData.entityType,
+        collectibleService.getCollectiblePropertyKeys(typeData.constraints),
+        collectibleService.getObligatoryPropertyKeys(typeData.constraints),
         form, errmsg, succmsg))
     })
   } recoverWith {
@@ -268,17 +267,16 @@ class CollectibleController @Inject()(cc: ControllerComponents,
                                               implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       extendedCollectible <- collectibleService.getCollectible(collectibleId)
-      typeData <- modelCollectibleService.getCompleteType(extendedCollectible.collectible.typeId)
+      typeData <- modelCollectibleService.getExtendedType(extendedCollectible.collectible.typeVersionId)
     } yield {
-      val (entityType, constraints) = typeData
       val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
         EntityForm.Data(
           extendedCollectible.properties.map(_.value), Seq(), Seq(), Seq()))
 
-      Ok(views.html.container.subject.collectible_editor(entityType,
+      Ok(views.html.container.subject.collectible_editor(typeData.entityType,
         extendedCollectible,
-        collectibleService.getCollectiblePropertyKeys(constraints),
-        collectibleService.getObligatoryPropertyKeys(constraints),
+        collectibleService.getCollectiblePropertyKeys(typeData.constraints),
+        collectibleService.getObligatoryPropertyKeys(typeData.constraints),
         editForm, msg, successMsg))
     }
   } recoverWith {

@@ -17,7 +17,8 @@
 * *@
 @import modules.core.model.EntityType
 @import views.html.helper.CSRF
-@(selectedType: Option[EntityType], entityTypes: Seq[EntityType], action: Call, label: String)(
+@import modules.core.model.VersionedEntityType
+@(selectedType: Option[VersionedEntityType], entityTypes: Seq[VersionedEntityType], action: Call, label: String)(
         implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
     @helper.form(action = action) {
@@ -25,10 +26,10 @@
                 @CSRF.formField
                 <select class="input-group-field no-margin" name="value">
                     <option>Choose an option</option>
-                    @for(entityType <- entityTypes) {
-                        <option @if(selectedType.isDefined && selectedType.get.id == entityType.id) {
+                    @for(versionedEntityType <- entityTypes) {
+                        <option @if(selectedType.isDefined && selectedType.get.entityType.id == versionedEntityType.entityType.id) {
                             selected="selected"}>
-                        @entityType.value
+                        @versionedEntityType.entityType.value
                         </option>
                     }
                 </select>
