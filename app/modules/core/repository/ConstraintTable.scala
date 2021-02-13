@@ -39,9 +39,9 @@ class ConstraintTable(tag: Tag) extends Table[Constraint](tag, "type_constraint"
 
   def byPlugin = column[Option[String]]("by_plugin")
 
-  def typeId = column[Long]("type_id")
+  def typeVersionId = column[Long]("type_version_id")
 
   override def * =
-    (id, c, v1, v2, byPlugin, typeId) <> (Constraint.tupledRaw, Constraint.unapplyToRaw)
+    (id, c, v1, v2, byPlugin, typeVersionId) <> (Constraint.tupledRaw, Constraint.unapplyToRaw)
 
 }

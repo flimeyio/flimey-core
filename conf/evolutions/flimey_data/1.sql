@@ -31,49 +31,57 @@ create table entity_type
     active  BOOL         NOT NULL
 );
 
+create table type_version
+(
+    id      SERIAL NOT NULL PRIMARY KEY,
+    type_id BIGINT NOT NULL UNIQUE,
+    version BIGINT NULL,
+    FOREIGN KEY (type_id) REFERENCES entity_type (id)
+);
+
 create table type_constraint
 (
-    id        SERIAL       NOT NULL PRIMARY KEY,
-    c         VARCHAR(255) NOT NULL,
-    v1        VARCHAR(255) NOT NULL,
-    v2        VARCHAR(255) NOT NULL,
-    by_plugin VARCHAR(255),
-    type_id   BIGINT       NOT NULL,
-    FOREIGN KEY (type_id) REFERENCES entity_type (id)
+    id              SERIAL       NOT NULL PRIMARY KEY,
+    c               VARCHAR(255) NOT NULL,
+    v1              VARCHAR(255) NOT NULL,
+    v2              VARCHAR(255) NOT NULL,
+    by_plugin       VARCHAR(255),
+    type_version_id BIGINT       NOT NULL,
+    FOREIGN KEY (type_version_id) REFERENCES type_version (id)
 );
 
 create table collection
 (
-    id        SERIAL       NOT NULL PRIMARY KEY,
-    type_id   BIGINT       NOT NULL,
-    entity_id BIGINT       NOT NULL,
-    status    VARCHAR(255) NOT NULL,
-    created   TIMESTAMP    NOT NULL,
+    id              SERIAL       NOT NULL PRIMARY KEY,
+    type_version_id BIGINT       NOT NULL,
+    entity_id       BIGINT       NOT NULL,
+    status          VARCHAR(255) NOT NULL,
+    created         TIMESTAMP    NOT NULL,
     FOREIGN KEY (entity_id) REFERENCES flimey_entity (id),
-    FOREIGN KEY (type_id) REFERENCES entity_type (id)
+    FOREIGN KEY (type_version_id) REFERENCES type_version (id)
 );
 
 create table collectible
 (
-    id            SERIAL       NOT NULL PRIMARY KEY,
-    entity_id     BIGINT       NOT NULL,
-    collection_id BIGINT       NOT NULL,
-    type_id       BIGINT       NOT NULL,
-    state         VARCHAR(255) NOT NULL,
-    created       TIMESTAMP    NOT NULL,
+    id              SERIAL       NOT NULL PRIMARY KEY,
+    entity_id       BIGINT       NOT NULL,
+    collection_id   BIGINT       NOT NULL,
+    type_version_id BIGINT       NOT NULL,
+    state           VARCHAR(255) NOT NULL,
+    created         TIMESTAMP    NOT NULL,
     FOREIGN KEY (entity_id) REFERENCES flimey_entity (id),
-    FOREIGN KEY (type_id) REFERENCES entity_type (id),
+    FOREIGN KEY (type_version_id) REFERENCES type_version (id),
     FOREIGN KEY (collection_id) REFERENCES collection (id)
 );
 
 
 create table asset
 (
-    id        SERIAL NOT NULL PRIMARY KEY,
-    entity_id BIGINT NOT NULL,
-    type_id   BIGINT NOT NULL,
+    id              SERIAL NOT NULL PRIMARY KEY,
+    entity_id       BIGINT NOT NULL,
+    type_version_id BIGINT NOT NULL,
     FOREIGN KEY (entity_id) REFERENCES flimey_entity (id),
-    FOREIGN KEY (type_id) REFERENCES entity_type (id)
+    FOREIGN KEY (type_version_id) REFERENCES type_version (id)
 );
 
 create table property
@@ -161,5 +169,6 @@ drop table type_constraint;
 drop table asset;
 drop table collectible;
 drop table collection;
+drop table type_version;
 drop table entity_type;
 drop table flimey_entity;
