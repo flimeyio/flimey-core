@@ -18,16 +18,16 @@
 
 package controllers
 
-import modules.asset.service.{AssetService, ModelAssetService}
-import modules.auth.model.Ticket
 import javax.inject.{Inject, Singleton}
 import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
+import modules.asset.service.{AssetService, ModelAssetService}
+import modules.auth.model.Ticket
 import modules.core.formdata.{EntityForm, SelectValueForm}
+import modules.user.service.GroupService
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import modules.user.service.GroupService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -55,7 +55,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def index: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelAssetService.getAllTypes map (types => {
+        modelAssetService.getAllVersions() map (types => {
           val error = request.flash.get("error")
           Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, error))
         }) recoverWith {
@@ -69,7 +69,7 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
   def searchAssets: Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        modelAssetService.getAllTypes map (types => {
+        modelAssetService.getAllVersions() map (types => {
           //FIXME
           Ok(views.html.container.asset.asset_overview(None, types, Seq(), 0, None))
         })
@@ -206,104 +206,116 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
    * Endpoint to get the current asset overview with opened asset editor.<br />
    * The Asset to edit must part of the current overview selection.
    *
-   * @param assetTypeId id of the AssetType
-   * @param assetId     id of the Asset to edit
+   * @param assetTypeVersionId id of the AssetTypes TypeVersion
+   * @param assetId            id of the Asset to edit
    * @return editor view result future
    */
-  def getAssetEditor(assetTypeId: Long, assetId: Long): Action[AnyContent] =
+  def getAssetEditor(assetTypeVersionId: Long, assetId: Long): Action[AnyContent] =
     withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        assetEditorFactory(assetTypeId, assetId, None)
-      }
-    }
-
-  /**
-   * Endpoint to post (update) the data of the currently edited Asset.<br />
-   * The Asset must be part of the current overview selection.
-   *
-   * @param assetTypeId id of the AssetType
-   * @param assetId     id of the Asset to edit
-   * @param msg         optional error message
-   * @return editor view result future
-   */
-  def postAsset(assetTypeId: Long, assetId: Long, msg: Option[String] = None): Action[AnyContent] =
-    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        EntityForm.form.bindFromRequest fold(
-          errorForm => assetEditorFactory(assetTypeId, assetId, Option(errorForm)),
-          data => {
-            assetService.updateAsset(assetId, data.values, data.maintainers, data.editors, data.viewers) flatMap (_ => {
-              assetEditorFactory(assetTypeId, assetId, Option(EntityForm.form.fill(data)), None, Option("Changes saved successfully"))
-            }) recoverWith {
-              case e: Throwable =>
-                logger.error(e.getMessage, e)
-                val newAssetForm = EntityForm.form.fill(data)
-                assetEditorFactory(assetTypeId, assetId, Option(newAssetForm), Option(e.getMessage))
-            }
-          })
-      }
-    }
-
-  /**
-   * Endpoint to delete an Asset.<br />
-   * The Asset is deleted permanently and can not be restored!
-   *
-   * @param assetTypeId id of the parent AssetType
-   * @param assetId     id of the Asset to delete
-   * @param msg         optional error message
-   * @return
-   */
-  def deleteAsset(assetTypeId: Long, assetId: Long, msg: Option[String] = None): Action[AnyContent] =
-    withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        assetService.deleteAsset(assetId) map (_ =>
-          Redirect(routes.AssetController.getAssets(assetTypeId, 0))
-          ) recoverWith {
+        modelAssetService.getVersionedType(assetTypeVersionId) flatMap (typeOption => {
+          if (typeOption.isDefined) {
+            assetEditorFactory(typeOption.get.entityType.id, assetId, None)
+          } else {
+            Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> "No such asset type found"))
+          }
+        }) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
-            Future.successful(Redirect(routes.AssetController.getAssetEditor(assetTypeId, assetId)).flashing("error" -> e.getMessage))
+            Future.successful(Redirect(routes.AssetController.index()).flashing("error" -> e.getMessage))
         }
       }
     }
 
-  /**
-   * Helper function to build a 'asset editor' view based on different configuration parameters.
-   *
-   * @param assetTypeId id of the AssetType
-   * @param assetId     id of the Asset to edit
-   * @param form        optional prepared form data
-   * @param msg         optional error message
-   * @param request     implicit request context
-   * @return asset editor result future (view)
-   */
-  private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[EntityForm.Data]],
-                                 msg: Option[String] = None, successMsg: Option[String] = None)
-                                (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
-    for {
-      extendedAsset <- assetService.getAsset(assetId)
-      typeData <- modelAssetService.getExtendedType(extendedAsset.asset.typeVersionId)
-      groups <- groupService.getAllGroups
-    } yield {
-      val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
-        EntityForm.Data(
-          extendedAsset.properties.map(_.value),
-          extendedAsset.viewers.maintainers.toSeq.map(_.name),
-          extendedAsset.viewers.editors.toSeq.map(_.name),
-          extendedAsset.viewers.viewers.toSeq.map(_.name)))
+      /**
+       * Endpoint to post (update) the data of the currently edited Asset.<br />
+       * The Asset must be part of the current overview selection.
+       *
+       * @param assetTypeId id of the AssetType
+       * @param assetId     id of the Asset to edit
+       * @param msg         optional error message
+       * @return editor view result future
+       */
+      def postAsset(assetTypeId: Long, assetId: Long, msg: Option[String] = None): Action[AnyContent] =
+        withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+          withTicket { implicit ticket =>
+            EntityForm.form.bindFromRequest fold(
+              errorForm => assetEditorFactory(assetTypeId, assetId, Option(errorForm)),
+              data => {
+                assetService.updateAsset(assetId, data.values, data.maintainers, data.editors, data.viewers) flatMap (_ => {
+                  assetEditorFactory(assetTypeId, assetId, Option(EntityForm.form.fill(data)), None, Option("Changes saved successfully"))
+                }) recoverWith {
+                  case e: Throwable =>
+                    logger.error(e.getMessage, e)
+                    val newAssetForm = EntityForm.form.fill(data)
+                    assetEditorFactory(assetTypeId, assetId, Option(newAssetForm), Option(e.getMessage))
+                }
+              })
+          }
+        }
 
-      Ok(views.html.container.asset.asset_editor(typeData.entityType,
-        extendedAsset,
-        assetService.getAssetPropertyKeys(typeData.constraints),
-        assetService.getObligatoryPropertyKeys(typeData.constraints),
-        groups,
-        editForm, msg, successMsg))
+      /**
+       * Endpoint to delete an Asset.<br />
+       * The Asset is deleted permanently and can not be restored!
+       *
+       * @param assetTypeId id of the parent AssetType
+       * @param assetId     id of the Asset to delete
+       * @param msg         optional error message
+       * @return
+       */
+      def deleteAsset(assetTypeId: Long, assetId: Long, msg: Option[String] = None): Action[AnyContent] =
+        withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
+          withTicket { implicit ticket =>
+            assetService.deleteAsset(assetId) map (_ =>
+              Redirect(routes.AssetController.getAssets(assetTypeId, 0))
+              ) recoverWith {
+              case e =>
+                logger.error(e.getMessage, e)
+                Future.successful(Redirect(routes.AssetController.getAssetEditor(assetTypeId, assetId)).flashing("error" -> e.getMessage))
+            }
+          }
+        }
+
+      /**
+       * Helper function to build a 'asset editor' view based on different configuration parameters.
+       *
+       * @param assetTypeId id of the AssetType
+       * @param assetId     id of the Asset to edit
+       * @param form        optional prepared form data
+       * @param msg         optional error message
+       * @param request     implicit request context
+       * @return asset editor result future (view)
+       */
+      private def assetEditorFactory(assetTypeId: Long, assetId: Long, form: Option[Form[EntityForm.Data]],
+                                     msg: Option[String] = None, successMsg: Option[String] = None)
+                                    (implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
+      =
+      {
+        for {
+          extendedAsset <- assetService.getAsset(assetId)
+          typeData <- modelAssetService.getExtendedType(extendedAsset.asset.typeVersionId)
+          groups <- groupService.getAllGroups
+        } yield {
+          val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
+            EntityForm.Data(
+              extendedAsset.properties.map(_.value),
+              extendedAsset.viewers.maintainers.toSeq.map(_.name),
+              extendedAsset.viewers.editors.toSeq.map(_.name),
+              extendedAsset.viewers.viewers.toSeq.map(_.name)))
+
+          Ok(views.html.container.asset.asset_editor(typeData.entityType,
+            extendedAsset,
+            assetService.getAssetPropertyKeys(typeData.constraints),
+            assetService.getObligatoryPropertyKeys(typeData.constraints),
+            groups,
+            editForm, msg, successMsg))
+        }
+      } recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.AssetController.getAssets(assetTypeId, 0)).flashing("error" -> e.getMessage))
+      }
+
     }
-  } recoverWith {
-    case e =>
-      logger.error(e.getMessage, e)
-      Future.successful(Redirect(routes.AssetController.getAssets(assetTypeId, 0)).flashing("error" -> e.getMessage))
-  }
-
-}
 
 

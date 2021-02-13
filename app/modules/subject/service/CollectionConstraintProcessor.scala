@@ -42,7 +42,7 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case ConstraintType.UsesPlugin => isUsesPluginConstraint(constraint.v1, constraint.v2)
       case ConstraintType.CanContain => isCanContainConstraint(constraint.v1, constraint.v2)
-      case _ => ERR("Invalid Asset Constraint Rule")
+      case _ => ERR("Invalid Constraint Rule")
     }
   }
 

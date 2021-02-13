@@ -20,10 +20,10 @@
 
 <div class="card relative-container tile">
     <a href="@routes.ModelController.getTypeEditor(versionedEntityType.entityType.id)">
-        <i class="material-icons">Edit Type</i>
+        Edit Type
     </a>
     <a href="@routes.ModelController.getVersionEditor(versionedEntityType.entityType.id, versionedEntityType.version.id)">
-        <i class="material-icons">Edit Version</i>
+        Edit Version
     </a>
     <p>name: @versionedEntityType.entityType.value | v.@versionedEntityType.version.version</p>
     <p>active @versionedEntityType.entityType.active</p>

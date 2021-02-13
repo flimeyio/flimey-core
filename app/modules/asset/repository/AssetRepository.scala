@@ -118,7 +118,7 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
    * @param typeVersionId of the TypeVersion to delete
    * @return Future[Unit]
    */
-  def deleteAssetType(typeVersionId: Long): Future[Unit] = {
+  def deleteAssetTypeVersion(typeVersionId: Long): Future[Unit] = {
     val assetsToDeleteEntityIds = assets.filter(_.typeVersionId === typeVersionId).map(_.entityId)
     db.run((for {
       _ <- properties.filter(_.parentId in assetsToDeleteEntityIds).delete

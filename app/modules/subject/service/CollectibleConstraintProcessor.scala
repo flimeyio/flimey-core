@@ -20,6 +20,7 @@ package modules.subject.service
 
 import modules.core.model.{Constraint, ConstraintType}
 import modules.core.util.ConstraintProcessor
+import modules.subject.model.CollectibleConstraintSpec
 import modules.util.messages.{ERR, OK, Status}
 
 /**
@@ -37,10 +38,11 @@ trait CollectibleConstraintProcessor extends ConstraintProcessor {
    */
   override def isValidConstraint(constraint: Constraint): Status = {
     constraint.c match {
+      case ConstraintType.HasProperty => isHasPropertyConstraint(constraint.v1, constraint.v2, CollectibleConstraintSpec.hasPropertyTypes)
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case ConstraintType.UsesPlugin => isUsesPluginConstraint(constraint.v1, constraint.v2)
       case ConstraintType.CanContain => isCanContainConstraint(constraint.v1, constraint.v2)
-      case _ => ERR("Invalid Asset Constraint Rule")
+      case _ => ERR("Invalid Constraint Rule")
     }
   }
 

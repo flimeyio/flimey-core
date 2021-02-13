@@ -25,7 +25,7 @@
     <div class="card relative-container tile">
         @if(ViewerAssertion.canEdit(asset.viewers, ticket.accessRights)) {
             <div class="float-top-right">
-                <a href="@routes.AssetController.getAssetEditor(asset.asset.typeId, asset.asset.id)">
+                <a href="@routes.AssetController.getAssetEditor(asset.asset.typeVersionId, asset.asset.id)">
                     <i class="material-icons">create</i>
                 </a>
             </div>

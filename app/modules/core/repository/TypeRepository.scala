@@ -192,9 +192,10 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
    * @return Future Option[ExtendedEntityType]
    */
   def getExtended(typeVersionId: Long, derivesFrom: Option[String] = None): Future[Option[ExtendedEntityType]] = {
-    var query = typeVersions.filter(_.id === typeVersionId) join types joinLeft constraints on (_._1.id === _.typeVersionId)
+    var query = typeVersions.filter(_.id === typeVersionId) join types on (_.typeId === _.id) joinLeft
+      constraints on (_._1.id === _.typeVersionId)
     if (derivesFrom.isDefined) {
-      query = typeVersions.filter(_.id === typeVersionId) join types.filter(_.typeOf === derivesFrom.get) joinLeft
+      query = typeVersions.filter(_.id === typeVersionId) join types.filter(_.typeOf === derivesFrom.get) on (_.typeId === _.id) joinLeft
         constraints on (_._1.id === _.typeVersionId)
     }
     db.run((for {

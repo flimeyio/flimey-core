@@ -22,11 +22,12 @@
 @import views.html.forms.core.new_type_form
 @import views.html.components.core.type_block
 @import modules.core.model.VersionedEntityType
+@import views.html.components.utils.navbar_category
 @(allTypes: Seq[VersionedEntityType],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Model Types"), routes.ModelController.searchEntityType)
+    @navbar_category(Seq("Model Types"))
 }{
     @message_box_error(msg)
     @new_type_form()

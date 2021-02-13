@@ -34,7 +34,7 @@
     }
     <p>status: @data.collection.status</p>
     <p>created at: @data.collection.created.toString</p>
-    @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeId, c.properties))))
+    @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeVersionId, c.properties))))
     <div class="meta-viewport"></div>
     @viewer_tag_box(data.viewers)
 </div>

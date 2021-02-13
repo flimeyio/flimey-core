@@ -137,7 +137,7 @@ class CollectionController @Inject()(cc: ControllerComponents,
         data <- collectionService.getCollection(collectionId)
         childTypes <- modelCollectionService.getChildren(data._1.collection.typeVersionId)
       } yield {
-        Ok(views.html.container.subject.collection_detail_page(data._2, childTypes, data._1, error))
+        Ok(views.html.container.subject.collection_detail_page(data._2, childTypes.map(_.entityType), data._1, error))
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)

@@ -68,7 +68,7 @@ class ModelController @Inject()(cc: ControllerComponents,
   def index: Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        entityTypeService.getAllTypes() map (types => {
+        entityTypeService.getAllVersions() map (types => {
           val error = request.flash.get("error")
           Ok(views.html.container.core.model_overview(types, error))
         }) recoverWith {
@@ -180,7 +180,7 @@ class ModelController @Inject()(cc: ControllerComponents,
       withTicket {
         implicit ticket =>
           entityTypeService.getExtendedType(versionId) map (extendedEntityType => {
-            var preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
+            val preparedConstraintForm = NewConstraintForm.form.fill(NewConstraintForm.Data("", "", ""))
             val error = request.flash.get("error")
             Ok(views.html.container.core.model_version_editor(extendedEntityType, preparedConstraintForm, error))
           }) recoverWith {
@@ -234,16 +234,16 @@ class ModelController @Inject()(cc: ControllerComponents,
         implicit ticket =>
           NewConstraintForm.form.bindFromRequest fold(
             errorForm => {
-              Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing("error" -> "Invalid form data!"))
+              Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing("error" -> "Invalid form data!"))
             },
             data => {
-              getService(typeId) flatMap (_.addConstraint(data.c, data.v1, data.v2, typeId) map { id =>
-                Redirect(routes.ModelController.getTypeEditor(typeId))
+              getService(typeId) flatMap (_.addConstraint(data.c, data.v1, data.v2, versionId) map { id =>
+                Redirect(routes.ModelController.getVersionEditor(typeId, versionId))
               })
             } recoverWith {
               case e => {
                 logger.error(e.getMessage, e)
-                Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing("error" -> e.getMessage))
+                Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing("error" -> e.getMessage))
               }
             })
       }
@@ -261,11 +261,11 @@ class ModelController @Inject()(cc: ControllerComponents,
       withTicket {
         implicit ticket =>
           getService(typeId) flatMap (_.deleteConstraint(constraintId) map { _ =>
-            Redirect(routes.ModelController.getTypeEditor(typeId))
+            Redirect(routes.ModelController.getVersionEditor(typeId, versionId))
           }) recoverWith {
             case e => {
               logger.error(e.getMessage, e)
-              Future.successful(Redirect(routes.ModelController.getTypeEditor(typeId)).flashing(("error" -> e.getMessage)))
+              Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing(("error" -> e.getMessage)))
             }
           }
       }

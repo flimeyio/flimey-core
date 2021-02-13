@@ -34,8 +34,8 @@ create table entity_type
 create table type_version
 (
     id      SERIAL NOT NULL PRIMARY KEY,
-    type_id BIGINT NOT NULL UNIQUE,
-    version BIGINT NULL,
+    type_id BIGINT NOT NULL,
+    version BIGINT NOT NULL,
     FOREIGN KEY (type_id) REFERENCES entity_type (id)
 );
 
