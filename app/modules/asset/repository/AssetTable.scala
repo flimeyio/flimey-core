@@ -31,8 +31,8 @@ class AssetTable(tag: Tag) extends Table[Asset](tag, "asset") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
   def entityId = column[Long]("entity_id")
-  def typeId = column[Long]("type_id")
+  def typeVersionId = column[Long]("type_version_id")
 
-  override def * = (id, entityId, typeId) <> (Asset.tupled, Asset.unapply)
+  override def * = (id, entityId, typeVersionId) <> (Asset.tupled, Asset.unapply)
 
 }
