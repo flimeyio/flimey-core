@@ -113,21 +113,36 @@ class ModelController @Inject()(cc: ControllerComponents,
   def addVersion(typeId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Not implemented yet"))
-      }
-  }
-
-  def deleteVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
-    implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Not implemented yet"))
+        getService(typeId) flatMap (_.addVersion(typeId) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e => {
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+        }
       }
   }
 
   def forkVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
-        Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Not implemented yet"))
+        getService(typeId) flatMap (_.forkVersion(versionId) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e => {
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+        }
+      }
+  }
+
+  def deleteVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        getService(typeId) flatMap (_.deleteVersion(versionId) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e => {
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+        }
       }
   }
 
