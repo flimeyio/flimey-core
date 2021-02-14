@@ -25,7 +25,7 @@ import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.Constraint
-import modules.core.repository.{FlimeyEntityRepository, TypeRepository}
+import modules.core.repository.FlimeyEntityRepository
 import modules.subject.model._
 import modules.subject.repository.CollectibleRepository
 import modules.user.util.ViewerAssertion
@@ -37,12 +37,13 @@ import scala.concurrent.Future
  * The service class to provide safe functionality to work with [[modules.subject.model.Collectible Collectibles]].
  * <p> Normally, this class is used with dependency injection in controller classes or as helper in other services.
  *
- * @param typeRepository        injected [[modules.core.repository.TypeRepository TypeRepository]]
- * @param collectibleRepository injected [[modules.subject.repository.CollectibleRepository CollectibleRepository]]
- * @param collectionService     injected [[modules.subject.service.CollectionService CollectionService]]
+ * @param collectibleRepository   injected [[modules.subject.repository.CollectibleRepository CollectibleRepository]]
+ * @param entityRepository        injected [[modules.core.repository.FlimeyEntityRepository FlimeyEntityRepository]]
+ * @param collectionService       injected [[modules.subject.service.CollectionService CollectionService]]
+ * @param modelCollectibleService injected [[modules.subject.service.ModelCollectibleService ModelCollectibleService]]
+ * @param modelCollectionService  injected [[modules.subject.service.ModelCollectionService ModelCollectionService]]
  */
-class CollectibleService @Inject()(typeRepository: TypeRepository,
-                                   collectibleRepository: CollectibleRepository,
+class CollectibleService @Inject()(collectibleRepository: CollectibleRepository,
                                    collectionService: CollectionService,
                                    modelCollectibleService: ModelCollectibleService,
                                    modelCollectionService: ModelCollectionService,
@@ -50,13 +51,15 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
 
   /**
    * Add a new [[modules.subject.model.Collectible Collectible]].
+   * <p> To create the Collectible, the newest available [[modules.core.model.TypeVersion TypeVersion]] of the selected
+   * [[modules.core.model.EntityType EntityType]].
    * <p> Fails without WORKER rights.
    * <p> Requires EDITOR rights in the parent Collection.
    * <p> This is a safe implementation and can be used by controller classes.
    *
    * @param collectionId id of the parent [[modules.subject.model.Collection Collection]]
    * @param typeId       id of the Collectible [[modules.core.model.EntityType]]
-   * @param propertyData of the new Collectible (must complete the Collectible EntityType model)
+   * @param propertyData of the new Collectible (must complete the Collectible TypeVersion model)
    * @param ticket       implicit authentication ticket
    * @return Future[Unit]
    */
@@ -69,7 +72,7 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
           collectionTypeData <- modelCollectionService.getExtendedType(collectionHeader.collection.typeVersionId)
           collectibleTypeData <- modelCollectibleService.getLatestExtendedType(typeId)
         } yield {
-          if (! collectionTypeData.entityType.active) throw new Exception("The selected Collection Type is not defined or active")
+          if (!collectionTypeData.entityType.active) throw new Exception("The selected Collection Type is not defined or active")
           if (!collectibleTypeData.entityType.active) throw new Exception("The selected Collectible Type is not defined or active")
           val extensionStatus = CollectibleLogic.canBeChildOf(collectibleTypeData.entityType.value, collectionTypeData.constraints)
           if (!extensionStatus.valid) extensionStatus.throwError
@@ -134,6 +137,7 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> This is a safe implementation and can be used by controller classes.
    *
    * @param collectibleId id of the Collectible to update
+   * @param newState      state string value
    * @param ticket        implicit authentication ticket
    * @return Future[Unit]
    */
@@ -205,7 +209,7 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> This is a safe implementation and can be used by controller classes.
    * <p> Fails without WORKER rights
    *
-   * @param constraints model of an CollectibleType
+   * @param constraints model of a [[modules.core.model.TypeVersion TypeVersion]]
    * @param ticket      implicit authentication ticket
    * @return Seq[(String, String)] (property key -> data type)
    */
@@ -219,7 +223,7 @@ class CollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> This is a safe implementation and can be used by controller classes.
    * <p> Fails without WORKER rights
    *
-   * @param constraints model of an CollectibleType
+   * @param constraints model of a [[modules.core.model.TypeVersion TypeVersion]]
    * @param ticket      implicit authentication ticket
    * @return Map[String, String] (property key -> default value)
    */

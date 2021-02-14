@@ -93,6 +93,16 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
     } yield ()).transactionally)
   }
 
+  /**
+   * Delete a [[modules.core.model.TypeVersion TypeVersion]] of a [[modules.subject.model.Collectible Collectible]].
+   * <p> To ensure integrity, this operation deletes:
+   * <p> 1. all [[modules.core.model.Constraint Constraints]] of the type.
+   * <p> 2. all [[modules.core.model.FlimeyEntity Entities (Collectibles)]] which use this type...
+   * <p> 3. ... with all their [[modules.core.model.Property Properties]].
+   *
+   * @param typeVersionId of the TypeVersion to delete
+   * @return Future[Unit]
+   */
   def deleteCollectibleTypeVersion(typeVersionId: Long): Future[Unit] = {
     val collectiblesOfTypeEntityIds = collectibles.filter(_.typeVersionId === typeVersionId).map(_.entityId)
     db.run((for {
@@ -145,9 +155,9 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
       typeResult <- db.run(typeQuery.result)
     } yield {
       val collectibleWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2)).headOption
-      if(collectibleWithProperties.isEmpty){
+      if (collectibleWithProperties.isEmpty) {
         None
-      }else {
+      } else {
         val collectible = collectibleWithProperties.get._1
         //Note: only viewers of that particular collectible (parent) are in the result
         val viewerRelations = viewerResult.map(value => (value._2, value._1._2))
@@ -162,8 +172,8 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
   /**
    * Update the state attribute of a [[modules.subject.model.Collectible Collectible]].
    *
-   * @param collectibleId if of the collectible.
-   * @param newState new [[modules.subject.model.SubjectState]] value
+   * @param collectibleId id of the collectible.
+   * @param newState      new [[modules.subject.model.SubjectState]] value
    * @return Future[Int]
    */
   def updateState(collectibleId: Long, newState: SubjectState.State): Future[Int] = {
@@ -180,7 +190,7 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
    * [[modules.core.repository.ConstraintRepository#addConstraint]]) will lead to loosing the integrity of the type
    * system. </strong>
    *
-   * @param typeVersionId              id of the TypeVersion (of a Collectible) to add the new Constraints to.
+   * @param typeVersionId       id of the [[modules.core.model.TypeVersion TypeVersion]] (of a Collectible) to add the new Constraints to.
    * @param propertyConstraints new Constraints of HasProperty type
    * @param otherConstraints    new Constraints NOT of HasProperty type
    * @return Future[Unit]
@@ -208,7 +218,7 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
    * calling [[modules.core.repository.ConstraintRepository#deleteConstraint]]) the type system of the database will
    * be damaged and the system becomes unusable!</strong>
    *
-   * @param typeVersionId              id of the parent TypeVersion
+   * @param typeVersionId       id of the parent [[modules.core.model.TypeVersion TypeVersion]]
    * @param propertyConstraints Constraints to delete of the HasProperty type
    * @param otherConstraints    Constraints to delete NOT of the HasProperty type
    * @return Future[Unit]

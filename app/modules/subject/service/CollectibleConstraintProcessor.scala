@@ -30,7 +30,7 @@ trait CollectibleConstraintProcessor extends ConstraintProcessor {
 
   /**
    * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
-   * [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]]
+   * [[modules.subject.model.Collectible Collectible]] [[modules.core.model.TypeVersion TypeVersion]].
    * No semantic analysis is done!
    *
    * @param constraint to check

@@ -30,7 +30,7 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
 
   /**
    * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
-   * [[modules.subject.model.Collection Collection]]Type
+   * [[modules.subject.model.Collection Collection]] [[modules.core.model.TypeVersion TypeVersion]]
    * No semantic analysis is done!
    *
    * @param constraint to check

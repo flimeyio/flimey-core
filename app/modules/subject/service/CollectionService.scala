@@ -55,8 +55,11 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
 
   /**
    * Add a new [[modules.subject.model.Collection Collection]].
+   * <p> A new Collection will always be created using the newest [[modules.core.model.TypeVersion TypeVersion]] available
+   * for the specified [[modules.core.model.EntityType EntityType]].
    * <p> Invalid and duplicate names in maintainers, editors and viewers is filtered out and does not lead to exceptions.
-   * <p> <strong> Note: a User (defined by his ticket) can create Collections he is unable to access himself (by assigning other Groups)</strong>
+   * <p> <strong> Note: a User (defined by his ticket) can create Collections he is unable to access himself (by assigning
+   * other [[modules.user.model.Group Groups]]</strong>
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -156,8 +159,9 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * <p> The requesting User must be EDITOR.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param collectionId       id of the Collection to update
-   * @param ticket             implicit authentication ticket
+   * @param collectionId id of the Collection to update
+   * @param newState     state string value
+   * @param ticket       implicit authentication ticket
    * @return Future[Unit]
    */
   def updateState(collectionId: Long, newState: String)(implicit ticket: Ticket): Future[Int] = {
@@ -166,7 +170,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
       getSlimCollection(collectionId) flatMap (collectionHeader => {
         //Check if the User can edit this Collection
         ViewerAssertion.assertEdit(collectionHeader.viewers)
-        val state = CollectionLogic.parseState(newState);
+        val state = CollectionLogic.parseState(newState)
         //FIXME if state is set to ARCHIVED, the whole collection must be added to the archive
         val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
         if (!updateStatus.valid) updateStatus.throwError
@@ -235,11 +239,13 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param groupSelector groups which must contain the returned Collection data (must be partition of ticket Groups)
+   * @param groupSelector [[modules.user.model.Group Groups]] which must contain the returned Collection data
+   *                      (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
-   * @return Future Seq[ExtendedCollection]
+   * @return Future Seq[CollectionHeader]
    */
-  def getCollectionHeaders(typeSelector: Option[String] = None, groupSelector: Option[String] = None)(implicit ticket: Ticket): Future[Seq[CollectionHeader]] = {
+  def getCollectionHeaders(typeSelector: Option[String] = None, groupSelector: Option[String] = None)(implicit ticket: Ticket):
+  Future[Seq[CollectionHeader]] = {
     try {
       RoleAssertion.assertWorker
       var accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
@@ -261,7 +267,8 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param groupSelector groups which must contain the returned Collection (must be partition of ticket Groups)
+   * @param groupSelector [[modules.user.model.Group Groups]] which must contain the returned Collection
+   *                      (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future[CollectionTypeComplex]
    */
@@ -306,7 +313,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
    * <p> This is a safe implementation and can be used by controller classes.
    * <p> Fails without WORKER rights
    *
-   * @param constraints model of an CollectionType
+   * @param constraints model of an [[modules.core.model.TypeVersion TypeVersion]]
    * @param ticket      implicit authentication ticket
    * @return Seq[(String, String)] (property key -> data type)
    */
@@ -328,7 +335,5 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
     RoleAssertion.assertWorker
     CollectionLogic.getObligatoryPropertyKeys(constraints)
   }
-
-
 
 }

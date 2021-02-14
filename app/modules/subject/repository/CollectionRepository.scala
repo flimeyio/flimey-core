@@ -92,11 +92,11 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   }
 
   /**
-   * TODO add doc
+   * Update the state attribute of a [[modules.subject.model.Collection Collection]]
    *
-   * @param collectionId
-   * @param newState
-   * @return
+   * @param collectionId id of the Collection to update
+   * @param newState     new state string state value
+   * @return Future[Int]
    */
   def updateState(collectionId: Long, newState: SubjectState.State): Future[Int] = {
     db.run(collections.filter(_.id === collectionId).map(_.status).update(newState.toString))
@@ -185,7 +185,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     //fetch all collectibles with properties
     val collectibleQuery = collectionQuery join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
     val collectibleTypeQuery = collectionQuery join collectibles on (_.id === _.collectionId) join
-      typeVersions on (_._2.typeVersionId === _.id) join entityTypes on (_._2.typeId=== _.id)
+      typeVersions on (_._2.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
 
     for {
       propertyResult <- db.run(propertyQuery.result)
@@ -290,6 +290,17 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     } yield ()).transactionally)
   }
 
+  /**
+   * Delete a [[modules.core.model.TypeVersion TypeVersion]] of a [[modules.subject.model.Collection Collection]].
+   * <p> To ensure integrity, this operation deletes:
+   * <p> 1. all [[modules.core.model.Constraint Constraints]] of the type.
+   * <p> 2. all [[modules.core.model.FlimeyEntity Entities (Collections)]] which use this type...
+   * <p> 3. ... with all their [[modules.core.model.Property Properties]].
+   * <p> 4. all to Entities of this type associated [[modules.core.model.Viewer Viewers]].
+   *
+   * @param typeVersionId id of the [[modules.core.model.TypeVersion TypeVersion]]
+   * @return Future[Unit]
+   */
   def deleteCollectionTypeVersion(typeVersionId: Long): Future[Unit] = {
     val collectionsToDeleteEntityIds = collections.filter(_.typeVersionId === typeVersionId).map(_.entityId)
     db.run((for {
@@ -303,7 +314,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
   }
 
   /**
-   * Add new [[modules.core.model.Constraint Constraints]] to a [[modules.core.model.FlimeyEntity FlimeyEntity]] of
+   * Add new [[modules.core.model.Constraint Constraints]] to a [[modules.core.model.TypeVersion TypeVersion]] of
    * the [[modules.subject.model.Collection Collection]] subtype.
    * <p> The id of all new Constraints must be set to 0 to enable auto increment.
    * <p> This method makes a difference between new propertyConstraints (Constraints of the HasProperty type) and other
@@ -340,7 +351,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * calling [[modules.core.repository.ConstraintRepository#deleteConstraint]]) the type system of the database will
    * be damaged and the system becomes unusable!</strong>
    *
-   * @param typeVersionId       id of the parent TypeVersion
+   * @param typeVersionId       id of the parent [[modules.core.model.TypeVersion TypeVersion]]
    * @param propertyConstraints Constraints to delete of the HasProperty type
    * @param otherConstraints    Constraints to delete NOT of the HasProperty type
    * @return Future[Unit]
