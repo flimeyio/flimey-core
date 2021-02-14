@@ -31,3 +31,11 @@ Contributing to flimey implies:
 * Write code as much as you want. Several weeks with no commits? No problem at all
 * Choose what you can do best, UI, testing, CI/CD, core development - everyone can help
 * No knowledge in Scala? Start by writing simple tests or style the UI - just learn Scala by doing
+* If flimey somehow becomes a commerical tool in the future or results in a startup, your contributions will be taken into account
+
+### What We Need Right Now
+
+* Support for UI development focusing on responsive design, usability and accessability
+* Support for documentation management, to review scaladoc comments, maintain the wiki and create and maintain tutorials for developers and end-users
+* Support for testing with focus on unit and integration tests as well als performance and load testing
+* Support for the core development with feature implementation, bug fixing and maintaining the exisiting code base
