@@ -286,5 +286,3 @@ class CollectibleController @Inject()(cc: ControllerComponents,
   }
 
 }
-
-

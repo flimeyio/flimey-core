@@ -276,7 +276,7 @@ class CollectionController @Inject()(cc: ControllerComponents,
 
   /**
    * Endpoint to get an editor to create new [[modules.subject.model.Collection Collections]].
-   * <p> The Editor will only accept Collections of the previously selected Entity(Collection)Type.
+   * <p> The Editor will only accept Collections of the previously selected [[modules.core.model.EntityType EntityType]].
    *
    * @return new collection editor page
    */
@@ -292,9 +292,11 @@ class CollectionController @Inject()(cc: ControllerComponents,
 
   /**
    * Endpoint to add a new [[modules.subject.model.Collection Collection]].
-   * <p> The Collection must be of the selected Collection [[modules.core.model.EntityType EntityType]].
+   * <p> The Collection must be of the selected [[modules.core.model.EntityType EntityTypes]].
    * <p> The incoming form data seq must be in the same order as the previously sent property keys.
    *
+   * @see [[modules.subject.service.CollectionService#addCollection]]
+   * @param typeId id of the parent EntityType
    * @return new collection editor page (clean or with errors)
    */
   def addNewCollection(typeId: Long): Action[AnyContent] =
@@ -327,8 +329,7 @@ class CollectionController @Inject()(cc: ControllerComponents,
    * @return new entity editor result future (view)
    */
   private def newCollectionEditorFactory(typeId: Long, form: Form[EntityForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
-                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
-  = {
+                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       groups <- groupService.getAllGroups
       typeData <- modelCollectionService.getLatestExtendedType(typeId)
@@ -383,5 +384,3 @@ class CollectionController @Inject()(cc: ControllerComponents,
   }
 
 }
-
-

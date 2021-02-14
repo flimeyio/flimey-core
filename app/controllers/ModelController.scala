@@ -37,9 +37,12 @@ import scala.concurrent.Future
 /**
  * The ModelAssetController responsible for all endpoints regarding asset type creation and management
  *
- * @param cc                 injected ControllerComponents
- * @param withAuthentication injected AuthenticationAction
- * @param modelAssetService  injected ModelService for business logic
+ * @param cc                      injected ControllerComponents
+ * @param withAuthentication      injected AuthenticationAction
+ * @param modelAssetService       injected [[modules.asset.service.ModelAssetService ModelAssetService]] for Asset model logic
+ * @param modelCollectionService  injected [[modules.subject.service.ModelCollectionService ModelCollectionService]] for Collection model logic
+ * @param modelCollectibleService injected [[modules.subject.service.ModelCollectibleService MidelCollectibleService]] for Collectible model logic
+ * @param entityTypeService       injected [[modules.core.service.EntityTypeService EntityTypeService]] for generic type logic
  */
 @Singleton
 class ModelController @Inject()(cc: ControllerComponents,
@@ -50,6 +53,16 @@ class ModelController @Inject()(cc: ControllerComponents,
                                 entityTypeService: EntityTypeService)
   extends AbstractController(cc) with I18nSupport with Logging with Authentication {
 
+  /**
+   * Private hub method to decide on the used ModelService strategy based on the type of the given id.
+   * <p> This works because all ModelServices implement the [[modules.core.service.ModelEntityService]] ModelEntityService trait
+   * and all methods inside this controller only use the interface defined by this trait.
+   * <p> Depending on the given type, the returned ModelService will provide type specific service functionality.
+   *
+   * @param typeId id of the [[modules.core.model.EntityType EntityType]]
+   * @param ticket implicit authentication ticket
+   * @return Future[ModelEntityService] (type specific implementation)
+   */
   private def getService(typeId: Long)(implicit ticket: Ticket): Future[ModelEntityService] = {
     entityTypeService.getType(typeId) map {
       case t if t.isEmpty => throw new Exception("No such EntityType found")
@@ -72,16 +85,15 @@ class ModelController @Inject()(cc: ControllerComponents,
           val error = request.flash.get("error")
           Ok(views.html.container.core.model_overview(types, error))
         }) recoverWith {
-          case e => {
+          case e =>
             logger.error(e.getMessage, e)
             Future.successful(Ok(views.html.container.core.model_overview(Seq(), Option(e.getMessage))))
-          }
         }
       }
   }
 
   /**
-   * Endpoint to add a new EntityType to the model.
+   * Endpoint to add a new [[modules.core.model.EntityType EntityType]] to the model.
    *
    * @return model overview page with optional error message
    */
@@ -89,11 +101,11 @@ class ModelController @Inject()(cc: ControllerComponents,
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket { implicit ticket =>
         NewTypeForm.form.bindFromRequest fold(
-          errorForm => {
+          _ => {
             Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> "Invalid form data!"))
           },
           data => {
-            val parentName = data.typeOf;
+            val parentName = data.typeOf
             if (!Seq(AssetConstraintSpec.ASSET, CollectionConstraintSpec.COLLECTION, CollectibleConstraintSpec.COLLECTIBLE).contains(parentName)) {
               Future.failed(new Exception("Select a valid parent type!"))
             } else {
@@ -102,55 +114,79 @@ class ModelController @Inject()(cc: ControllerComponents,
               }
             }
           }) recoverWith {
-          case e => {
+          case e =>
             logger.error(e.getMessage, e)
             Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
-          }
-        }
-      }
-  }
-
-  def addVersion(typeId: Long): Action[AnyContent] = withAuthentication.async {
-    implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        getService(typeId) flatMap (_.addVersion(typeId) map (_ => Redirect(routes.ModelController.index())))
-      } recoverWith {
-        case e => {
-          logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
-        }
-      }
-  }
-
-  def forkVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
-    implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        getService(typeId) flatMap (_.forkVersion(versionId) map (_ => Redirect(routes.ModelController.index())))
-      } recoverWith {
-        case e => {
-          logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
-        }
-      }
-  }
-
-  def deleteVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
-    implicit request: AuthenticatedRequest[AnyContent] =>
-      withTicket { implicit ticket =>
-        getService(typeId) flatMap (_.deleteVersion(versionId) map (_ => Redirect(routes.ModelController.index())))
-      } recoverWith {
-        case e => {
-          logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
         }
       }
   }
 
   /**
-   * Endpoint to delete an EntityType from the model.
-   * <p> Further actions depend on the specific EntityType
+   * Endpoint to add a new [[modules.core.model.TypeVersion TypeVersion]] of a specified
+   * [[modules.core.model.EntityType EntityType]].
    *
-   * @param id id of the type to delete
+   * @param typeId id of the parent EntityType
+   * @return redirect to ModelController.index()
+   */
+  def addVersion(typeId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        getService(typeId) flatMap (_.addVersion(typeId) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+      }
+  }
+
+  /**
+   * Endpoint to fork (clone) a already existing [[modules.core.model.TypeVersion TypeVersion]] of a specified
+   * [[modules.core.model.EntityType EntityType]].
+   * <p> This will create a new TypeVersion with the same data but a higher version number.
+   *
+   * @see [[modules.core.service.ModelEntityService#forkVersion]]
+   * @param typeId    id of the parent EntityType
+   * @param versionId id of the TypeVersion to fork
+   * @return redirect to ModelController.index()
+   */
+  def forkVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        getService(typeId) flatMap (_.forkVersion(versionId) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+      }
+  }
+
+  /**
+   * Endpoint to delete a [[modules.core.model.TypeVersion TypeVersion]].
+   * <p> <strong>This is a very destructive operation!</strong>
+   *
+   * @see [[modules.core.service.ModelEntityService#deleteVersion]]
+   * @param typeId    id of the parent [[modules.core.model.EntityType EntityType]]
+   * @param versionId id of the TypeVersion to delete
+   * @return redirect to ModelController.index()
+   */
+  def deleteVersion(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
+    implicit request: AuthenticatedRequest[AnyContent] =>
+      withTicket { implicit ticket =>
+        getService(typeId) flatMap (_.deleteVersion(versionId) map (_ => Redirect(routes.ModelController.index())))
+      } recoverWith {
+        case e =>
+          logger.error(e.getMessage, e)
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
+      }
+  }
+
+  /**
+   * Endpoint to delete an [[modules.core.model.EntityType EntityType]] from the model.
+   * <p> Further actions depend on the specific EntityType
+   * <p> <strong>This is a very destructive operation!</strong>
+   *
+   * @see [[modules.core.service.ModelEntityService#deleteType]]
+   * @param id id of the EntityType to delete
    * @return model overview page with optional error message
    */
   def deleteType(id: Long): Action[AnyContent] = withAuthentication.async {
@@ -158,19 +194,17 @@ class ModelController @Inject()(cc: ControllerComponents,
       withTicket { implicit ticket =>
         getService(id) flatMap (_.deleteType(id) map (_ => Redirect(routes.ModelController.index())))
       } recoverWith {
-        case e => {
+        case e =>
           logger.error(e.getMessage, e)
           Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
-        }
       }
   }
 
   /**
-   * Endpoint to get the model overview with open constraint editor.
+   * Endpoint to get the open [[modules.core.model.EntityType EntityType]] editor.
    *
    * @param typeId of the EntityType which shall be edited
    * @return model overview page with open editor and optional error message
-   *
    */
   def getTypeEditor(typeId: Long): Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
     withTicket { implicit ticket =>
@@ -182,14 +216,21 @@ class ModelController @Inject()(cc: ControllerComponents,
         } else {
           Redirect(routes.ModelController.index()).flashing("error" -> "Entity Type not found")
         }) recoverWith {
-        case e: Throwable => {
+        case e: Throwable =>
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ModelController.index()).flashing(("error" -> e.getMessage)))
-        }
+          Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
       }
     }
   }
 
+  /**
+   * Endpoint to get the open [[modules.core.model.Constraint Constraint]] editor of a specified
+   * [[modules.core.model.TypeVersion TypeVersion]].
+   *
+   * @param typeId    of the [[modules.core.model.EntityType EntityType]]
+   * @param versionId of the TypeVersion to edit
+   * @return model overview page with open editor and optional error message
+   */
   def getVersionEditor(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket {
@@ -199,16 +240,15 @@ class ModelController @Inject()(cc: ControllerComponents,
             val error = request.flash.get("error")
             Ok(views.html.container.core.model_version_editor(extendedEntityType, preparedConstraintForm, error))
           }) recoverWith {
-            case e: Throwable => {
+            case e: Throwable =>
               logger.error(e.getMessage, e)
-              Future.successful(Redirect(routes.ModelController.index()).flashing(("error" -> e.getMessage)))
-            }
+              Future.successful(Redirect(routes.ModelController.index()).flashing("error" -> e.getMessage))
           }
       }
   }
 
   /**
-   * Endpoint to change an EntityType (update activation or value).
+   * Endpoint to change an [[modules.core.model.EntityType EntityType]] (update activation or value).
    * <p> Further actions depend on the specific EntityType
    *
    * @param id of the EntityType to change (is not transmitted by the form)
@@ -219,8 +259,8 @@ class ModelController @Inject()(cc: ControllerComponents,
       withTicket {
         implicit ticket =>
           EditTypeForm.form.bindFromRequest fold(
-            errorForm => {
-              //ignore form input here, just show an error message, maybe a future FIXME
+            _ => {
+              //ignore form input here, just show an error message
               Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> "Invalid form data!"))
             },
             data => {
@@ -228,46 +268,48 @@ class ModelController @Inject()(cc: ControllerComponents,
                 Redirect(routes.ModelController.getTypeEditor(id))
               })
             }) recoverWith {
-            case e => {
+            case e =>
               logger.error(e.getMessage, e)
               Future.successful(Redirect(routes.ModelController.getTypeEditor(id)).flashing("error" -> e.getMessage))
-            }
           }
       }
   }
 
   /**
-   * Endpoint to add a new AssetConstraint to the specified AssetType
+   * Endpoint to add a new [[modules.core.model.Constraint Constraint]] to the specified [[modules.core.model.TypeVersion TypeVersion]]
    * <p> Further actions depend on the specific EntityType
    *
-   * @param typeId id of the parent EntityType
-   * @return redirects to type editor with optional form presets and error message
+   * @param typeId    id of the parent [[modules.core.model.EntityType EntityType]]
+   * @param versionId id of the TypeVersion to edit
+   * @return redirects to constraint editor with optional form presets and error message
    */
   def addConstraint(typeId: Long, versionId: Long): Action[AnyContent] = withAuthentication.async {
     implicit request: AuthenticatedRequest[AnyContent] =>
       withTicket {
         implicit ticket =>
           NewConstraintForm.form.bindFromRequest fold(
-            errorForm => {
+            _ => {
               Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing("error" -> "Invalid form data!"))
             },
             data => {
-              getService(typeId) flatMap (_.addConstraint(data.c, data.v1, data.v2, versionId) map { id =>
+              getService(typeId) flatMap (_.addConstraint(data.c, data.v1, data.v2, versionId) map { _ =>
                 Redirect(routes.ModelController.getVersionEditor(typeId, versionId))
               })
             } recoverWith {
-              case e => {
+              case e =>
                 logger.error(e.getMessage, e)
                 Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing("error" -> e.getMessage))
-              }
             })
       }
   }
 
   /**
-   * Endpoint to delete an Constraint
+   * Endpoint to delete a [[modules.core.model.Constraint Constraint]] of the specified [[modules.core.model.TypeVersion TypeVersion]]
+   * <p> <strong>This is a very destructive operation!</strong>
    *
-   * @param typeId       id of the parent EntityType
+   * @see [[modules.core.service.ModelEntityService#deleteConstraint]]
+   * @param typeId       id of the parent [[modules.core.model.EntityType EntityType]]
+   * @param versionId    id of the TypeVersion to edit
    * @param constraintId id of the Constraint to delete
    * @return redirects to getTypeEditor with optional error message
    */
@@ -278,10 +320,9 @@ class ModelController @Inject()(cc: ControllerComponents,
           getService(typeId) flatMap (_.deleteConstraint(constraintId) map { _ =>
             Redirect(routes.ModelController.getVersionEditor(typeId, versionId))
           }) recoverWith {
-            case e => {
+            case e =>
               logger.error(e.getMessage, e)
-              Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing(("error" -> e.getMessage)))
-            }
+              Future.successful(Redirect(routes.ModelController.getVersionEditor(typeId, versionId)).flashing("error" -> e.getMessage))
           }
       }
   }
