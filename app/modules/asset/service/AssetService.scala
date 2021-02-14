@@ -19,7 +19,7 @@
 package modules.asset.service
 
 import com.google.inject.Inject
-import modules.asset.model.{Asset, AssetConstraintSpec, AssetTypeCombination, ExtendedAsset}
+import modules.asset.model.{Asset, AssetTypeCombination, ExtendedAsset}
 import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
@@ -33,15 +33,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
- * Service class to provide SAFE business logic for Assets and their Properties.
+ * Service class to provide SAFE business logic for [[modules.asset.model.Asset Assets]] and their
+ * [[modules.core.model.Property Properties]].
  * This class is normally used by dependency injection inside controller endpoints.
  *
- * @param typeRepository     injected db interface for AssetTypes
+ * @param typeRepository     injected db interface for [[modules.core.model.EntityType EntityTypes]]
  * @param assetRepository    injected db interface for Assets
- * @param propertyRepository injected db interface for (Asset)Properties
- * @param entityRepository
- * @param modelAssetService
- * @param groupService       injected service class to access Group functionality
+ * @param propertyRepository injected db interface for Properties
+ * @param entityRepository   injected db interface for [[modules.core.model.FlimeyEntity Entities]]
+ * @param modelAssetService  injected service class for Asset specific EntityType models
+ * @param groupService       injected service class to access [[modules.user.model.Group Group]] functionality
  */
 class AssetService @Inject()(typeRepository: TypeRepository,
                              assetRepository: AssetRepository,
@@ -51,14 +52,14 @@ class AssetService @Inject()(typeRepository: TypeRepository,
                              groupService: GroupService) {
 
   /**
-   * Add a new Asset.<br />
-   * This is a safe implementation and can be used by controller classes.
+   * Add a new [[modules.asset.model.Asset Asset]].
    * <p> Fails without WORKER rights.
-   * <p> Note: a User (defined by his ticket) can create Assets he is unable to access himself (by assigning other Groups)
+   * <p> Note: a [[modules.user.model.User User]] (defined by his ticket) can create Assets he is unable to access himself
+   * (by assigning other [[modules.user.model.Group Groups]])
    * <p> Invalid and duplicate names in maintainers, editors and viewers is filtered out and does not lead to exceptions.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeId       id of the AssetType
+   * @param typeId       id of the EntityType
    * @param propertyData of the new Asset (must complete the AssetType model)
    * @param maintainers  names of Groups to serve as maintainers
    * @param editors      names of Groups to serve as editors
@@ -70,15 +71,14 @@ class AssetService @Inject()(typeRepository: TypeRepository,
                viewers: Seq[String])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
-      typeRepository.getComplete(typeId, Some(AssetConstraintSpec.ASSET)) flatMap (typeData => {
-        val (head, constraints) = typeData
-        if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not defined or active")
-        val properties = AssetLogic.derivePropertiesFromRawData(constraints, propertyData)
-        val configurationStatus = AssetLogic.isModelConfiguration(constraints, properties)
+      modelAssetService.getLatestExtendedType(typeId) flatMap (extendedEntityType => {
+        if (!extendedEntityType.entityType.active) throw new Exception("The selected Asset Type is not active")
+        val properties = AssetLogic.derivePropertiesFromRawData(extendedEntityType.constraints, propertyData)
+        val configurationStatus = AssetLogic.isModelConfiguration(extendedEntityType.constraints, properties)
         if (!configurationStatus.valid) configurationStatus.throwError
         groupService.getAllGroups map (allGroups => {
           val aViewers = AssetLogic.deriveViewersFromData(maintainers :+ GroupStats.SYSTEM_GROUP, editors, viewers, allGroups)
-          assetRepository.add(Asset(0, 0, typeId), properties, aViewers)
+          assetRepository.add(Asset(0, 0, extendedEntityType.version.id), properties, aViewers)
         })
       })
     } catch {
@@ -87,13 +87,14 @@ class AssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Update an Assets properties and Viewers.
-   * <p> All AssetProperties (if updated or not) must be passed, else the configuration can not be verified.
+   * Update an [[modules.asset.model.Asset Assets]] properties and [[modules.core.model.Viewer Viewers]].
+   * <p> All [[modules.core.model.Property Properties]] (if updated or not) must be passed, else the configuration
+   * can not be verified.
    * <p> All Viewers (old AND new ones) must be passed as string. Old viewers that are not passed will be deleted.
    * Invalid and duplicate Viewer names (Group names) are filtered out. Only the highest role is applied per Viewer.
    * The SYSTEM Group can not be removed as MAINTAINER.
    * <p> Fails without WORKER rights.
-   * <p> If AssetProperties are changed, EDITOR rights are required.
+   * <p> If Properties are changed, EDITOR rights are required.
    * <p> If Viewers are change, MAINTAINER rights are required.
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -120,10 +121,9 @@ class AssetService @Inject()(typeRepository: TypeRepository,
         val newConfig = AssetLogic.mapConfigurations(oldConfig, propertyUpdateData)
 
         //check if the AssetType of the Asset is active (else it can not be edited)
-        typeRepository.getComplete(extendedAsset.asset.typeId) flatMap (typeData => {
-          val (head, constraints) = typeData
-          if (!(head.isDefined && head.get.active)) throw new Exception("The selected Asset Type is not active")
-          val configurationStatus = AssetLogic.isModelConfiguration(constraints, newConfig)
+        typeRepository.getExtended(extendedAsset.asset.typeVersionId) flatMap (extendedEntityType => {
+          if (extendedEntityType.isEmpty || !extendedEntityType.get.entityType.active) throw new Exception("The selected Asset Type is not defined or active")
+          val configurationStatus = AssetLogic.isModelConfiguration(extendedEntityType.get.constraints, newConfig)
           if (!configurationStatus.valid) configurationStatus.throwError
 
           groupService.getAllGroups flatMap (groups => {
@@ -149,12 +149,12 @@ class AssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Get an Asset by its id.
-   * <p> A User (given by his ticket) can only request assets he has access rights to.
+   * Get an [[modules.asset.model.ExtendedAsset ExtendedAsset]] by its id.
+   * <p> A [[modules.user.model.User User]] (given by his ticket) can only request assets he has access rights to.
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param assetId id of the Asset to fetch
+   * @param assetId id of the [[modules.asset.model.Asset Asset]] to fetch
    * @param ticket  implicit authentication ticket
    * @return Future[ExtendedAsset]
    */
@@ -172,22 +172,22 @@ class AssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Get a number od Assets defined by multiple query parameters.
-   * <p> Only Assets the given User (by ticket) can access are returned.
+   * Get a number of [[modules.asset.model.ExtendedAsset ExtendedAssets]] defined by multiple query parameters.
+   * <p> Only Assets the given [[modules.user.model.User User]] (by ticket) can access are returned.
    * <p> Only a specified range of Assets are returned, given by the pageNumber.
-   * The Assets returned by a specific parameter combination (also pageNumber) do not stay constant but can change due to
-   * Asset deletion and Management!
+   * The [[modules.asset.model.Asset Assets]] returned by a specific parameter combination (also pageNumber) do not stay
+   * constant but can change due to Asset deletion and Management!
    * <p> Fails without WORKER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeId        id of the AssetType every Asset must have
+   * @param typeVersionId id of the [[modules.core.model.TypeVersion TypeVersion]] every Asset must have
    * @param pageNumber    number of the Asset page (starting with 0)
    * @param pageSize      maximum size of a page (max result size)
    * @param groupSelector groups which must contain the returned Assets (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future Seq[ExtendedAsset]
    */
-  def getAssets(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
+  def getAssets(typeVersionId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                (implicit ticket: Ticket): Future[Seq[ExtendedAsset]] = {
     try {
       RoleAssertion.assertWorker
@@ -199,38 +199,40 @@ class AssetService @Inject()(typeRepository: TypeRepository,
       if (pageNumber < 0) throw new Exception("Page number must be positive")
       val offset = pageNumber * pageSize
       val limit = pageSize
-      assetRepository.getAssetSubset(accessedGroupIds.toSet, typeId, limit, offset)
+      assetRepository.getAssetSubset(accessedGroupIds.toSet, typeVersionId, limit, offset)
     } catch {
       case e: Throwable => Future.failed(e)
     }
   }
 
   /**
-   * Get a number od Assets defined by multiple query parameters and information on all AssetTypes.
-   * <p> This method calls [[ModelAssetService.getAllTypes]] (see there for more information)
-   * <p> This method calls [[AssetService.getAssets]] (see there for more information)
+   * Get a number of [[modules.asset.model.Asset Assets]] defined by multiple query parameters and information on all
+   * [[modules.core.model.TypeVersion TypeVersions]].
+   * as [[modules.asset.model.AssetTypeCombination AssetTypeCombinations]]
+   * <p> This method calls [[modules.asset.service.ModelAssetService#getAllTypes]] (see there for more information)
+   * <p> This method calls [[modules.asset.service.AssetService#getAssets]] (see there for more information)
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeId        id of the AssetType every Asset must have
+   * @param typeVersionId id of the TypeVersion every Asset must have
    * @param pageNumber    number of the Asset page (starting with 0)
    * @param pageSize      maximum size of a page (max result size)
-   * @param groupSelector groups which must contain the returned Assets (must be partition of ticket Groups)
+   * @param groupSelector [[modules.user.model.Group Groups]] which must contain the returned Assets (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future[AssetTypeCombination]
    */
-  def getAssetComplex(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
+  def getAssetComplex(typeVersionId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                      (implicit ticket: Ticket): Future[AssetTypeCombination] = {
     try {
       RoleAssertion.assertWorker
-      modelAssetService.getAllTypes flatMap (types => {
-        val selectedAssetType = types.find(_.id == typeId)
+      modelAssetService.getAllVersions() flatMap (types => {
+        val selectedAssetType = types.find(_.version.id == typeVersionId)
         if (selectedAssetType.isDefined) {
-          getAssets(typeId, pageNumber, pageSize, groupSelector) map (assetData => {
+          getAssets(typeVersionId, pageNumber, pageSize, groupSelector) map (assetData => {
             AssetTypeCombination(selectedAssetType, types, assetData)
           })
         } else {
-          throw new Exception("No such Asset Type found")
+          throw new Exception("No such Asset Type Version found")
         }
       })
     } catch {
@@ -239,16 +241,13 @@ class AssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Delete an Asset.
-   * <p> Not implemented yet:
-   * If a Subject will become invalid because of this operation, nothing will be performed and the future will fail.
-   * In this case, the affected Subjects must be modified before.<br />
+   * Delete an [[modules.asset.model.Asset Asset]].
    * <p> This is a safe implementation and can be used by controller classes.
    * <p> Fails without MAINTAINER rights
    *
    * @param id     of the Asset
    * @param ticket implicit authentication ticket
-   * @return result future
+   * @return Future[Unit]
    */
   def deleteAsset(id: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
@@ -264,13 +263,12 @@ class AssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Forwards to same method of AssetLogic.<br />
-   * <br />
-   * This is a safe implementation and can be used by controller classes.
+   * Forwards to same method of [[modules.asset.service.AssetLogic AssetLogic]].
+   * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param constraints model of an AssetType
+   * @param constraints model of an [[modules.core.model.TypeVersion TypeVersion]]
    * @param ticket      implicit authentication ticket
-   * @return tuple2 seq (property key, data type)
+   * @return Seq[(String, String)] (property key, data type)
    */
   def getAssetPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Seq[(String, String)] = {
     RoleAssertion.assertWorker
@@ -278,12 +276,12 @@ class AssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Forwards to same method of AssetLogic<br />
-   * <br />
+   * Forwards to same method of [[modules.asset.service.AssetLogic AssetLogic]].
+   * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param constraints model of an AssetType
+   * @param constraints model of an [[modules.core.model.TypeVersion TypeVersion]]
    * @param ticket      implicit authentication ticket
-   * @return map of (property key -> default value)
+   * @return Map[String, String] (property key -> default value)
    */
   def getObligatoryPropertyKeys(constraints: Seq[Constraint])(implicit ticket: Ticket): Map[String, String] = {
     RoleAssertion.assertWorker

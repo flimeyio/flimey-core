@@ -18,7 +18,7 @@
 
 package modules.subject.model
 
-import modules.core.model.ExtendedEntityType
+import modules.core.model.EntityType
 
 /**
  * The CollectionTypeComplex is a helper class to wrap several [[modules.subject.model.CollectionHeader CollectionHeaders]]
@@ -27,4 +27,4 @@ import modules.core.model.ExtendedEntityType
  * @param collections   CollectionHeaders
  * @param collectionTypes all EntityTypes which define Collections
  */
-case class CollectionTypeComplex(collections: Seq[CollectionHeader], collectionTypes: Seq[ExtendedEntityType])
+case class CollectionTypeComplex(collections: Seq[CollectionHeader], collectionTypes: Seq[EntityType])

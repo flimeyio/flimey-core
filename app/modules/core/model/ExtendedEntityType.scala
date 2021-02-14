@@ -20,9 +20,10 @@ package modules.core.model
 
 /**
  * The ExtendedEntityType data class wraps an [[modules.core.model.EntityType EntityType]] together with its
- * [[modules.core.model.Constraint Constraints]].
+ * [[modules.core.model.Constraint Constraints]] described by a particular [[modules.core.model.TypeVersion TypeVersion]].
  *
  * @param entityType  parent EntityType
+ * @param version     TypeVersion
  * @param constraints child Constraints
  */
-case class ExtendedEntityType(entityType: EntityType, constraints: Seq[Constraint])
+case class ExtendedEntityType(entityType: EntityType, version: TypeVersion, constraints: Seq[Constraint])

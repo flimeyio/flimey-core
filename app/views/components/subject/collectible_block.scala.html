@@ -19,8 +19,8 @@
 @import modules.core.model.ExtendedEntityType
 @import modules.subject.model.CollectibleHeader
 @import views.html.components.subject.collectible_detail_tile
-@(collectibleTypes: Seq[ExtendedEntityType], collectibles: Seq[CollectibleHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(collectibles: Seq[CollectibleHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @for(collectible <- collectibles){
-    @collectible_detail_tile(collectible, collectibleTypes.map(_.entityType).filter(_.id == collectible.collectible.typeId).head.value)
+    @collectible_detail_tile(collectible)
 }

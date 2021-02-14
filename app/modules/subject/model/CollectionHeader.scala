@@ -18,7 +18,7 @@
 
 package modules.subject.model
 
-import modules.core.model.Property
+import modules.core.model.{EntityType, Property}
 import modules.user.model.ViewerCombinator
 
 /**
@@ -33,4 +33,5 @@ import modules.user.model.ViewerCombinator
 case class CollectionHeader(collection: Collection,
                             collectibles: Seq[CollectibleHeader],
                             properties: Seq[Property],
-                            viewers: ViewerCombinator)
+                            viewers: ViewerCombinator,
+                            entityType: Option[EntityType])

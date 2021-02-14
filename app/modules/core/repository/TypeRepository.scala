@@ -20,7 +20,7 @@ package modules.core.repository
 
 import com.google.inject.Inject
 import modules.asset.repository.AssetRepository
-import modules.core.model.{Constraint, EntityType, ExtendedEntityType}
+import modules.core.model._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -40,18 +40,23 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   val types = TableQuery[TypeTable]
+  val typeVersions = TableQuery[TypeVersionTable]
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
 
   /**
-   * Add a new EntityType to the db.
-   * The id must be set to 0 to enable auto increment.
+   * Add a new [[modules.core.model.EntityType EntityType]] to the db.
+   * <p> The id must be set to 0 to enable auto increment.
+   * <p> This adds also a new [[modules.core.model.TypeVersion TypeVersion]] with version number 0.
    *
    * @param entityType new EntityType entity
    * @return new id future
    */
   def add(entityType: EntityType): Future[Long] = {
-    db.run((types returning types.map(_.id)) += entityType)
+    db.run((for {
+      newTypeId <- (types returning types.map(_.id)) += entityType
+      _ <- (typeVersions returning typeVersions.map(_.id)) += TypeVersion(0, newTypeId, 1)
+    } yield newTypeId).transactionally)
   }
 
   /**
@@ -69,7 +74,7 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
    *
    * @param id          of the EntityType
    * @param derivesFrom optional parent type specification
-   * @return future of EntityType if found, else None
+   * @return Future Option[EntityType]
    */
   def get(id: Long, derivesFrom: Option[String] = None): Future[Option[EntityType]] = {
     if (derivesFrom.isEmpty) {
@@ -80,10 +85,25 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
   }
 
   /**
+   * Get a [[modules.core.model.VersionedEntityType VersionedEntityType]] by its id.
+   *
+   * @param typeVersionId of the [[modules.core.model.TypeVersion TypeVersion]]
+   * @param derivesFrom   optional parent type specification
+   * @return Future Option[VersionedEntityType]
+   */
+  def getVersioned(typeVersionId: Long, derivesFrom: Option[String] = None): Future[Option[VersionedEntityType]] = {
+    var query = typeVersions.filter(_.id === typeVersionId) join types on (_.typeId === _.id)
+    if (derivesFrom.isDefined) {
+      query = typeVersions.filter(_.id === typeVersionId) join types.filter(_.typeOf === derivesFrom.get) on (_.typeId === _.id)
+    }
+    db.run(query.result).map(res => res.map(value => VersionedEntityType(value._2, value._1)).headOption)
+  }
+
+  /**
    * Get all EntityTypes.
    *
    * @param derivesFrom optional parent type specification
-   * @return future of result
+   * @return Future Seq[EntityType]
    */
   def getAll(derivesFrom: Option[String] = None): Future[Seq[EntityType]] = {
     if (derivesFrom.isEmpty) {
@@ -94,16 +114,32 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
   }
 
   /**
+   * Get all [[modules.core.model.VersionedEntityType VersionedEntityTypes]].
+   *
+   * @param derivesFrom optional parent type specification
+   * @return Future Seq[VersionedEntityType]
+   */
+  def getAllVersioned(derivesFrom: Option[String] = None): Future[Seq[VersionedEntityType]] = {
+    var query = typeVersions join types on (_.typeId === _.id)
+    if (derivesFrom.isDefined) {
+      query = typeVersions join types.filter(_.typeOf === derivesFrom.get) on (_.typeId === _.id)
+    }
+    db.run(query.result).map(res => res.map(value => VersionedEntityType(value._2, value._1)).sortBy(_.entityType.id))
+  }
+
+  /**
    * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] defined by their values (names).
    *
    * @param values names of the EntityTypes to fetch
    * @return Future Seq[ExtendedEntityType]
    */
   def getAllExtended(values: Seq[String]): Future[Seq[ExtendedEntityType]] = {
-    val query = types.filter(_.value inSet values) joinLeft constraints on (_.id === _.typeId)
+    val query = typeVersions join
+      types.filter(_.value inSet values) on (_.typeId === _.id) joinLeft
+      constraints on (_._1.id === _.typeVersionId)
     db.run(query.result).map(res => {
       res.groupBy(_._1).mapValues(v => v.filter(_._2.isDefined).map(_._2.get)).map(typeWithConstraints =>
-        ExtendedEntityType(typeWithConstraints._1, typeWithConstraints._2)).toSeq
+        ExtendedEntityType(typeWithConstraints._1._2, typeWithConstraints._1._1, typeWithConstraints._2)).toSeq
     })
   }
 
@@ -114,40 +150,59 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
    * @return Future Seq[ExtendedEntityType]
    */
   def getAllExtended(derivesFrom: Option[String] = None): Future[Seq[ExtendedEntityType]] = {
-    var query = types joinLeft constraints on (_.id === _.typeId)
+    var query = typeVersions join types on (_.typeId === _.id) joinLeft constraints on (_._1.id === _.typeVersionId)
     if (derivesFrom.isDefined) {
-      query = types.filter(_.typeOf === derivesFrom.get) joinLeft constraints on (_.id === _.typeId)
+      query = typeVersions join types.filter(_.typeOf === derivesFrom.get) on (_.typeId === _.id) joinLeft
+        constraints on (_._1.id === _.typeVersionId)
     }
     db.run((for {
       (c, s) <- query
     } yield (c, s)).result) map (res => {
       res.groupBy(_._1).mapValues(v => v.filter(_._2.isDefined).map(_._2.get)).map(typeWithConstraints =>
-        ExtendedEntityType(typeWithConstraints._1, typeWithConstraints._2)).toSeq
+        ExtendedEntityType(typeWithConstraints._1._2, typeWithConstraints._1._1, typeWithConstraints._2)).toSeq
     })
   }
 
   /**
-   * Get an EntityType with all its Constraints if it has an existing model.
-   * This operation is more performant then fetching both separately.
+   * Get all [[modules.core.model.ExtendedEntityType ExtendedEntityTypes]] (Versions) of a specified EntityType.
    *
-   * @param id          of the EntityType
+   * @param typeId      id of the parent [[modules.core.model.EntityType EntityType]]
    * @param derivesFrom optional parent type specification
-   * @return result future with pair of AssetType and Constraints
+   * @return Future Seq[ExtendedEntityType]
    */
-  def getComplete(id: Long, derivesFrom: Option[String] = None): Future[(Option[EntityType], Seq[Constraint])] = {
-    var query = types.filter(_.id === id) joinLeft constraints on (_.id === _.typeId)
+  def getAllExtendedVersions(typeId: Long, derivesFrom: Option[String] = None): Future[Seq[ExtendedEntityType]] = {
+    var query = typeVersions join types.filter(_.id === typeId) on (_.typeId === _.id) joinLeft constraints on (_._1.id === _.typeVersionId)
     if (derivesFrom.isDefined) {
-      query = types.filter(_.id === id).filter(_.typeOf === derivesFrom.get) joinLeft constraints on (_.id === _.typeId)
+      query = typeVersions join types.filter(_.id === typeId).filter(_.typeOf === derivesFrom.get) on (_.typeId === _.id) joinLeft
+        constraints on (_._1.id === _.typeVersionId)
     }
     db.run((for {
       (c, s) <- query
     } yield (c, s)).result) map (res => {
-      if (res.isEmpty) {
-        (None, Seq())
-      } else {
-        val result = res.groupBy(_._1.id).mapValues(values => (values.map(_._1).headOption, values.map(_._2))).values.head
-        (result._1, result._2.filter(_.isDefined).map(_.get).sortBy(_.id))
-      }
+      res.groupBy(_._1).mapValues(v => v.filter(_._2.isDefined).map(_._2.get)).map(typeWithConstraints =>
+        ExtendedEntityType(typeWithConstraints._1._2, typeWithConstraints._1._1, typeWithConstraints._2)).toSeq
+    })
+  }
+
+  /**
+   * Get an [[modules.core.model.ExtendedEntityType ExtendedEntityType]].
+   *
+   * @param typeVersionId of the [[modules.core.model.TypeVersion TypeVersion]]
+   * @param derivesFrom   optional parent type specification
+   * @return Future Option[ExtendedEntityType]
+   */
+  def getExtended(typeVersionId: Long, derivesFrom: Option[String] = None): Future[Option[ExtendedEntityType]] = {
+    var query = typeVersions.filter(_.id === typeVersionId) join types on (_.typeId === _.id) joinLeft
+      constraints on (_._1.id === _.typeVersionId)
+    if (derivesFrom.isDefined) {
+      query = typeVersions.filter(_.id === typeVersionId) join types.filter(_.typeOf === derivesFrom.get) on (_.typeId === _.id) joinLeft
+        constraints on (_._1.id === _.typeVersionId)
+    }
+    db.run((for {
+      (c, s) <- query
+    } yield (c, s)).result).map(res => {
+      res.groupBy(_._1).mapValues(v => v.filter(_._2.isDefined).map(_._2.get)).map(typeWithConstraints =>
+        ExtendedEntityType(typeWithConstraints._1._2, typeWithConstraints._1._1, typeWithConstraints._2)).headOption
     })
   }
 

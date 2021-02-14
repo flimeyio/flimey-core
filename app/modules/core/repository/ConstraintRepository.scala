@@ -42,6 +42,7 @@ class ConstraintRepository @Inject()(@NamedDatabase("flimey_data") protected val
   val constraints = TableQuery[ConstraintTable]
   val properties = TableQuery[PropertyTable]
   val entityTypes = TableQuery[TypeTable]
+  val typeVersions = TableQuery[TypeVersionTable]
 
   /**
    * Add a new Constraint to the db.
@@ -79,19 +80,21 @@ class ConstraintRepository @Inject()(@NamedDatabase("flimey_data") protected val
   }
 
   /**
-   * Get the sequence of all Constraints associated to a particular Type.
+   * Get the sequence of all Constraints associated to a particular [[modules.core.model.TypeVersion TypeVersion]].
    *
-   * @param typeId      id of the Type
-   * @param derivesFrom optional parent type specification
+   * @param typeVersionId id of the TypeVersion
+   * @param derivesFrom   optional parent type specification
    * @return future of Constraints of the given Type
    */
-  def getAssociated(typeId: Long, derivesFrom: Option[String] = None): Future[Seq[Constraint]] = {
-    if(derivesFrom.isEmpty) {
-      db.run(constraints.filter(_.typeId === typeId).sortBy(_.id.asc).result)
-    }else{
+  def getAssociated(typeVersionId: Long, derivesFrom: Option[String] = None): Future[Seq[Constraint]] = {
+    if (derivesFrom.isEmpty) {
+      db.run(constraints.filter(_.typeVersionId === typeVersionId).sortBy(_.id.asc).result)
+    } else {
       db.run((for {
-        (c, s) <- constraints.filter(_.typeId === typeId).sortBy(_.id.asc) join entityTypes.filter(_.typeOf === derivesFrom.get)
-      } yield (c, s)).result) map (res => res.map(_._1).sortBy(_.id))
+        (c, s) <- constraints.filter(_.typeVersionId === typeVersionId) join
+          typeVersions on (_.typeVersionId === _.id) join
+          entityTypes.filter(_.typeOf === derivesFrom.get) on (_._2.typeId === _.id)
+      } yield (c, s)).result) map (res => res.map(_._1._1).sortBy(_.id))
     }
   }
 

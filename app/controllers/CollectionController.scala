@@ -135,9 +135,9 @@ class CollectionController @Inject()(cc: ControllerComponents,
       val error = request.flash.get("error")
       (for {
         data <- collectionService.getCollection(collectionId)
-        childTypes <- modelCollectionService.getChildren(data._1.collection.typeId)
+        childTypes <- modelCollectionService.getChildren(data._1.collection.typeVersionId)
       } yield {
-        Ok(views.html.container.subject.collection_detail_page(data._2, childTypes, data._1, error))
+        Ok(views.html.container.subject.collection_detail_page(data._2, childTypes.map(_.entityType), data._1, error))
       }) recoverWith {
         case e =>
           logger.error(e.getMessage, e)
@@ -276,7 +276,7 @@ class CollectionController @Inject()(cc: ControllerComponents,
 
   /**
    * Endpoint to get an editor to create new [[modules.subject.model.Collection Collections]].
-   * <p> The Editor will only accept Collections of the previously selected Entity(Collection)Type.
+   * <p> The Editor will only accept Collections of the previously selected [[modules.core.model.EntityType EntityType]].
    *
    * @return new collection editor page
    */
@@ -292,9 +292,11 @@ class CollectionController @Inject()(cc: ControllerComponents,
 
   /**
    * Endpoint to add a new [[modules.subject.model.Collection Collection]].
-   * <p> The Collection must be of the selected Collection [[modules.core.model.EntityType EntityType]].
+   * <p> The Collection must be of the selected [[modules.core.model.EntityType EntityTypes]].
    * <p> The incoming form data seq must be in the same order as the previously sent property keys.
    *
+   * @see [[modules.subject.service.CollectionService#addCollection]]
+   * @param typeId id of the parent EntityType
    * @return new collection editor page (clean or with errors)
    */
   def addNewCollection(typeId: Long): Action[AnyContent] =
@@ -327,16 +329,14 @@ class CollectionController @Inject()(cc: ControllerComponents,
    * @return new entity editor result future (view)
    */
   private def newCollectionEditorFactory(typeId: Long, form: Form[EntityForm.Data], errmsg: Option[String] = None, succmsg: Option[String] = None)
-                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
-  = {
+                                        (implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       groups <- groupService.getAllGroups
-      typeData <- modelCollectionService.getCompleteType(typeId)
+      typeData <- modelCollectionService.getLatestExtendedType(typeId)
     } yield {
-      val (collectionType, constraints) = typeData
-      Ok(views.html.container.subject.new_collection_editor(collectionType,
-        collectionService.getCollectionPropertyKeys(constraints),
-        collectionService.getObligatoryPropertyKeys(constraints),
+      Ok(views.html.container.subject.new_collection_editor(typeData.entityType,
+        collectionService.getCollectionPropertyKeys(typeData.constraints),
+        collectionService.getObligatoryPropertyKeys(typeData.constraints),
         groups,
         form, errmsg, succmsg))
     }
@@ -357,15 +357,12 @@ class CollectionController @Inject()(cc: ControllerComponents,
    */
   private def updateCollectionEditorFactory(collectionId: Long, form: Option[Form[EntityForm.Data]],
                                             msg: Option[String] = None, successMsg: Option[String] = None)(
-                                             implicit request: Request[AnyContent], ticket: Ticket): Future[Result]
-
-  = {
+                                             implicit request: Request[AnyContent], ticket: Ticket): Future[Result] = {
     for {
       collectionHeader <- collectionService.getSlimCollection(collectionId)
-      typeData <- modelCollectionService.getCompleteType(collectionHeader.collection.typeId)
+      typeData <- modelCollectionService.getExtendedType(collectionHeader.collection.typeVersionId)
       groups <- groupService.getAllGroups
     } yield {
-      val (entityType, constraints) = typeData
       val editForm = if (form.isDefined) form.get else EntityForm.form.fill(
         EntityForm.Data(
           collectionHeader.properties.map(_.value),
@@ -373,10 +370,10 @@ class CollectionController @Inject()(cc: ControllerComponents,
           collectionHeader.viewers.editors.toSeq.map(_.name),
           collectionHeader.viewers.viewers.toSeq.map(_.name)))
 
-      Ok(views.html.container.subject.collection_editor(entityType,
+      Ok(views.html.container.subject.collection_editor(typeData.entityType,
         collectionHeader,
-        collectionService.getCollectionPropertyKeys(constraints),
-        collectionService.getObligatoryPropertyKeys(constraints),
+        collectionService.getCollectionPropertyKeys(typeData.constraints),
+        collectionService.getObligatoryPropertyKeys(typeData.constraints),
         groups,
         editForm, msg, successMsg))
     }
@@ -387,5 +384,3 @@ class CollectionController @Inject()(cc: ControllerComponents,
   }
 
 }
-
-

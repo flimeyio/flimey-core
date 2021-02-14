@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.service
+package modules.core.repository
 
-class SubjectCollectibleService {
+import modules.core.model.TypeVersion
+import slick.jdbc.PostgresProfile.api._
+
+/**
+ * Slick framework db mapping for TypeVersions.
+ * see evolutions/default for schema creation.
+ *
+ * @param tag for mysql
+ */
+class TypeVersionTable(tag: Tag) extends Table[TypeVersion](tag, "type_version") {
+
+  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+
+  def typeId = column[Long]("type_id")
+
+  def version = column[Long]("version")
+
+
+  override def * =
+    (id, typeId, version) <> (TypeVersion.tupled, TypeVersion.unapply)
 
 }

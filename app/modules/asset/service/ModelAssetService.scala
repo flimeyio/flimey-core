@@ -23,7 +23,7 @@ import modules.asset.model.AssetConstraintSpec
 import modules.asset.repository.AssetRepository
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, ConstraintType, EntityType}
+import modules.core.model._
 import modules.core.repository.{ConstraintRepository, TypeRepository}
 import modules.core.service.{EntityTypeService, ModelEntityService}
 
@@ -44,107 +44,149 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
                                   assetRepository: AssetRepository,
                                   entityTypeService: EntityTypeService) extends ModelEntityService {
 
+  /*
+   * Note: AssetTypes are only allowed to have a single version!
+   */
+
   /**
-   * Get all AssetTypes.
-   * <p> Fails without WORKER rights.
-   * <p> This is a safe implementation and can be used by controller classes.
+   * Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param ticket implicit authentication ticket
-   * @return Future Seq[AssetType]
+   * @see [[modules.core.service.ModelEntityService#getAllTypes]]
+   * @param ticket implicit authentication ticket.
+   * @return Future Seq[EntityType]
    */
   override def getAllTypes()(implicit ticket: Ticket): Future[Seq[EntityType]] = {
     entityTypeService.getAllTypes(Option(AssetConstraintSpec.ASSET))
   }
 
   /**
-   * Get an AssetType by its ID.
-   * <p> This is a safe implementation and can be used by controller classes.
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param id     od the AssetType
+   * @see [[modules.core.service.ModelEntityService#getAllVersions]]
    * @param ticket implicit authentication ticket
-   * @return Future Option[AssetType]
+   * @return Future Seq[VersionedEntityType]
+   */
+  override def getAllVersions()(implicit ticket: Ticket): Future[Seq[VersionedEntityType]] = {
+    entityTypeService.getAllVersions(Option(AssetConstraintSpec.ASSET))
+  }
+
+  /**
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
+   *
+   * @see [[modules.core.service.ModelEntityService#getType]]
+   * @param id     of the EntityType
+   * @param ticket implicit authentication ticket
+   * @return Future Option[EntityType]
    */
   override def getType(id: Long)(implicit ticket: Ticket): Future[Option[EntityType]] = {
     entityTypeService.getType(id, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
-   * Get a complete AssetType (Head + Constraints).
-   * <p> Fails without WORKER rights.
-   * <p> This is a safe implementation and can be used by controller classes.
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param id     od the AssetType
-   * @param ticket implicit authentication ticket
-   * @return Future (AssetType, Seq[AssetConstraint])
+   * @see [[modules.core.service.ModelEntityService#getVersionedType]]
+   * @param typeVersionId of the [[modules.core.model.TypeVersion TypeVersion]] to fetch
+   * @param ticket        implicit authentication ticket
+   * @return Future Option[VersionedEntityType]
    */
-  override def getCompleteType(id: Long)(implicit ticket: Ticket): Future[(EntityType, Seq[Constraint])] = {
-    entityTypeService.getCompleteType(id, Option(AssetConstraintSpec.ASSET))
+  override def getVersionedType(typeVersionId: Long)(implicit ticket: Ticket): Future[Option[VersionedEntityType]] = {
+    entityTypeService.getVersionedType(typeVersionId, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
-   * Get an AssetType by its value (name) field.
-   * <p> Fails without WORKER rights.
-   * <p> This is a safe implementation and can be used by controller classes.
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param value  value filed (name) of the searched AssetType
+   * @see [[modules.core.service.ModelEntityService#getExtendedType]]
+   * @param typeVersionId of the [[modules.core.model.EntityType EntityTypes]] TypeVersion
+   * @param ticket        implicit authentication ticket
+   * @return Future[ExtendedEntityType]
+   */
+  override def getExtendedType(typeVersionId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    entityTypeService.getExtendedType(typeVersionId, Option(AssetConstraintSpec.ASSET))
+  }
+
+  /**
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
+   *
+   * @see [[modules.core.service.ModelEntityService#getLatestExtendedType]]
+   * @param typeId id of the parent EntityType
    * @param ticket implicit authentication ticket
-   * @return Future Option[AssetType]
+   * @return Future[ExtendedEntityType]
+   */
+  override def getLatestExtendedType(typeId: Long)(implicit ticket: Ticket): Future[ExtendedEntityType] = {
+    entityTypeService.getLatestExtendedType(typeId, Option(AssetConstraintSpec.ASSET))
+  }
+
+  /**
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
+   *
+   * @see [[modules.core.service.ModelEntityService#getTypeByValue]]
+   * @param value  value filed (name) of the searched EntityType
+   * @param ticket implicit authentication ticket
+   * @return Future Option[CollectionType]
    */
   override def getTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[EntityType]] = {
     entityTypeService.getEntityTypeByValue(value, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
-   * Update an already existing AssetType entity. This includes 'value' (name) and 'active'.
-   * <p> To change the 'active' property to true, the Constraint model must be valid!
+   * <p> <strong>Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].</strong><br />
+   *
+   * Update an already existing [[modules.core.model.EntityType EntityType]]. This includes 'value' (name) and 'active'.
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the Type to update
+   * @see [[modules.core.service.ModelEntityService#updateType]]
+   * @param id     of the EntityType to update
    * @param ticket implicit authentication ticket
    * @return Future[Int]
    */
   override def updateType(id: Long, value: String, active: Boolean)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertModeler
-      if(!AssetLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
-      if (active) {
-        getConstraintsOfType(id) flatMap (constraints => {
-          val status = AssetLogic.isConstraintModel(constraints)
-          if (!status.valid) status.throwError
-          typeRepository.update(EntityType(id, value, "", active))
-        })
-      } else {
-        typeRepository.update(EntityType(id, value, "", active))
-      }
+      if (!AssetLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
+      typeRepository.update(EntityType(id, value, "", active))
     } catch {
       case e: Throwable => Future.failed(e)
     }
   }
 
   /**
-   * Get all Constraints associated to an AssetType.
-   * <p> Fails without WORKER rights.
-   * <p>This is a safe implementation and can be used by controller classes.
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param id     of the AssetType
-   * @param ticket implicit authentication ticket
-   * @return Future Seq[AssetConstraint]
+   * @see [[modules.core.service.ModelEntityService#getConstraintsOfType]]
+   * @param typeVersionId of the parent TypeVersion
+   * @param ticket        implicit authentication ticket
+   * @return Future Seq[Constraint]
    */
-  override def getConstraintsOfType(id: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
-    entityTypeService.getConstraintsOfEntityType(id, Option(AssetConstraintSpec.ASSET))
+  override def getConstraintsOfType(typeVersionId: Long)(implicit ticket: Ticket): Future[Seq[Constraint]] = {
+    entityTypeService.getConstraintsOfEntityType(typeVersionId, Option(AssetConstraintSpec.ASSET))
   }
 
   /**
-   * Delete an AssetConstraint by its ID.
-   * <p> By deleting a Constraint, the associated AssetType model must stay valid.
+   * <p> <strong>Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].</strong><br />
+   *
+   * Delete a [[modules.core.model.Constraint Constraint]] by its ID.
+   * <p> By deleting a Constraint, the associated [[modules.core.model.TypeVersion TypeVersion]] model must stay valid.
    * If the removal of the Constraint will invalidate the model, the future will fail.
    * <p> <strong>The removal of a 'HasProperty' Constraint leads to the system wide removal of all corresponding
-   * Asset data properties!</strong>
+   * [[modules.asset.model.Asset Asset]] [[modules.core.model.Property Properties]]!</strong>
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param id     of the AssetConstraint to delete
+   * @see [[modules.core.service.ModelEntityService#deleteConstraint]]
+   * @param id     of the Constraint to delete
    * @param ticket implicit authentication ticket
    * @return Future[Int]
    */
@@ -154,9 +196,9 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
       entityTypeService.getConstraint(id) flatMap (constraintOption => {
         if (constraintOption.isEmpty) throw new Exception("No such Constraint found")
         val constraint = constraintOption.get
-        getType(constraint.typeId) flatMap (assetType => {
-          if (assetType.isEmpty) throw new Exception("No corresponding AssetType found")
-          getConstraintsOfType(assetType.get.id) flatMap (constraints => {
+        getVersionedType(constraint.typeVersionId) flatMap (versionedAssetType => {
+          if (versionedAssetType.isEmpty) throw new Exception("No corresponding AssetType found")
+          getConstraintsOfType(versionedAssetType.get.version.id) flatMap (constraints => {
 
             val status = AssetLogic.isConstraintModel(constraints.filter(c => c.id != id))
             if (!status.valid) status.throwError
@@ -175,27 +217,31 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Add an AssetConstraint to an AssetType.
+   * <p> <strong>Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].</strong><br />
+   *
+   * Add a [[modules.core.model.Constraint Constraint]] to a [[modules.core.model.TypeVersion TypeVersion]].
    * <p> ID must be 0 (else the future will fail). If the addition of the Constraint will invalidate the model,
    * the future will fail.
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param c      String value of the ConstraintType
-   * @param v1     first Constraint parameter
-   * @param v2     second Constraint parameter
-   * @param typeId id of the parent EntityType
-   * @param ticket implicit authentication ticket
+   * @see [[modules.core.service.ModelEntityService#addConstraint]]
+   * @param c             String value of the [[modules.core.model.ConstraintType ConstraintType]]
+   * @param v1            first Constraint parameter
+   * @param v2            second Constraint parameter
+   * @param typeVersionId id of the parent TypeVersion
+   * @param ticket        implicit authentication ticket
    * @return Future[Long]
    */
-  override def addConstraint(c: String, v1: String, v2: String, typeId: Long)(implicit ticket: Ticket): Future[Unit] = {
+  override def addConstraint(c: String, v1: String, v2: String, typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertModeler
       //FIXME the ConstraintType.find() needs a check before, the rulst can be empty and lead to a unspecified exception
-      val assetConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeId)
+      val assetConstraint = Constraint(0, ConstraintType.find(c).get, v1, v2, None, typeVersionId)
       val constraintStatus = AssetLogic.isValidConstraint(assetConstraint)
       if (!constraintStatus.valid) constraintStatus.throwError
-      getConstraintsOfType(assetConstraint.typeId) flatMap { i =>
+      getConstraintsOfType(assetConstraint.typeVersionId) flatMap { i =>
         val modelStatus = AssetLogic.isConstraintModel(i :+ assetConstraint)
         if (!modelStatus.valid) modelStatus.throwError
 
@@ -211,12 +257,11 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Delete an AssetType.
-   * <p> <strong> This operation will also delete all associated Constraints and all Assets which have this type! </strong>
-   * <p> Fails without MODELER rights
-   * <p> This is a safe implementation and can be used by controller classes.
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param id     of the AssetType
+   * @see [[modules.core.service.ModelEntityService#deleteType]]
+   * @param id     of the EntityType
    * @param ticket implicit authentication ticket
    * @return Future[Unit]
    */
@@ -230,18 +275,48 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * Get all AssetTypes, a specific AssetType and its Constraints at once.
-   * <p> This operation is just a future comprehension of different service methods.
-   * <p> Fails without WORKER rights
-   * <p> This is a safe implementation and can be used by controller classes.
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
    *
-   * @param id     of an AssetType
+   * @see [[modules.core.service.ModelEntityService#addVersion]]
+   *
+   *      <p> <strong>This operation is not supported for Asset Types.</strong>
+   * @param typeId of the parent EntityType
    * @param ticket implicit authentication ticket
-   * @return Future Tuple of all AssetTypes, a specific AssetType and its Constraints
+   * @return Future[Long]
    */
-  @deprecated
-  def getCombinedAssetEntity(id: Long)(implicit ticket: Ticket): Future[(Seq[EntityType], Option[EntityType], Seq[Constraint])] = {
-    entityTypeService.getCombinedEntity(id, Option(AssetConstraintSpec.ASSET))
+  override def addVersion(typeId: Long)(implicit ticket: Ticket): Future[Long] = {
+    Future.failed(new Exception("Operation not supported for Asset Types"))
+  }
+
+  /**
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].
+   *
+   * @see [[modules.core.service.ModelEntityService#deleteVersion]]
+   *
+   *      <p> <strong>This operation is not supported for Asset Types.</strong>
+   * @param typeVersionId of the TypeVersion to delete
+   * @param ticket        implicit authentication ticket
+   * @return Future[Unit]
+   */
+  override def deleteVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
+    Future.failed(new Exception("Operation not supported for Asset Types"))
+  }
+
+  /**
+   * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.asset.model.Asset Assets]].<br />
+   *
+   * @see [[modules.core.service.ModelEntityService#forkVersion]]
+   *
+   *      <p> <strong>This operation is not supported for Asset Types.</strong>
+   * @param typeVersionId of the TypeVersion to fork
+   * @param ticket        implicit authentication ticket
+   * @return Future[Unit]
+   */
+  override def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
+    Future.failed(new Exception("Operation not supported for Asset Types"))
   }
 
 }

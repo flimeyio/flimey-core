@@ -81,7 +81,7 @@ trait ConstraintProcessor {
 
   /**
    * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
-   * [[modules.core.model.EntityType EntityType]] specific subtype. No semantic analysis is done!
+   * [[modules.core.model.TypeVersion TypeVersion]] specific subtype. No semantic analysis is done!
    *
    * @param constraint to check
    * @return Status with optional error message

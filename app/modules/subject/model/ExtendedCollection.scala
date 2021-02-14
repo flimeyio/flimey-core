@@ -19,7 +19,7 @@
 package modules.subject.model
 
 import modules.asset.model.Asset
-import modules.core.model.Property
+import modules.core.model.{EntityType, Property}
 import modules.user.model.ViewerCombinator
 
 /**
@@ -36,4 +36,5 @@ case class ExtendedCollection(collection: Collection,
                               collectibles: Seq[CollectibleHeader],
                               properties: Seq[Property],
                               attachments: Seq[Asset],
-                              viewers: ViewerCombinator)
+                              viewers: ViewerCombinator,
+                              entityType: EntityType)

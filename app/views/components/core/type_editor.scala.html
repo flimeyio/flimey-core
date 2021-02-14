@@ -25,44 +25,17 @@
 @import views.html.forms.core.edit_type_form
 @import views.html.forms.core.new_constraint_form
 @import views.html.forms.core.delete_type_form
-@(assetType: EntityType, assetConstraints: Seq[Constraint],
-        editAssetTypeForm: Form[EditTypeForm.Data],
-        newAssetConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(entityType: EntityType, editTypeForm: Form[EditTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="scroll-container">
     <div>
-        @edit_type_form(assetType, editAssetTypeForm)
-        @if(assetType.active){
+        <h1>@entityType.value</h1>
+        @edit_type_form(entityType, editTypeForm)
+        @if(entityType.active){
             @message_box_hint(Option("While editing constraints, it is recommended to disable the type."))
         }
     </div>
     <div>
-        <div class="">
-            @new_constraint_form(assetType.id, newAssetConstraintForm)
-        </div>
-        <table class="">
-                <tr>
-                    <th>constraint</th>
-                    <th>value 1</th>
-                    <th>value 2</th>
-                    <th></th>
-                </tr>
-            @for(constraint <- assetConstraints) {
-                <tr>
-                    <td><div>@constraint.c</div></td>
-                    <td><div>@constraint.v1</div></td>
-                    <td><div>@constraint.v2</div></td>
-                    <td>
-                        <form role="form" action='@routes.ModelController.deleteConstraint(assetType.id, constraint.id)' method="post">
-                            @CSRF.formField
-                            <button type="submit" class="">X</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </table>
-    </div>
-    <div>
-        @delete_type_form(assetType.id)
+        @delete_type_form(entityType.id)
     </div>
 </div>

@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2021 Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.subject.repository
+package modules.core.model
 
-import java.sql.Timestamp
-
-import modules.subject.model.Collectible
-import slick.jdbc.PostgresProfile.api._
-
-class CollectibleTable(tag: Tag) extends Table[Collectible](tag, "collectible") {
-
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def entityId = column[Long]("entity_id")
-  def collectionId = column[Long]("collection_id")
-  def typeVersionId = column[Long]("type_version_id")
-  def state = column[String]("state")
-  def created = column[Timestamp]("created")
-
-  override def * = (id, entityId, collectionId, typeVersionId, state, created) <> (Collectible.tupledRaw, Collectible.unapplyToRaw)
-
-}
+/**
+ * The VersionedEntityType data class wraps an [[modules.core.model.EntityType EntityType]] together with its
+ * particular [[modules.core.model.TypeVersion TypeVersion]].
+ *
+ * @param entityType  parent EntityType
+ * @param version     TypeVersion
+ */
+case class VersionedEntityType(entityType: EntityType, version: TypeVersion)

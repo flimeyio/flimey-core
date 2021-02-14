@@ -20,8 +20,9 @@
 @import modules.asset.model.ExtendedAsset
 @import modules.core.model.EntityType
 @import views.html.components.utils.navbar_category_searchable
-@(selectedType: Option[EntityType],
-        assetTypes: Seq[EntityType],
+@import modules.core.model.VersionedEntityType
+@(selectedType: Option[VersionedEntityType],
+        assetTypes: Seq[VersionedEntityType],
         assetData: Seq[ExtendedAsset],
         pageNumber: Int,
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)

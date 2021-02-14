@@ -18,12 +18,9 @@
 * *@
 @import modules.subject.model.CollectionHeader
 @import views.html.components.subject.collection_tile
-@import modules.core.model.ExtendedEntityType
-@import views.html.components.core.meta_typedef
-@(collectionTypes: Seq[ExtendedEntityType], collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 <div class="meta-entity-root scroll-container">
-    @meta_typedef(collectionTypes)
     @for(collection <- collections){
-        @collection_tile(collection, collectionTypes.map(_.entityType).filter(_.id == collection.collection.typeId).head.value)
+        @collection_tile(collection)
     }
 </div>

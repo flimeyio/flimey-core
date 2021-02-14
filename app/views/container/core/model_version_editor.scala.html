@@ -15,21 +15,26 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.auth.model.Ticket
 @import views.html.components.utils.message_box_error
 @import views.html.components.utils.navbar_category_searchable
+@import views.html.components.utils.navbar_category_closeable
+@import modules.auth.model.Ticket
 @import modules.core.model.EntityType
-@import views.html.forms.core.new_type_form
+@import modules.core.model.Constraint
+@import modules.core.formdata.NewConstraintForm
+@import modules.core.formdata.EditTypeForm
+@import views.html.components.core.type_editor
 @import views.html.components.core.type_block
 @import modules.core.model.VersionedEntityType
-@import views.html.components.utils.navbar_category
-@(allTypes: Seq[VersionedEntityType],
+@import views.html.components.core.type_version_editor
+@import modules.core.model.ExtendedEntityType
+@(extendedEntityType: ExtendedEntityType, newConstraintForm: Form[NewConstraintForm.Data],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category(Seq("Model Types"))
+    @navbar_category_closeable(Seq("Type Version Editor"), routes.ModelController.index())
 }{
     @message_box_error(msg)
-    @new_type_form()
-    @type_block(allTypes)
+    @type_version_editor(extendedEntityType, newConstraintForm)
 }()()()
+

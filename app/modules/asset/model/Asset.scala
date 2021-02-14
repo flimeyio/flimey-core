@@ -18,4 +18,4 @@
 
 package modules.asset.model
 
-case class Asset(id: Long, entityId: Long, typeId: Long)
+case class Asset(id: Long, entityId: Long, typeVersionId: Long)

@@ -30,7 +30,7 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
 
   /**
    * Checks if a given [[modules.core.model.Constraint Constraint]] is a syntactically correct Constraint of an
-   * [[modules.subject.model.Collection Collection]]Type
+   * [[modules.subject.model.Collection Collection]] [[modules.core.model.TypeVersion TypeVersion]]
    * No semantic analysis is done!
    *
    * @param constraint to check
@@ -42,7 +42,7 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
       case ConstraintType.MustBeDefined => isMustBeDefinedConstraint(constraint.v1, constraint.v2)
       case ConstraintType.UsesPlugin => isUsesPluginConstraint(constraint.v1, constraint.v2)
       case ConstraintType.CanContain => isCanContainConstraint(constraint.v1, constraint.v2)
-      case _ => ERR("Invalid Asset Constraint Rule")
+      case _ => ERR("Invalid Constraint Rule")
     }
   }
 

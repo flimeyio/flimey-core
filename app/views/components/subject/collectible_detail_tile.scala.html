@@ -17,7 +17,7 @@
 * *@
 @import views.html.components.core.meta_entity
 @import modules.subject.model.CollectibleHeader
-@(data: CollectibleHeader, typeValue: String)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(data: CollectibleHeader)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="meta-entity-container card relative-container tile">
     <div class="float-top-right">
@@ -25,9 +25,11 @@
             <i class="material-icons">create</i>
         </a>
     </div>
-    <div class="tag bg-sec-dark cell-small-1">
-        @typeValue.toLowerCase
-    </div>
+    @if(data.entityType.isDefined) {
+        <div class="tag bg-sec-dark cell-small-1">
+        @data.entityType.get.value.toLowerCase
+        </div>
+    }
     @if(data.properties.exists(_.key == "Name")) {
         <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
     }
