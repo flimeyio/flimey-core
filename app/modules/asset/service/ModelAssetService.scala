@@ -142,7 +142,6 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
    * [[modules.asset.model.Asset Assets]].</strong><br />
    *
    * Update an already existing [[modules.core.model.EntityType EntityType]]. This includes 'value' (name) and 'active'.
-   * <p> To change the 'active' property to true, the Constraint model must be valid!
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
@@ -155,15 +154,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
     try {
       RoleAssertion.assertModeler
       if (!AssetLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
-      if (active) {
-        getConstraintsOfType(id) flatMap (constraints => {
-          val status = AssetLogic.isConstraintModel(constraints)
-          if (!status.valid) status.throwError
-          typeRepository.update(EntityType(id, value, "", active))
-        })
-      } else {
-        typeRepository.update(EntityType(id, value, "", active))
-      }
+      typeRepository.update(EntityType(id, value, "", active))
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -315,7 +306,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
 
   /**
    * Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
-   * [[modules.asset.model.Asset Assets]].
+   * [[modules.asset.model.Asset Assets]].<br />
    *
    * @see [[modules.core.service.ModelEntityService#forkVersion]]
    *
