@@ -19,6 +19,7 @@
 package modules.user.repository
 
 import com.google.inject.Inject
+import modules.core.repository.ViewerTable
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
@@ -40,8 +41,8 @@ class GroupRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
 
   val groups = TableQuery[GroupTable]
   val groupMemberships = TableQuery[GroupMembershipTable]
-  val assetViewers = TableQuery[GroupViewerTable]
-
+  val groupViewers = TableQuery[GroupViewerTable]
+  val entityViewers = TableQuery[ViewerTable]
   /**
    * Add a new Group.
    * The id must be set to 0 to enable auto increment.
@@ -100,7 +101,9 @@ class GroupRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
    */
   def delete(id: Long): Future[Unit] = {
     db.run((for {
-      _ <- assetViewers.filter(_.viewerId === id).delete
+      _ <- groupViewers.filter(_.viewerId === id).delete
+      _ <- groupViewers.filter(_.targetId === id).delete
+      _ <- entityViewers.filter(_.viewerId === id).delete
       _ <- groupMemberships.filter(_.groupId === id).delete
       _ <- groups.filter(_.id === id).delete
     } yield ()).transactionally)
