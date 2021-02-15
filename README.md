@@ -4,11 +4,13 @@
 
 ## About
 
-This project is work in progress. Do not use in production! 
+**This project is work in progress. Do not use in production!**
 
 A detailled documentation can be found [here](https://github.com/flimeyio/flimey-core/wiki).
 
 The development setup/getting started guide can also be found [here](https://github.com/flimeyio/flimey-core/wiki/System-Setup).
+
+Our project kanban with open issues and development progress can be found [here](https://github.com/flimeyio/flimey-core/projects/1).
 
 ## Devlopment Stack
 
