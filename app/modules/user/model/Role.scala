@@ -40,4 +40,6 @@ object Role extends Enumeration {
     role == SYSTEM
   }
 
+  def getAll: Seq[Role.Value] = Seq(WORKER, MODELER, ADMIN, SYSTEM)
+
 }

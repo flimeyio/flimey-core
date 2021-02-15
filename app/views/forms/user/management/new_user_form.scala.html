@@ -19,6 +19,7 @@
 @import modules.user.formdata.NewUserForm
 @import views.html.helper.CSRF
 @import views.html.components.utils.message_box_error
+@import modules.user.model.Role
 @(newUserForm: Form[NewUserForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ManagementController.postNewInvitation()) {
@@ -36,7 +37,14 @@
         </div>
         <div class="grid-x">
             <label class="cell small-3 cell-center-text">Role</label>
-            <input class="cell medium-9" type="text" name="role" value="@newUserForm.data("role")"/>
+            <select class="cell medium-9 input-group-field no-margin" name="role">
+                <option>Choose a Role</option>
+                @for(role <- Role.getAll) {
+                    <option @if(role.toString == newUserForm.data("role")) {selected="selected"}>
+                    @role.toString
+                    </option>
+                }
+            </select>
         </div>
         <button class="button button-small bottom-right margin-bottom-10">Go</button>
     </div>
