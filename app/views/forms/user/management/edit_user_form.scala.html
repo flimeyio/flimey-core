@@ -17,13 +17,21 @@
 * *@
 @import views.html.helper.CSRF
 @import modules.user.formdata.EditUserForm
+@import modules.user.model.Role
 @(userId: Long, editUserForm: Form[EditUserForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ManagementController.postUser(userId)) {
     @CSRF.formField
     <div class="flex-container horizontal">
         <div class="col-7">
-            <input type="text" name="role" placeholder="New Role" value="@editUserForm.data("role")"/>
+            <select class="input-group-field no-margin" name="role">
+                <option>Choose a Role</option>
+                @for(role <- Role.getAll) {
+                    <option @if(role.toString == editUserForm.data("role")) {selected="selected"}>
+                    @role.toString
+                    </option>
+                }
+            </select>
         </div>
         <div class="col-3">
             <button class="button button-small no-margin">Update</button>

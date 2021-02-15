@@ -27,8 +27,7 @@
                 <select class="input-group-field no-margin" name="value">
                     <option>Choose an option</option>
                     @for(entityType <- entityTypes) {
-                        <option @if(selectedType.isDefined && selectedType.get.id == entityType.id) {
-                            selected="selected"}>
+                        <option @if(selectedType.isDefined && selectedType.get.id == entityType.id) {selected="selected"}>
                         @entityType.value
                         </option>
                     }

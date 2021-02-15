@@ -48,4 +48,6 @@ object ViewerRole extends Enumeration {
     }
   }
 
+  def getAll: Seq[Role] = Seq(VIEWER, EDITOR, MAINTAINER)
+
 }

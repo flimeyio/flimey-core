@@ -29,11 +29,11 @@
 
 <div class="scroll-container">
     <div>
-        <h1>@entityType.value</h1>
-        @edit_type_form(entityType, editTypeForm)
         @if(entityType.active){
             @message_box_hint(Option("While editing constraints, it is recommended to disable the type."))
         }
+        <h1>@entityType.value</h1>
+        @edit_type_form(entityType, editTypeForm)
     </div>
     <div>
         @delete_type_form(entityType.id)

@@ -31,4 +31,7 @@ object PluginType extends Enumeration {
       case e: Exception => None
     }
   }
+
+  def getAll: Seq[PluginType.Value] = Seq(WithName, TimedInterval, Milestone, TimeAccumulation, CostAccumulation, WithPriority)
+
 }

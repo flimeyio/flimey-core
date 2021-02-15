@@ -16,23 +16,108 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.core.formdata.NewConstraintForm
-@import modules.core.model.ConstraintType
+@import modules.core.model.{ConstraintType, PropertyType, PluginType}
 @import views.html.helper.CSRF
 @(entityTypeId: Long, versionId: Long, newConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
+<h5>New Constraint</h5>
 @helper.form(action = routes.ModelController.addConstraint(entityTypeId, versionId)) {
     <div class="">
         <div class="">
             @CSRF.formField
-            <select class="" name="c">
+            <select id="constraint-form-type-selector" class="" name="c">
                 <option>Choose an option</option>
                 @for(ctype <- ConstraintType.values){
                     <option @if(newConstraintForm.data("c") == ctype.name){selected="selected"}>@ctype.name</option>
                 }
             </select>
-            <input type="text" name="v1" id="input-nasf" class="" placeholder="NULL" value="@newConstraintForm.data("v1")"/>
-            <input type="text" name="v2" id="input-nasf" class="" placeholder="NULL" value="@newConstraintForm.data("v2")"/>
-            <button class="">New</button>
+            <div id="constraint-form-v1"></div>
+            <div id="constraint-form-v2"></div>
+            <button class="button">Create</button>
         </div>
     </div>
 }
+
+    <ol hidden id="property-datatype-options">
+        @for(propertyType <- PropertyType.getAll){
+            <li>@propertyType.name</li>
+        }
+    </ol>
+
+    <ol hidden id="plugin-type-options">
+        @for(pluginType <- PluginType.getAll){
+            <li>@pluginType.toString</li>
+        }
+    </ol>
+
+<script type="text/javascript">
+    let selector = $("#constraint-form-type-selector");
+    let v1 = $("#constraint-form-v1");
+    let v2 = $("#constraint-form-v2");
+
+    let propertyDatatypeOptions = [];
+    let pluginTypeOptions = [];
+
+    $('#property-datatype-options li').each(function (index, value) {
+        propertyDatatypeOptions.push($(value).text());
+    });
+
+    $('#plugin-type-options li').each(function (index, value) {
+        pluginTypeOptions.push($(value).text());
+    });
+
+    const clearInputs = function(){
+        v1.show();
+        v2.show();
+        v1.empty();
+        v2.empty();
+    };
+
+    const onNewProperty = function(){
+        let propertyNameInput = $("<input/>").attr({name: "v1", type: "text", placeholder: "Property Name"});
+        let propertyDataTypeSelector = $("<select/>").attr({name: "v2"});
+        propertyDatatypeOptions.forEach(optionName => {
+            $("<option/>").attr({type: 'select', value: optionName}).text(optionName).appendTo(propertyDataTypeSelector)
+        });
+        propertyNameInput.appendTo(v1).focus();
+        propertyDataTypeSelector.appendTo(v2).focus();
+    };
+
+    const onNewPlugin = function(){
+        let pluginTypeSelector = $("<select/>").attr({name: "v1"});
+        let placeholderInput = $("<input/>").attr({name: "v2", type: "text", placeholder: "Keep Empty"});
+        pluginTypeOptions.forEach(optionName => {
+            $("<option/>").attr({type: 'select', value: optionName}).text(optionName).appendTo(pluginTypeSelector)
+        });
+        pluginTypeSelector.appendTo(v1).focus();
+        placeholderInput.appendTo(v2).hide();
+    };
+
+    const onNewContain = function(){
+        let containNameInput = $("<input/>").attr({name: "v1", type: "text", placeholder: "Child Name"});
+        let placeholderInput = $("<input/>").attr({name: "v2", type: "text", placeholder: "Keep Empty"});
+        containNameInput.appendTo(v1).focus();
+        placeholderInput.appendTo(v2).hide();
+    };
+
+    const onNewMustDefined = function(){
+        let defPropNameInput = $("<input/>").attr({name: "v1", type: "text", placeholder: "Property Name"});
+        let hintPropInput = $("<input/>").attr({name: "v2", type: "text", placeholder: "Hint Text"});
+        defPropNameInput.appendTo(v1).focus();
+        hintPropInput.appendTo(v2);
+    };
+
+    selector.on('change', function() {
+        clearInputs()
+        let selectionType = this.value;
+        switch (selectionType) {
+            case "@ConstraintType.CanContain.name" : onNewContain()
+                break;
+            case "@ConstraintType.HasProperty.name" : onNewProperty()
+                break;
+            case "@ConstraintType.MustBeDefined.name" : onNewMustDefined()
+                break;
+            case "@ConstraintType.UsesPlugin.name" : onNewPlugin()
+        }
+    });
+</script>

@@ -18,12 +18,20 @@
 @import views.html.helper.CSRF
 @import views.html.components.utils.message_box_error
 @import modules.user.formdata.NewGroupViewerForm
+@import modules.core.model.ViewerRole
 @(groupId: Long, newGroupViewerForm: Form[NewGroupViewerForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ManagementController.postNewGroupRelation(groupId)) {
     @CSRF.formField
     @message_box_error(msg)
     <input type="text" name="viewerName" placeholder="Viewing Group" value="@newGroupViewerForm.data("viewerName")"/>
-    <input type="text" name="viewerRole" placeholder="Role" value="@newGroupViewerForm.data("viewerRole")"/>
+    <select class="input-group-field no-margin" name="viewerRole">
+        <option>Choose a Role</option>
+        @for(role <- ViewerRole.getAll) {
+            <option @if(role.toString == newGroupViewerForm.data("viewerRole")) {selected="selected"}>
+            @role.toString
+            </option>
+        }
+    </select>
     <button class="button button-small">Create Relation</button>
 }
