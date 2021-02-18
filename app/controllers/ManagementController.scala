@@ -57,7 +57,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
    * @return overview redirect
    */
   def redirectWithNoRights: Future[Result] = Future.successful(
-    Redirect(routes.ApplicationController.overview()).flashing("error" -> "No rights to access the admin area"))
+    Redirect(routes.NewsController.index()).flashing("error" -> "No rights to access the admin area"))
 
 
   /**

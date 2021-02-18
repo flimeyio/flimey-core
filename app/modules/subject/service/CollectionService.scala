@@ -27,6 +27,8 @@ import modules.auth.util.RoleAssertion
 import modules.core.model.{Constraint, ExtendedEntityType}
 import modules.core.repository.{FlimeyEntityRepository, TypeRepository}
 import modules.core.service.EntityTypeService
+import modules.news.model.NewsType
+import modules.news.service.NewsService
 import modules.subject.model._
 import modules.subject.repository.CollectionRepository
 import modules.user.model.GroupStats
@@ -42,16 +44,18 @@ import scala.concurrent.Future
  *
  * @param typeRepository         injected [[modules.core.repository.TypeRepository TypeRepository]]
  * @param collectionRepository   injected [[modules.subject.repository.CollectionRepository CollectionRepository]]
- * @param entityRepository
- * @param modelCollectionService injected [[modules.subject.service.ModelCollectionService]]
- * @param groupService           injected [[modules.user.service.GroupService]]
+ * @param entityRepository       injected [[modules.core.repository.FlimeyEntityRepository FlimeyEntityRepository]]
+ * @param modelCollectionService injected [[modules.subject.service.ModelCollectionService ModelCollectionService]]
+ * @param groupService           injected [[modules.user.service.GroupService GroupService]]
+ * @param newsService            injected [[modules.news.service.NewsService NewsService]]
  */
 class CollectionService @Inject()(typeRepository: TypeRepository,
                                   collectionRepository: CollectionRepository,
                                   entityRepository: FlimeyEntityRepository,
                                   modelCollectionService: ModelCollectionService,
                                   entityTypeService: EntityTypeService,
-                                  groupService: GroupService) {
+                                  groupService: GroupService,
+                                  newsService: NewsService) {
 
   /**
    * Add a new [[modules.subject.model.Collection Collection]].
@@ -82,8 +86,10 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         if (!configurationStatus.valid) configurationStatus.throwError
         groupService.getAllGroups flatMap (allGroups => {
           val aViewers = CollectionLogic.deriveViewersFromData(maintainers :+ GroupStats.SYSTEM_GROUP, editors, viewers, allGroups)
-          //FIXME validate status and move creation to CollectionLogic object
-          collectionRepository.add(Collection(0, 0, extendedEntityType.version.id, SubjectState.CREATED, Timestamp.from(Instant.now())), properties, aViewers)
+          for {
+            collectionId <- collectionRepository.add(Collection(0, 0, extendedEntityType.version.id, SubjectState.CREATED, Timestamp.from(Instant.now())), properties, aViewers)
+            _ <- newsService.addCollectionEvent(collectionId, NewsType.CREATED, aViewers.map(_.viewerId).toSet)
+          } yield ()
         })
       })
     } catch {
@@ -174,7 +180,11 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         //FIXME if state is set to ARCHIVED, the whole collection must be added to the archive
         val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
         if (!updateStatus.valid) updateStatus.throwError
-        collectionRepository.updateState(collectionId, state)
+        for {
+          res <- collectionRepository.updateState(collectionId, state)
+          _ <- newsService.addCollectionEvent(collectionId, NewsType.STATE_CHANGE,
+            collectionHeader.viewers.getAllViewingGroups.map(_.id))
+        } yield res
       })
     } catch {
       case e: Throwable => Future.failed(e)
@@ -301,7 +311,11 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
       RoleAssertion.assertWorker
       getSlimCollection(id) flatMap (collectionData => {
         ViewerAssertion.assertMaintain(collectionData.viewers)
-        collectionRepository.delete(collectionData.collection)
+        for {
+          _ <- collectionRepository.delete(collectionData.collection)
+          _ <- newsService.addCollectionEvent(id, NewsType.DELETED,
+            collectionData.viewers.getAllViewingGroups.map(_.id))
+        } yield ()
       })
     } catch {
       case e: Throwable => Future.failed(e)

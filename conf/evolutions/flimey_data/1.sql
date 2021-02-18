@@ -143,6 +143,25 @@ create table group_membership
     CONSTRAINT c_group_user UNIQUE (group_id, user_id)
 );
 
+create table news_event
+(
+    id          SERIAL       NOT NULL PRIMARY KEY,
+    news_type   VARCHAR(255) NOT NULL,
+    priority    BIGINT       NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    route       VARCHAR(255) NOT NULL,
+    date        TIMESTAMP    NOT NULL
+);
+
+create table news_target
+(
+    id       SERIAL NOT NULL PRIMARY KEY,
+    news_id  BIGINT NOT NULL,
+    group_id BIGINT NOT NULL,
+    FOREIGN KEY (news_id) REFERENCES news_event (id),
+    FOREIGN KEY (group_id) REFERENCES u_group (id)
+);
+
 -- Default inserts on installation
 INSERT INTO u_group(id, name)
 VALUES (1, 'public');
@@ -159,6 +178,8 @@ SELECT pg_catalog.setval(pg_get_serial_sequence('group_membership', 'id'), (SELE
 
 -- !Downs
 
+drop table news_target;
+drop table news_event;
 drop table group_membership;
 drop table entity_viewer;
 drop table group_viewer;

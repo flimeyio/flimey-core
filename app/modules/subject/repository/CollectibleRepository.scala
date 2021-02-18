@@ -58,15 +58,15 @@ class CollectibleRepository @Inject()(@NamedDatabase("flimey_data") protected va
    *
    * @param collectible   new Collectible entity
    * @param newProperties Properties of the Collectible
-   * @return Future[Unit]
+   * @return Future[Long]
    */
-  def add(collectible: Collectible, newProperties: Seq[Property]): Future[Unit] = {
+  def add(collectible: Collectible, newProperties: Seq[Property]): Future[Long] = {
     db.run((for {
       entityId <- (entities returning entities.map(_.id)) += FlimeyEntity(0)
-      _ <- (collectibles returning collectibles.map(_.id)) +=
+      collectibleId <- (collectibles returning collectibles.map(_.id)) +=
         Collectible(0, entityId, collectible.collectionId, collectible.typeVersionId, collectible.state, collectible.created)
       _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
-    } yield ()).transactionally)
+    } yield collectibleId).transactionally)
   }
 
   /**

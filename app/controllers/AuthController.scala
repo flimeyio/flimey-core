@@ -53,7 +53,7 @@ class AuthController @Inject()(cc: ControllerComponents,
    */
   def getLoginPage: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     if (getSessionKey(request).isDefined) {
-      Redirect(routes.ApplicationController.overview())
+      Redirect(routes.NewsController.index())
     } else {
       //this error is flashed by the AuthenticationFilter if an unauthenticated request was detected
       val error = request.flash.get("error")
@@ -76,7 +76,7 @@ class AuthController @Inject()(cc: ControllerComponents,
       },
       data => {
         authService.createSession(data.email, data.password) flatMap (sessionKey => {
-          grantAuthentication(Redirect(routes.ApplicationController.overview()), sessionKey)
+          grantAuthentication(Redirect(routes.NewsController.index()), sessionKey)
         }) recoverWith {
           case e =>
             logger.error(e.getMessage, e)
@@ -93,7 +93,7 @@ class AuthController @Inject()(cc: ControllerComponents,
    */
   def getAuthenticatePage: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     if (getSessionKey(request).isDefined) {
-      Redirect(routes.ApplicationController.overview())
+      Redirect(routes.NewsController.index())
     } else {
       //This error is not flashed yet, but may be flashed by the login logic, if the user is not authenticated but tries to log in
       val error = request.flash.get("error")
@@ -140,7 +140,7 @@ class AuthController @Inject()(cc: ControllerComponents,
       } recoverWith {
         case e =>
           logger.error(e.getMessage, e)
-          Future.successful(Redirect(routes.ApplicationController.overview()).flashing("error" -> e.getMessage))
+          Future.successful(Redirect(routes.NewsController.index()).flashing("error" -> e.getMessage))
       }
     }
   }

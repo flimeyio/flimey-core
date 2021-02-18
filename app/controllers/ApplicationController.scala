@@ -19,12 +19,10 @@
 package controllers
 
 import javax.inject._
-import middleware.{AuthenticatedRequest, Authentication, AuthenticationFilter}
+import middleware.{Authentication, AuthenticationFilter}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-
-import scala.concurrent.Future
 
 /**
  * The ApplicationController responsible for the page index and overview endpoints.
@@ -43,19 +41,6 @@ class ApplicationController @Inject()(cc: ControllerComponents, withAuthenticati
    */
   def index: Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Redirect(routes.AuthController.login())
-  }
-
-  /**
-   * Overview Endpoint.
-   * This endpoint provides the overview page of the for the current User most important information.
-   *
-   * @return overview page (not implemented yet, just redirect)
-   */
-  def overview: Action[AnyContent] = withAuthentication.async { implicit request: AuthenticatedRequest[AnyContent] =>
-    withTicket { implicit ticket =>
-      //TODO implement user based overview
-      Future.successful(Ok(views.html.container.overview.overview(Some("Overview page not implemented yet..."))))
-    }
   }
 
 }

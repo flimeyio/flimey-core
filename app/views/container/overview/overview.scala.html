@@ -24,12 +24,18 @@
 @import views.html.components.utils.navbar_category_searchable
 @import modules.core.model.ExtendedEntityType
 @import views.html.forms.core.select_type_form
-@(msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+@import modules.news.model.ExtendedNewsEvent
+@import views.html.components.utils.navbar_category
+@import views.html.components.overview.news_block
+@(feed: Seq[ExtendedNewsEvent], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Overview"), routes.CollectionController.index())
+    @navbar_category(Seq("Overview"))
 }{
     @message_box_error(msg)
-    <p>Go to <a href="@routes.CollectionController.index()" class="">Collections</a></p>
-    <p>Go to <a href="@routes.AssetController.index()" class="">Assets</a></p>
+    @if(feed.isEmpty){
+        <h5>No News Found</h5>
+    }else{
+        @news_block(feed)
+    }
 }()()()

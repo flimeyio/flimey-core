@@ -21,7 +21,7 @@ GET     /assets/*file                                       controllers.Assets.v
 
 
 GET     /                                                   controllers.ApplicationController.index()
-GET     /overview                                           controllers.ApplicationController.overview()
+GET     /overview                                           controllers.NewsController.index()
 
 GET     /login                                              controllers.AuthController.getLoginPage()
 POST    /login                                              controllers.AuthController.login()
