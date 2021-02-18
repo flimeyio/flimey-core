@@ -30,10 +30,11 @@ trait NewsFactory {
    *
    * @param collectionId id of the Collection
    * @param newsType     [[modules.news.model.NewsType NewsType]] which triggered the NewsEvent
+   * @param description  an optional short description
    * @return NewsEvent
    */
-  def eventFrom(collectionId: Long, newsType: NewsType.Value): NewsEvent = {
-    NewsEvent(0, newsType, 1, "", NewsRouter.buildRoute(collectionId, newsType), Timestamp.from(Instant.now()))
+  def eventFrom(collectionId: Long, newsType: NewsType.Value, description: Option[String]): NewsEvent = {
+    NewsEvent(0, newsType, 1, description.getOrElse(""), NewsRouter.buildRoute(collectionId, newsType), Timestamp.from(Instant.now()))
   }
 
   /**
@@ -42,10 +43,11 @@ trait NewsFactory {
    * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
    * @param collectibleId id of the Collectible
    * @param newsType      [[modules.news.model.NewsType NewsType]] which triggered the NewsEvent
+   * @param description   an optional short description
    * @return
    */
-  def eventFrom(collectionId: Long, collectibleId: Long, newsType: NewsType.Value): NewsEvent = {
-    NewsEvent(0, newsType, 1, "", NewsRouter.buildRoute(collectionId, collectibleId, newsType), Timestamp.from(Instant.now()))
+  def eventFrom(collectionId: Long, collectibleId: Long, newsType: NewsType.Value, description: Option[String]): NewsEvent = {
+    NewsEvent(0, newsType, 1, description.getOrElse(""), NewsRouter.buildRoute(collectionId, collectibleId, newsType), Timestamp.from(Instant.now()))
   }
 
 }

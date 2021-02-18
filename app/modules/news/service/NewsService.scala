@@ -25,8 +25,7 @@ import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.news.model.{ExtendedNewsEvent, NewsEvent, NewsType}
 import modules.news.repository.NewsEventRepository
-import modules.user.model.Group
-import play.api.{Logger, Logging}
+import play.api.Logging
 
 import scala.concurrent.Future
 
@@ -45,11 +44,11 @@ class NewsService @Inject()(newsEventRepository: NewsEventRepository) extends Ne
    * <p> This is a safe implementation and can be used inside controller classes.
    *
    * @param newsEvent new NewsEvent
-   * @param viewers   all [[modules.user.model.Group Groups]] which can see this NewsEvent
+   * @param viewers   all [[modules.user.model.Group Groups]] by id which can see this NewsEvent
    * @param ticket    implicit authentication ticket
    * @return Future[Unit]
    */
-  def addEvent(newsEvent: NewsEvent, viewers: Set[Group])(implicit ticket: Ticket): Future[Unit] = {
+  def addEvent(newsEvent: NewsEvent, viewers: Set[Long])(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
       newsEventRepository.addNewsEvent(newsEvent, viewers)
@@ -68,12 +67,14 @@ class NewsService @Inject()(newsEventRepository: NewsEventRepository) extends Ne
    * @see [[modules.news.service.NewsService#addEvent]]
    * @param collectionId id of the Collection
    * @param newsType     [[modules.news.model.NewsType NewsType]] which triggered the NewsEvent
-   * @param viewers      all [[modules.user.model.Group Groups]] which can see this NewsEvent
+   * @param viewers      all [[modules.user.model.Group Groups]] by id which can see this NewsEvent
+   * @param description  an optional short description
    * @param ticket       implicit authentication ticket
    * @return Future[Unit]
    */
-  def addCollectionEvent(collectionId: Long, newsType: NewsType.Value, viewers: Set[Group])(implicit ticket: Ticket): Future[Unit] = {
-    addEvent(eventFrom(collectionId, newsType), viewers)
+  def addCollectionEvent(collectionId: Long, newsType: NewsType.Value, viewers: Set[Long],
+                         description: Option[String] = None)(implicit ticket: Ticket): Future[Unit] = {
+    addEvent(eventFrom(collectionId, newsType, description), viewers)
   }
 
   /**
@@ -85,12 +86,14 @@ class NewsService @Inject()(newsEventRepository: NewsEventRepository) extends Ne
    * @param collectionId  id of the parent [[modules.subject.model.Collection Collection]]
    * @param collectibleId id of the Collectible
    * @param newsType      [[modules.news.model.NewsType NewsType]] which triggered the NewsEvent
-   * @param viewers       all [[modules.user.model.Group Groups]] which can see this NewsEvent
+   * @param viewers       all [[modules.user.model.Group Groups]] by id which can see this NewsEvent
+   * @param description   an optional short description
    * @param ticket        implicit authentication ticket
    * @return Future[Unit]
    */
-  def addCollectibleEvent(collectionId: Long, collectibleId: Long, newsType: NewsType.Value, viewers: Set[Group])(implicit ticket: Ticket): Future[Unit] = {
-    addEvent(eventFrom(collectionId, collectibleId, newsType), viewers)
+  def addCollectibleEvent(collectionId: Long, collectibleId: Long, newsType: NewsType.Value, viewers: Set[Long],
+                          description: Option[String] = None)(implicit ticket: Ticket): Future[Unit] = {
+    addEvent(eventFrom(collectionId, collectibleId, newsType, description), viewers)
   }
 
   /**
@@ -101,7 +104,7 @@ class NewsService @Inject()(newsEventRepository: NewsEventRepository) extends Ne
    * <p> This is a safe implementation and can be used inside controller classes.
    *
    * @param maxCount maximum number of returned NewsEvents, but can always be less
-   * @param ticket implicit authentication ticket
+   * @param ticket   implicit authentication ticket
    * @return Future Seq[ExtendedNewsEvent]
    */
   def getFeed(maxCount: Long)(implicit ticket: Ticket): Future[Seq[ExtendedNewsEvent]] = {

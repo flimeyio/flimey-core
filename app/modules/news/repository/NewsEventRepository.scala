@@ -49,13 +49,13 @@ class NewsEventRepository @Inject()(@NamedDatabase("flimey_data") protected val 
    * <p> The id of the newsEvent must be set to 0 to enable auto increment.
    *
    * @param newsEvent new NewsEvent to save
-   * @param viewers all [[modules.user.model.Group Groups]] which can see the NewsEvent
+   * @param viewers all [[modules.user.model.Group Groups]] by id which can see the NewsEvent
    * @return Future[Unit]
    */
-  def addNewsEvent(newsEvent: NewsEvent, viewers: Set[Group]): Future[Unit] = {
+  def addNewsEvent(newsEvent: NewsEvent, viewers: Set[Long]): Future[Unit] = {
     db.run((for {
       newsId <- (newsEvents returning newsEvents.map(_.id)) += newsEvent
-      _ <- newsTargets ++= viewers.map(group => NewsTarget(0, newsId, group.id))
+      _ <- newsTargets ++= viewers.map(groupId => NewsTarget(0, newsId, groupId))
     } yield ()).transactionally)
   }
 
