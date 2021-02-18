@@ -20,11 +20,22 @@ package modules.news.model
 
 import java.sql.Timestamp
 
+/**
+ * The data class to describe news triggered by different sources.
+ * <p> Has a repository representation.
+ *
+ * @param id          unique identifier (primary key)
+ * @param newsType    the [[modules.news.model.NewsType NewsType]] which describes what triggered this NewsEvent
+ * @param priority    a priority value (expected between 0 and 10)
+ * @param description a short description of the event
+ * @param route       the server path to access the entity which triggered this event
+ * @param date        the timestamp the event occurred
+ */
 case class NewsEvent(id: Long, newsType: NewsType.Value, priority: Long, description: String, route: String, date: Timestamp)
 
 object NewsEvent {
 
-  def applyRaw (id: Long, newsType: String, priority: Long, description: String, route: String, date: Timestamp): NewsEvent = {
+  def applyRaw(id: Long, newsType: String, priority: Long, description: String, route: String, date: Timestamp): NewsEvent = {
     NewsEvent(id, NewsType.withName(newsType), priority, description, route, date)
   }
 

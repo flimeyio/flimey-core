@@ -18,16 +18,12 @@
 
 package modules.news.model
 
+import modules.user.model.Group
+
 /**
- * Enumeration to describe different events which can trigger a [[modules.news.model.NewsEvent NewsEvent]].
+ * Wraps a [[modules.news.model.NewsEvent NewsEvent]] together with its viewing [[modules.user.model.Group Groups]].
+ *
+ * @param newsEvent the NewsEvent
+ * @param viewers Groups which can see the NewsEvent
  */
-object NewsType extends Enumeration {
-
-  type Role = Value
-
-  val CREATED, DELETED, STATE_CHANGE, WARNING, FORECAST = Value
-
-
-  def getAll: Seq[NewsType.Value] = Seq(CREATED, DELETED, STATE_CHANGE, WARNING, FORECAST)
-
-}
+case class ExtendedNewsEvent(newsEvent: NewsEvent, viewers: Seq[Group])

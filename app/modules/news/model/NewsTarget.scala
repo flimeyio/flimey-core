@@ -18,4 +18,13 @@
 
 package modules.news.model
 
+/**
+ * The NewsTarget describes the m to n relationship between a [[modules.news.model.NewsEvent NewsEvent]] and a
+ * [[modules.user.model.Group Group]] which can view the NewsEvent.
+ * <p> Has a repository representation.
+ *
+ * @param id      unique identifier (primary key)
+ * @param newsId  id of the NewsEvent
+ * @param groupId id of the Group
+ */
 case class NewsTarget(id: Long, newsId: Long, groupId: Long)
