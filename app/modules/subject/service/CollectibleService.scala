@@ -26,6 +26,8 @@ import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
 import modules.core.model.Constraint
 import modules.core.repository.FlimeyEntityRepository
+import modules.news.model.NewsType
+import modules.news.service.NewsService
 import modules.subject.model._
 import modules.subject.repository.CollectibleRepository
 import modules.user.util.ViewerAssertion
@@ -42,12 +44,14 @@ import scala.concurrent.Future
  * @param collectionService       injected [[modules.subject.service.CollectionService CollectionService]]
  * @param modelCollectibleService injected [[modules.subject.service.ModelCollectibleService ModelCollectibleService]]
  * @param modelCollectionService  injected [[modules.subject.service.ModelCollectionService ModelCollectionService]]
+ * @param newsService             injected [[modules.news.service.NewsService]]
  */
 class CollectibleService @Inject()(collectibleRepository: CollectibleRepository,
                                    collectionService: CollectionService,
                                    modelCollectibleService: ModelCollectibleService,
                                    modelCollectionService: ModelCollectionService,
-                                   entityRepository: FlimeyEntityRepository) {
+                                   entityRepository: FlimeyEntityRepository,
+                                   newsService: NewsService) {
 
   /**
    * Add a new [[modules.subject.model.Collectible Collectible]].
@@ -81,8 +85,11 @@ class CollectibleService @Inject()(collectibleRepository: CollectibleRepository,
           val configurationStatus = CollectibleLogic.isModelConfiguration(collectibleTypeData.constraints, properties)
           if (!configurationStatus.valid) configurationStatus.throwError
 
-          collectibleRepository.add(
-            Collectible(0, 0, collectionHeader.collection.id, collectibleTypeData.version.id, SubjectState.CREATED, Timestamp.from(Instant.now())), properties)
+          val newCollectible = Collectible(0, 0, collectionHeader.collection.id, collectibleTypeData.version.id, SubjectState.CREATED, Timestamp.from(Instant.now()))
+          for {
+            collectibleId <- collectibleRepository.add(newCollectible, properties)
+            _ <- newsService.addCollectibleEvent(collectionId, collectibleId, NewsType.CREATED, collectionHeader.viewers.getAllViewingGroups.map(_.id))
+          } yield ()
 
         }
       })
@@ -141,16 +148,20 @@ class CollectibleService @Inject()(collectibleRepository: CollectibleRepository,
    * @param ticket        implicit authentication ticket
    * @return Future[Unit]
    */
-  def updateState(collectibleId: Long, newState: String)(implicit ticket: Ticket): Future[Int] = {
+  def updateState(collectibleId: Long, newState: String)(implicit ticket: Ticket): Future[Unit] = {
     try {
       RoleAssertion.assertWorker
       getCollectible(collectibleId) flatMap (extendedCollectible => {
         //Check if the User can edit this Collectible
         ViewerAssertion.assertEdit(extendedCollectible.viewers)
-        val state = CollectionLogic.parseState(newState);
+        val state = CollectionLogic.parseState(newState)
         val updateStatus = CollectibleLogic.isValidStateTransition(extendedCollectible.collectible.state, state)
         if (!updateStatus.valid) updateStatus.throwError
-        collectibleRepository.updateState(collectibleId, state)
+        for {
+          _ <- collectibleRepository.updateState(collectibleId, state)
+          _ <- newsService.addCollectibleEvent(extendedCollectible.collectible.collectionId, collectibleId, NewsType.STATE_CHANGE,
+            extendedCollectible.viewers.getAllViewingGroups.map(_.id))
+        } yield ()
       })
     } catch {
       case e: Throwable => Future.failed(e)
@@ -197,7 +208,11 @@ class CollectibleService @Inject()(collectibleRepository: CollectibleRepository,
       RoleAssertion.assertWorker
       getCollectible(id) flatMap (extendedCollectible => {
         ViewerAssertion.assertMaintain(extendedCollectible.viewers)
-        collectibleRepository.delete(extendedCollectible.collectible)
+        for {
+          _ <- collectibleRepository.delete(extendedCollectible.collectible)
+          _ <- newsService.addCollectibleEvent(extendedCollectible.collectible.collectionId, id, NewsType.DELETED,
+            extendedCollectible.viewers.getAllViewingGroups.map(_.id))
+        } yield ()
       })
     } catch {
       case e: Throwable => Future.failed(e)

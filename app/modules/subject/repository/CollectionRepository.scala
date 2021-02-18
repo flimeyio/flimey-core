@@ -61,13 +61,13 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
    * @param newViewers    [[modules.core.model.Viewer Viewers]] of the Collection.
    * @return Future[Unit]
    */
-  def add(collection: Collection, newProperties: Seq[Property], newViewers: Seq[Viewer]): Future[Unit] = {
+  def add(collection: Collection, newProperties: Seq[Property], newViewers: Seq[Viewer]): Future[Long] = {
     db.run((for {
       entityId <- (entities returning entities.map(_.id)) += FlimeyEntity(0)
-      _ <- (collections returning collections.map(_.id)) += Collection(0, entityId, collection.typeVersionId, collection.status, collection.created)
+      collectionId <- (collections returning collections.map(_.id)) += Collection(0, entityId, collection.typeVersionId, collection.status, collection.created)
       _ <- properties ++= newProperties.map(p => Property(0, p.key, p.value, entityId))
       _ <- viewers ++= newViewers.map(v => Viewer(0, entityId, v.viewerId, v.role))
-    } yield ()).transactionally)
+    } yield collectionId).transactionally)
   }
 
   /**
