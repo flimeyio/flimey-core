@@ -122,7 +122,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     val propertyQuery = accessableCollections joinLeft properties on (_.entityId === _.parentId)
 
     //fetch all viewers
-    val viewerQuery = accessableCollections join viewers on (_.id === _.targetId) join groups on (_._2.viewerId === _.id)
+    val viewerQuery = accessableCollections join viewers on (_.entityId === _.targetId) join groups on (_._2.viewerId === _.id)
 
     val typeQuery = accessableCollections join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
 

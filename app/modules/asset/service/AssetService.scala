@@ -134,7 +134,7 @@ class AssetService @Inject()(typeRepository: TypeRepository,
               viewers.toSet,
               extendedAsset.viewers,
               groups,
-              extendedAsset.asset.id)
+              extendedAsset.asset.entityId)
 
             if (viewersToDelete.nonEmpty || viewersToInsert.nonEmpty) {
               ViewerAssertion.assertMaintain(extendedAsset.viewers)
