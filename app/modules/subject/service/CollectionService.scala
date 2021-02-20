@@ -145,7 +145,7 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
               viewers.toSet,
               collectionHeader.viewers,
               groups,
-              collectionHeader.collection.id)
+              collectionHeader.collection.entityId)
 
             if (viewersToDelete.nonEmpty || viewersToInsert.nonEmpty) {
               ViewerAssertion.assertMaintain(collectionHeader.viewers)
