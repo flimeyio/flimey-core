@@ -64,7 +64,7 @@
 }
 
 .navbar-item {
-    font-size: 14pt;
+    font-size: 13pt;
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
     margin-top: 5px;
@@ -83,10 +83,10 @@
 .navbar-layout{
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
-    padding: 4px;
+    padding: 3px;
     background-color: var(--color-prim-dark);
     color: white;
-    height: 50px;
+    height: 40px;
 }
 
 .navbar-layout-scrolled {
@@ -100,7 +100,7 @@
 }
 
 .main-content {
-    padding-top: 130px;
+    padding-top: 110px;
     -webkit-transition: all 0.8s ease;
     transition: all 0.8s ease;
 }
@@ -153,7 +153,7 @@ a {
 }
 
 .callout{
-    padding: 6px;
+    padding: 4px;
     font-size: medium;
     color: var(--color-error);
 }
@@ -165,7 +165,7 @@ a {
 }
 
 .navbar-title{
-    font-size: 20px;
+    font-size: 13pt;
 }
 
 tbody tr:nth-child(even){
@@ -245,3 +245,17 @@ a:hover{
     text-shadow: none !important;
 }
 
+input{
+    height: 2.2rem !important;
+    font-size: 11pt;
+}
+
+.input-group-field{
+    height: 2.2rem !important;
+    font-size: 11pt;
+}
+
+.input-group{
+    height: 2.2rem !important;
+    font-size: 11pt;
+}

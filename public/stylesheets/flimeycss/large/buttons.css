@@ -19,8 +19,9 @@
 .button{
     color: #ffffff;
     background-color: var(--color-prim);
-    height: 40px;
+    height: 35px;
     width: min-content;
+    font-size: 10pt;
 }
 
 .button:hover{
@@ -29,9 +30,10 @@
 
 .button-small{
     width: fit-content;
-    min-width: 60px;
+    min-width: 55px;
     /*box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);*/
     padding: 3px;
+    font-size: 10pt;
 }
 
 .border-button{
@@ -39,6 +41,7 @@
     border-color: var(--color-prim);
     color: var(--color-prim);
     position: relative;
+    font-size: 10pt;
 }
 
 .border-button:hover{
