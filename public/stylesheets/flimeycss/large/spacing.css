@@ -26,6 +26,10 @@
     max-height: 25px;
 }
 
+.full-high {
+    height: 100%;
+}
+
 .padding-top-50 {
     padding-top: 50px;
 }
@@ -59,6 +63,10 @@
 
 .margin-top-15{
     margin-top: 15px;
+}
+
+.margin-top-30{
+    margin-top: 30px;
 }
 
 .right{
@@ -97,6 +105,10 @@
 
 .margin-bottom-10{
     margin-bottom: 10px;
+}
+
+.margin-bottom-30{
+    margin-bottom: 30px;
 }
 
 .full-width {

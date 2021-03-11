@@ -18,15 +18,14 @@
 * *@
 @(titles: Seq[String], closeAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="navbar-local top-bar navbar-layout">
-    <section class="top-bar-left">
+<div class="navbar-local flex-container horizontal stretched center-align centered">
+    <section class="">
         @for(title <- titles) {
             <div class="navbar-title">@title</div>
         }
     </section>
-    <section class="top-bar-right padding-y">
-        <a href="@closeAction">
-            <button class="button no-margin button-small">Close</button>
+    <div class="weight-2"></div>
+        <a href="@closeAction" class="material-icons">
+            close
         </a>
-    </section>
 </div>
