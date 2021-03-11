@@ -20,15 +20,15 @@
 @import views.html.forms.subject.collection_query_form
 @import views.html.components.utils.message_box_error
 @import modules.subject.model.CollectionHeader
-@import views.html.components.utils.navbar_category_searchable
 @import views.html.forms.core.select_type_form
 @import views.html.components.subject.collection_block
+@import views.html.components.utils.navbar_category
 @(collectionTypes: Seq[EntityType],
         collectionData: Seq[CollectionHeader],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_searchable(Seq("Collections"), routes.CollectionController.index())
+    @navbar_category(Seq("Collections"))
 }{
     @message_box_error(msg)
     @select_type_form(None, collectionTypes, routes.CollectionController.requestNewCollectionEditor(), "New")

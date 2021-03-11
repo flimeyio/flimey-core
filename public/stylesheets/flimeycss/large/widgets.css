@@ -1,5 +1,6 @@
 /*
  * This file is part of the flimey-core software.
+ * Copyright (C) 2021 Karl Kegel
  * Copyright (C) 2020-2021 Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,96 +20,42 @@
 .sticky-footer{
     position: fixed;
     bottom: 0px;
-    padding-left: 15px;
+    right: 0px;
+    padding-right: 20px;
     padding-bottom: 15px;
 }
 
-.sticky-headbar{
+.sticky-leftbar{
     position: fixed;
-    top: 0px;
-    width: 100%;
-    background-color: white;
+    left: 0px;
+    height: 100vh;
+    background-color: var(--color-prim-dark);
+    width: 50px;
     z-index: 1000;
 }
 
-.navbar-global {
-    background-color: var(--color-background);
-    height: 100px;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.navbar-global-scrolled {
-    height: 60px;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.root-navigation {
-    height: 50px;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.navbar-global-scrolled .root-navigation {
-    height: 30px;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.navbar-global-scrolled .button {
-    background-color: white !important;
-    color: black;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.navbar-item {
-    font-size: 14pt;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-    margin-top: 5px;
-    padding-left: 3px;
-    padding-right: 3px;
-    color: black;
-    font-weight: bolder;
-}
-
-.navbar-global-scrolled .navbar-item {
-    font-size: 12pt;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.navbar-layout{
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-    padding: 4px;
-    background-color: var(--color-prim-dark);
+.navbar-icon {
     color: white;
-    height: 50px;
+    font-size: 24px;
+    -webkit-transition: all 0.4s ease;
+    transition: all 0.4s ease;
 }
 
-.navbar-layout-scrolled {
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-    padding: 4px;
-    background-color: var(--color-background);
-    border-bottom: 5px solid var(--color-prim-dark);
-    color: black;
-    height: 50px;
+.navbar-local {
+    width: 100%;
+    background-color: #d3d3d3;
+    height: 40px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.navbar-icon:hover {
+    color: white;
+    font-size: 34px;
 }
 
 .main-content {
-    padding-top: 130px;
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-}
-
-.main-content-scrolled {
-    -webkit-transition: all 0.8s ease;
-    transition: all 0.8s ease;
-   padding-top: 90px;
+    padding-top: 15px;
 }
 
 .top-bar .menu{
@@ -165,7 +112,7 @@ a {
 }
 
 .navbar-title{
-    font-size: 20px;
+    font-size: 18px;
 }
 
 tbody tr:nth-child(even){
