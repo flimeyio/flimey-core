@@ -1,5 +1,6 @@
 @*
 * This file is part of the flimey-core software.
+*
 * Copyright (C) 2020  Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
@@ -10,41 +11,30 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.auth.model.Ticket
 @import modules.user.model.Role
 @(navbarLocalLeft: Html = Html(""), navbarLocalRight: Html = Html(""))(implicit ticket: Ticket)
 
-<div class="flex-container vertical full-width">
-    <div class="flex-container horizontal full-width root-navigation stretched">
-        <div class="flex-container horizontal left-align weight-1">
-        <a href="@routes.NewsController.index()" class="navbar-item margin-right-10"><div class="">Overview</div></a>
-        <a href="@routes.CollectionController.index()" class="navbar-item margin-right-10"><div class="">Collections</div></a>
-        <a href="@routes.AssetController.index()" class="navbar-item margin-right-10"><div class="">Assets</div></a>
+<div class="flex-container vertical centered full-high">
 
-        </div>
-        <div class="flex-container horizontal right-align">
-        @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-            <a href="@routes.ModelController.index()" class="navbar-item margin-right-10"><div class="">Model</div></a>
-        }
-        @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
-            <a href="@routes.ManagementController.index()" class="navbar-item margin-right-10"><div class="">Admin</div></a>
-        }
-        <a href="@routes.AccountController.getAccountOverview()" class="navbar-item"><div class="">Account</div></a>
-        </div>
-    </div>
-    <div class="flex-container horizontal full-width">
-        <div class="col-5">
-            @navbarLocalLeft
-        </div>
-        <div class="col-5 padding-left-10">
-            @navbarLocalRight
-        </div>
-    </div>
+    <a href="@routes.NewsController.index()" class="material-icons navbar-icon margin-top-15">circle_notifications</a>
+    <a href="@routes.CollectionController.index()" class="material-icons navbar-icon margin-top-15">space_dashboard</a>
+    <a href="@routes.AssetController.index()" class="material-icons navbar-icon margin-top-15">topic</a>
+
+    @if(Role.isAtLeastModeler(ticket.authSession.role)) {
+        <a href="@routes.ModelController.index()" class="material-icons navbar-icon margin-top-30"><div class="">extension</div></a>
+    }
+    @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
+        <a href="@routes.ManagementController.index()" class="material-icons navbar-icon margin-top-15"><div class="">
+            miscellaneous_services</div></a>
+    }
+    <a href="@routes.AccountController.getAccountOverview()" class="material-icons navbar-icon margin-top-15 margin-bottom-30">account_circle</a>
+
 </div>
 

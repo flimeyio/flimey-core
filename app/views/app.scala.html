@@ -22,19 +22,21 @@
         navbarLocalRight: Html = Html(""))(rightContainer: Html = Html(""))(msg: Option[String] = None)(implicit ticket: Ticket)
 
 @main {
-    <div class="flex-container vertical">
-        <div class="sticky-headbar navbar-global width-90vw margin-5vw-side">
+    <div class="sticky-leftbar">
         @navbar_main(navbarLocalLeft, navbarLocalRight)
-        </div>
-        <div class="flex-container horizontal main-content width-90vw margin-5vw-side">
-            <div class="col-5">
+    </div>
+    <div class="flex-container horizontal main-content width-90vw margin-5vw-side">
+        <div class="col-5">
+            @navbarLocalLeft
+            <div class="margin-top-15"></div>
             @leftContainer
-            </div>
-            <div class="col-5 padding-left-10">
-            @if(!rightContainer.equals(Html(""))) {
-                @rightContainer
-            }
-            </div>
+        </div>
+        <div class="col-5 padding-left-10">
+        @if(!rightContainer.equals(Html(""))) {
+            @navbarLocalRight
+            <div class="margin-top-15"></div>
+            @rightContainer
+        }
         </div>
     </div>
     @footer()

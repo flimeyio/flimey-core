@@ -19,8 +19,8 @@
 
 @(titles: Seq[String])
 
-<div class="navbar-local top-bar navbar-layout">
-    <section class="top-bar-left">
+<div class="navbar-local flex-container horizontal stretched center-align centered">
+    <section class="">
         @for(title <- titles) {
             <div class="navbar-title">@title</div>
         }
