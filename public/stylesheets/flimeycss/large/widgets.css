@@ -140,10 +140,6 @@
     font-size: 30px;
 }
 
-a {
-    color: var(--color-prim);
-}
-
 .background-image{
     position:relative;
     top: 5%;
@@ -206,11 +202,7 @@ tbody tr:nth-child(even){
     font-size: 30px;
 }
 
-.admin_nav a{
-    color:white;
-}
-
-.admin_nav .button{
+.admin_nav .border-button{
     width: 100%;
 }
 
@@ -233,11 +225,6 @@ tbody tr:nth-child(even){
     left: 5%;
     height: 60%;
     transform: translate(-50%, -50%);
-}
-
-a:hover{
-    text-shadow: 0 0 1px var(--color-sec-light);
-    color: var(--color-prim-dark);
 }
 
 .no-hover:hover{
