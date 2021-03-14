@@ -31,23 +31,21 @@
                 @typeValue.toLowerCase
             </div>
         </div>
-        <div class="padding-left-10">
+        <div class="padding-left-10 padding-right-20">
             @if(data.properties.exists(_.key == "Name")) {
                 <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
             }
             </div>
     </div>
     <div class="flex-container horizontal left-align">
-        <div class="">
         <div>status: @data.collection.status </div>
-        </div>
         <div class="padding-left-10">
         <a href="@routes.CollectionController.getStateEditor(data.collection.id)">
             <i class="material-icons fc-prim">swap_horiz</i>
         </a>
         </div>
     </div>
-    <div> created at: @data.collection.created.toString</div>
+    <div> created at: @data.collection.created.format("dd.MM.yyyy HH:mm")</div>
     @for(property <- data.properties) {
         @if(property.key != "Name") {
             <div>@{

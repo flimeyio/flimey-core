@@ -22,6 +22,7 @@ html, body {
     max-height: 100vh;
     margin: 0;
     overflow-wrap: break-word;
+    word-break: break-word;
     scroll-behavior: auto;
     overflow-y: auto;
     background-color: var(--color-background);

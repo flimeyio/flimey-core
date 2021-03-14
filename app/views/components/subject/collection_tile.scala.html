@@ -29,22 +29,22 @@
     </div>
     <div class="flex-container horizontal left-align">
         <div class="">
-            @if(data.entityType.isDefined) {
-                <div class="tag bg-sec-dark cell-small-1">
-                @data.entityType.get.value.toLowerCase
-                </div>
-            }
+        @if(data.entityType.isDefined) {
+            <div class="tag bg-sec-dark cell-small-1">
+            @data.entityType.get.value.toLowerCase
+            </div>
+        }
         </div>
-        <div class="padding-left-10">
-            @if(data.properties.exists(_.key == "Name")){
-                <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
-            }
+        <div class="padding-left-10 padding-right-20">
+        @if(data.properties.exists(_.key == "Name")) {
+            <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
+        }
         </div>
     </div>
     <div class="flex-container horizontal stretched padding-bottom-10">
-    <div>@data.collection.status</div>
-    <div class="weight-2"></div>
-    <div class="padding-left-10">created at: @data.collection.created.toString</div>
+        <div>@data.collection.status</div>
+        <div class="weight-2"></div>
+        <div class="padding-left-10">created at: @data.collection.created.format("dd.MM.yyyy HH:mm")</div>
     </div>
     @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeVersionId, c.properties))))
     <div class="meta-viewport"></div>
