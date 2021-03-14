@@ -20,7 +20,7 @@
 @()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="admin_nav">
-    <button class="border-button small-margin-top"><a  class="fc-prim-dark" href="@routes.ManagementController.getInvitedUsers()">Invited Users</a></button>
+    <a  class="fc-prim-dark border-button full-width small-margin-top" href="@routes.ManagementController.getInvitedUsers()">Invited Users</a>
     <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getInvitationForm()">New Invitation</a></button>
     <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getGroups()">Group Management</a></button>
     <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getNewGroupForm()">New Group</a></button>
