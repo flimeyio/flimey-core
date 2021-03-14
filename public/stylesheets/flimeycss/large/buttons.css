@@ -31,10 +31,16 @@
 .button-small{
     width: fit-content;
     min-width: 55px;
-    /*box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);*/
     padding: 3px;
     font-size: 10pt;
 }
+
+.button-mini{
+     width: fit-content;
+     min-width: 20px;
+     padding: 3px;
+     font-size: 10pt;
+ }
 
 .border-button{
     background-color: transparent;
@@ -46,14 +52,16 @@
     font-size: 10pt;
     height: 35px;
     width: min-content;
+    box-shadow: 0 0px 1px 0 var(--color-prim-dark);
 }
 
 .border-button:hover {
     color: var(--color-prim-dark);
-    box-shadow: 0 0 2px 0 var(--color-prim-dark);
+    box-shadow: 0 0 3px 0 var(--color-prim-dark);
 }
 
 .delete-button:hover{
     background-color: var(--color-error);
     border-color: var(--color-error);
+    color: white;
 }
