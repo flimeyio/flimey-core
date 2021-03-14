@@ -34,28 +34,21 @@
 }
 
 @message_box_error(msg)
-    <div class="menu relative-container">
+    <div class="flex-container horizontal full-width stretched">
 @select_versioned_type_form(selectedType, assetTypes, routes.AssetController.changeAssetType(), "Show")
 @if(selectedType.isDefined) {
-    <div class="padding-left-right">
-    <a class= "button border-button no-padding" href="@routes.AssetController.getNewAssetEditor(selectedType.get.entityType.id)">
-        <i class="material-icons margin-top-5">add</i>
+    <a class="border-button button-mini margin-10-side" href="@routes.AssetController.getNewAssetEditor(selectedType.get.entityType.id)">
+        <i class="material-icons fc-prim">add</i>
     </a>
-    </div>
-    <div>
-    @if(pageNumber > 0){
-        <div class="bit-right">
-        <a href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber-1)">
-            <i class="material-icons big-icon">navigate_before</i>
+    <div class="weight-2"></div>
+        @if(pageNumber > 0){
+            <a class="no-padding" href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber-1)">
+                <i class="material-icons big-icon fc-prim">navigate_before</i>
+            </a>
+        }
+        <a class="padding-left-10" href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber+1)">
+            <i class="material-icons big-icon fc-prim">navigate_next</i>
         </a>
-        </div>
-    }
-    <div class="right">
-    <a class="no-padding" href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber+1)">
-        <i class="material-icons big-icon">navigate_next</i>
-    </a>
-    </div>
-    </div>
 }
     </div>
     <div class="margin-top-15">
