@@ -87,10 +87,6 @@
     font-size: 30px;
 }
 
-a {
-    color: var(--color-prim);
-}
-
 .background-image{
     position:relative;
     top: 5%;
@@ -100,7 +96,7 @@ a {
 }
 
 .callout{
-    padding: 6px;
+    padding: 4px;
     font-size: medium;
     color: var(--color-error);
 }
@@ -123,7 +119,7 @@ tbody tr:nth-child(even){
     padding: 8px;
     width: 100%;
     background-color: white;
-    box-shadow: 0 3px 0px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.2);
 }
 
 .tile table th, td {
@@ -153,11 +149,7 @@ tbody tr:nth-child(even){
     font-size: 30px;
 }
 
-.admin_nav a{
-    color:white;
-}
-
-.admin_nav .button{
+.admin_nav .border-button{
     width: 100%;
 }
 
@@ -182,13 +174,26 @@ tbody tr:nth-child(even){
     transform: translate(-50%, -50%);
 }
 
-a:hover{
-    text-shadow: 0 0 1px var(--color-sec-light);
-    color: var(--color-prim-dark);
-}
-
 .no-hover:hover{
     color: white !important;
     text-shadow: none !important;
 }
 
+input{
+    height: 2.2rem !important;
+    font-size: 11pt;
+}
+
+.input-group-field{
+    height: 2.2rem !important;
+    font-size: 11pt;
+}
+
+.input-group{
+    height: 2.2rem !important;
+    font-size: 11pt;
+}
+
+.prim-dark-hover:hover{
+    color: var(--color-prim-dark);
+}

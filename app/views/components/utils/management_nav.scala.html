@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,9 +20,9 @@
 @()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="admin_nav">
-    <div><a class="button small-margin-top" href="@routes.ManagementController.getInvitedUsers()">Invited Users</a></div>
-    <div><a class="button small-margin-top" href="@routes.ManagementController.getInvitationForm()">New Invitation</a></div>
-    <div><a class="button small-margin-top" href="@routes.ManagementController.getGroups()">Group Management</a></div>
-    <div><a class="button small-margin-top" href="@routes.ManagementController.getNewGroupForm()">New Group</a></div>
-    <div><a class="button small-margin-top" href="@routes.ManagementController.getUsers()">User Management</a></div>
+    <a  class="fc-prim-dark border-button full-width small-margin-top" href="@routes.ManagementController.getInvitedUsers()">Invited Users</a>
+    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getInvitationForm()">New Invitation</a></button>
+    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getGroups()">Group Management</a></button>
+    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getNewGroupForm()">New Group</a></button>
+    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getUsers()">User Management</a></button>
 </div>
