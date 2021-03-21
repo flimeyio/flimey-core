@@ -32,8 +32,8 @@
         <div class="col-3">Key</div>
         <div class="col-7" >@invitedUser.key.get</div>
     </div>
-    <div id="parent">
-        <button class="btn-showDialog" onclick="showConfirmDelDialog(this)">Delete</button>
+    <div>
+        <button class="btn-showDialog button" onclick="showConfirmDelDialog(this)">Delete</button>
         @confirm_dialog{
             <form role="form" action='@routes.ManagementController.deleteInvitation(invitedUser.id)' method="post">
                 @CSRF.formField

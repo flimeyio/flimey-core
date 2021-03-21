@@ -17,6 +17,7 @@
 * *@
 @import views.html.helper.CSRF
 @import modules.user.model.Group
+@import views.html.components.utils.confirm_dialog
 @(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="card tile flex-container vertical padding-bottom">
@@ -36,10 +37,13 @@
         </div>
         <div class="col-2"></div>
         <div class="col-2">
-            <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
-                @CSRF.formField
-                <button type="submit" class="button button-small no-margin delete-button border-button">Delete</button>
-            </form>
+            <button class="btn-showDialog button button-small no-margin delete-button border-button" onclick="showConfirmDelDialog(this)">Delete</button>
+            @confirm_dialog{
+                <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
+                    @CSRF.formField
+                    <button type="submit" class="delete-button button-small button no-margin">Confirm</button>
+                </form>
+            }
         </div>
     </div>
 </div>
