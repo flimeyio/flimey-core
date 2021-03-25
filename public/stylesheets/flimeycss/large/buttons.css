@@ -16,11 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-.button{
+.solid-button{
     color: #ffffff;
     background-color: var(--color-prim);
-    height: 40px;
+    height: 35px;
     width: min-content;
+    font-size: 10pt;
 }
 
 .button:hover{
@@ -29,25 +30,38 @@
 
 .button-small{
     width: fit-content;
-    min-width: 60px;
-    /*box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);*/
+    min-width: 55px;
     padding: 3px;
+    font-size: 10pt;
 }
+
+.button-mini{
+     width: fit-content;
+     min-width: 20px;
+     padding: 3px;
+     font-size: 10pt;
+ }
 
 .border-button{
-    background-color: white;
-    border-color: var(--color-prim);
-    color: var(--color-prim);
+    background-color: transparent;
+    border-color: var(--color-prim-dark);
+    border-style: solid;
+    border-width: 1px;
+    color: var(--color-prim-dark);
     position: relative;
+    font-size: 10pt;
+    height: 35px;
+    width: min-content;
+    box-shadow: 0 0px 1px 0 var(--color-prim-dark);
 }
 
-.border-button:hover{
-    background-color: var(--color-prim-dark);
-    border-color: var(--color-prim-dark);
-    color: white;
+.border-button:hover {
+    color: var(--color-prim-dark);
+    box-shadow: 0 0 3px 0 var(--color-prim-dark);
 }
 
 .delete-button:hover{
     background-color: var(--color-error);
     border-color: var(--color-error);
+    color: white;
 }

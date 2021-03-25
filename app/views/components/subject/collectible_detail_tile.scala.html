@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2021 Karl Kegel
+* Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,31 +23,42 @@
 <div class="meta-entity-container card relative-container tile">
     <div class="float-top-right">
         <a href="@routes.CollectibleController.getCollectibleEditor(data.collectible.collectionId, data.collectible.id)">
-            <i class="material-icons">create</i>
+            <i class="material-icons fc-prim">create</i>
         </a>
     </div>
-    @if(data.entityType.isDefined) {
-        <div class="tag bg-sec-dark cell-small-1">
-        @data.entityType.get.value.toLowerCase
+    <div class="flex-container horizontal left-align">
+        <div>
+        @if(data.entityType.isDefined) {
+            <div class="tag bg-sec-dark">
+            @data.entityType.get.value.toLowerCase
+            </div>
+        }
         </div>
-    }
-    @if(data.properties.exists(_.key == "Name")) {
-        <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
-    }
-    <p>status: @data.collectible.state
-        <a href="@routes.CollectibleController.getStateEditor(data.collectible.collectionId, data.collectible.id)">
-            <i class="material-icons">swap_horiz</i>
-        </a>
-    </p>
-    <p> created at: @data.collectible.created.toString</p>
-    <hr/>
+        <div class="padding-left-10 padding-right-20">
+        @if(data.properties.exists(_.key == "Name")){
+            <b>@data.properties.find(_.key == "Name").get.value</b>
+        }
+        </div>
+    </div>
+    <div class="flex-container horizontal stretched">
+        <div>status: @data.collectible.state </div>
+        <div class="padding-left-10">
+            <a href="@routes.CollectibleController.getStateEditor(data.collectible.collectionId, data.collectible.id)">
+                <i class="material-icons fc-prim">swap_horiz</i>
+            </a>
+        </div>
+        <div class="weight-2"></div>
+    <div> created at: @data.collectible.created.format("dd.MM.yyyy HH:mm")</div>
+    </div>
+    <div class="margin-top-5">
     @for(property <- data.properties) {
         @if(property.key != "Name") {
-            <p>@{
+            <div>@{
                 property.key + ": " + property.value
-            }</p>
+            }</div>
         }
     }
+    </div>
     @meta_entity(data.collectible.id, data.properties, None)
     <div class="meta-viewport"></div>
 </div>

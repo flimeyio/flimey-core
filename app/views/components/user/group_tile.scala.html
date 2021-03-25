@@ -1,6 +1,7 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Julia Kegel
 * Copyright (C) 2021 Tom-Maurice Schreiber
 *
 * This program is free software: you can redistribute it and/or modify
@@ -23,28 +24,20 @@
 
 <div class="card tile flex-container vertical padding-bottom">
     <div class="subtitle-bar full-width h6">@group.name</div>
-    <div class="flex-container horizontal full-width">
-        <div class="col-3">
-            <div class="button border-button no-margin align-horizontal">
-                <i class="material-icons center-icon-vertical">create</i>
-                <a class="no-hover" href="@routes.ManagementController.getGroupEditor(group.id)">Members</a>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="button border-button no-margin align-horizontal">
-                <i class="material-icons center-icon-vertical">create</i>
-                <a class="no-hover" href="@routes.ManagementController.getGroupRelationEditor(group.id)">Relations</a>
-            </div>
-        </div>
-        <div class="col-2"></div>
-        <div class="col-2">
-            <button class="btn-showDialog button button-small no-margin delete-button border-button" onclick="showConfirmDelDialog(this)">Delete</button>
+    <div class="flex-container horizontal full-width stretched">
+        <button class="border-button border-small">
+            <a class="fc-prim prim-dark-hover" href="@routes.ManagementController.getGroupEditor(group.id)">Members</a>
+        </button>
+        <button class="border-button button-small margin-10-side">
+            <a class="fc-prim prim-dark-hover" href="@routes.ManagementController.getGroupRelationEditor(group.id)">Relations</a>
+        </button>
+        <div class="weight-2"></div>
+            <button class="btn-showDialog button-small no-margin delete-button border-button" onclick="showConfirmDelDialog(this)">Delete</button>
             @confirm_dialog{
                 <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
                     @CSRF.formField
                     <button type="submit" class="delete-button button-small button no-margin">Confirm</button>
                 </form>
             }
-        </div>
     </div>
 </div>

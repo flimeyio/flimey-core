@@ -29,7 +29,7 @@ function showConfirmDelDialog(btnDelete) {
     showDialogBtn.hidden = true;
 
     // buttons with class button can not be hidden
-    showDialogBtn.classList.remove("button");
+    //showDialogBtn.classList.remove("button");
 }
 
 // Cancel Delete
@@ -40,7 +40,7 @@ function cancelDelete(element) {
     dialogConfirmDel.hidden = true;
     showDialogBtn.hidden = false;
 
-    showDialogBtn.classList.add("button")
+    //showDialogBtn.classList.add("button")
 }
 
 // find specific child element by className
