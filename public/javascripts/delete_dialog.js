@@ -24,12 +24,8 @@ function showConfirmDelDialog(btnDelete) {
     // Show-Dialog Button is the Delete Button
     let showDialogBtn = getChildElement("btn-showDialog", btnDelete.parentNode);
 
-    console.log(btnDelete.parentNode);
     dialogConfirmDel.hidden = false;
     showDialogBtn.hidden = true;
-
-    // buttons with class button can not be hidden
-    //showDialogBtn.classList.remove("button");
 }
 
 // Cancel Delete
@@ -39,8 +35,6 @@ function cancelDelete(element) {
 
     dialogConfirmDel.hidden = true;
     showDialogBtn.hidden = false;
-
-    //showDialogBtn.classList.add("button")
 }
 
 // find specific child element by className
