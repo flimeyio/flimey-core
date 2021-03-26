@@ -20,7 +20,7 @@
 @import views.html.helper.CSRF
 @(versions: Seq[VersionedEntityType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card relative-container tile meta-type-tile">
+<div id="@{"meta-type-tile-"+versions.head.entityType.id}" class="card relative-container tile">
     <div class="flex-container full-width left-align">
         @if(versions.head.entityType.active){
             <i class="material-icons">extension</i>
@@ -31,17 +31,17 @@
     </div>
 
     <div class="flex-container full-width stretched margin-top-15">
-        <select class="col-1">
-        @for(i <- versions.indices){
-            <option>
+        <select class="col-1 meta-type-version-select" onchange=@{"updateTypeTile("+versions.head.entityType.id+")"}>
+        @for(i <- versions.indices.reverse){
+            <option value="@versions(i).version.version">
                 @versions(i).version.version
             </option>
-        }
+            }
         </select>
 
-        <div>
+        <div class="meta-type-version-switch">
              @for(i <- versions.indices){
-                <div id="@i" class="flex-container meta-version-tile margin-10-side">
+                <div id="@versions(i).version.version" class="flex-container meta-version-view margin-10-side">
                     <a class="margin-right-10" href="@routes.ModelController.getVersionEditor(versions.head.entityType.id, versions(i).version.id)">
                         <button class="button-small border-button">edit v. + @versions(i).version.version</button>
                     </a>
@@ -52,6 +52,9 @@
                 </div>
             }
         </div>
+
+        <script>updateTypeTile(@versions.head.entityType.id)</script>
+
         <div class="weight-2"></div>
          @helper.form(action = routes.ModelController.addVersion(versions.head.entityType.id)) {
             @CSRF.formField
