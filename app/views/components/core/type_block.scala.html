@@ -19,7 +19,7 @@
 @import modules.core.model.EntityType
 @import views.html.components.core.type_tile
 @import modules.core.model.VersionedEntityType
-@(entityTypes: Seq[VersionedEntityType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(entityTypes: Seq[Seq[VersionedEntityType]])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 <div class="scroll-container">
     @for(entityType <- entityTypes){
         @type_tile(entityType)

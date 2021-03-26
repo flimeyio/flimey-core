@@ -27,3 +27,9 @@ html, body {
     overflow-y: auto;
     background-color: var(--color-background);
 }
+
+html, body, text, a, button {
+    cursor: default !important;
+}
+
+

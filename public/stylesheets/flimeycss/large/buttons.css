@@ -30,7 +30,7 @@
 
 .button-small{
     width: fit-content;
-    min-width: 55px;
+    min-width: 7em;
     padding: 3px;
     font-size: 10pt;
 }
@@ -50,7 +50,7 @@
     color: var(--color-prim-dark);
     position: relative;
     font-size: 10pt;
-    height: 35px;
+    height: 2.8em;
     width: min-content;
     box-shadow: 0 0px 1px 0 var(--color-prim-dark);
 }
