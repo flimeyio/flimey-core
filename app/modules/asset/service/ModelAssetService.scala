@@ -315,7 +315,7 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
    * @param ticket        implicit authentication ticket
    * @return Future[Unit]
    */
-  override def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
+  override def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Long] = {
     Future.failed(new Exception("Operation not supported for Asset Types"))
   }
 

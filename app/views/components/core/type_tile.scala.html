@@ -17,6 +17,7 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.core.model.VersionedEntityType
+@import views.html.helper.CSRF
 @(versionedEntityType: VersionedEntityType)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="card relative-container tile">
@@ -33,6 +34,12 @@
         @versionedEntityType.entityType.typeOf
         </div>
     </div>
-    <a href="#">Fork Version</a>
-    <a href="#">New Version</a>
+    @helper.form(action = routes.ModelController.forkVersion(versionedEntityType.entityType.id, versionedEntityType.version.id)) {
+        @CSRF.formField
+        <button class="button-small border-button">Fork Version</button>
+    }
+    @helper.form(action = routes.ModelController.addVersion(versionedEntityType.entityType.id)) {
+        @CSRF.formField
+        <button class="button-small border-button">New Version</button>
+    }
 </div>

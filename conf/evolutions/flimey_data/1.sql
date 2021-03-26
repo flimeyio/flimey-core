@@ -36,7 +36,8 @@ create table type_version
     id      SERIAL NOT NULL PRIMARY KEY,
     type_id BIGINT NOT NULL,
     version BIGINT NOT NULL,
-    FOREIGN KEY (type_id) REFERENCES entity_type (id)
+    FOREIGN KEY (type_id) REFERENCES entity_type (id),
+    CONSTRAINT c_type_id_version UNIQUE (type_id, version)
 );
 
 create table type_constraint

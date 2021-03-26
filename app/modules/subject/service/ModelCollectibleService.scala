@@ -52,7 +52,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getAllTypes]]
@@ -64,7 +64,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getAllVersion]]
@@ -76,7 +76,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#addVersion]]
@@ -85,11 +85,24 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * @return Future[Long]
    */
   override def addVersion(typeId: Long)(implicit ticket: Ticket): Future[Long] = {
-    Future.failed(new Exception("Not implemented yet"))
+    entityTypeService.addVersion(typeId)
   }
 
   /**
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * [[modules.subject.model.Collectible Collectibles]].</strong>
+   *
+   * @see [[modules.core.service.ModelEntityService#forkVersion]]
+   * @param typeVersionId of the TypeVersion to fork
+   * @param ticket        implicit authentication ticket
+   * @return Future[Unit]
+   */
+  override def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Long] = {
+    entityTypeService.forkVersion(typeVersionId)
+  }
+
+  /**
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#deleteVersion]]
@@ -98,7 +111,19 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * @return Future[Unit]
    */
   override def deleteVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
-    Future.failed(new Exception("Not implemented yet"))
+    try {
+      RoleAssertion.assertModeler
+      getVersionedType(typeVersionId) flatMap (versionedTypeOption => {
+        if (versionedTypeOption.isEmpty) throw new Exception("No such version found")
+        val versionedType = versionedTypeOption.get
+        typeRepository.getAllExtendedVersions(versionedType.entityType.id, Some(CollectibleConstraintSpec.COLLECTIBLE)) flatMap (allVersions => {
+          if (allVersions.size == 1) throw new Exception("Every type must have at least one version")
+          collectibleRepository.deleteCollectibleTypeVersion(typeVersionId)
+        })
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
   }
 
   /**
@@ -118,7 +143,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * Get an [[modules.subject.model.Collectible Collectible]] [[modules.core.model.EntityType EntityType]] by its ID.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getType]]
@@ -131,7 +156,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getVersionedType]]
@@ -148,7 +173,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getExtendedType]]
@@ -161,7 +186,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getLatestExtendedType]]
@@ -178,7 +203,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getTypeByValue]]
@@ -195,7 +220,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#updateType]]
@@ -220,7 +245,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights.
    * <p>This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#getConstraintsOfType]]
@@ -241,7 +266,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#deleteConstraint]]
@@ -285,7 +310,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without MODELER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#addConstraint]]
@@ -333,7 +358,7 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without MODELER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
+   * <p><strong> Specific implementation to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.subject.model.Collectible Collectibles]].</strong>
    *
    * @see [[modules.core.service.ModelEntityService#deleteType]]
@@ -348,19 +373,6 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
     } catch {
       case e: Throwable => Future.failed(e)
     }
-  }
-
-  /**
-   * <p><strong> Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
-   * [[modules.subject.model.Collectible Collectibles]].</strong>
-   *
-   * @see [[modules.core.service.ModelEntityService#forkVersion]]
-   * @param typeVersionId of the TypeVersion to fork
-   * @param ticket        implicit authentication ticket
-   * @return Future[Unit]
-   */
-  override def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit] = {
-    Future.failed(new Exception("Not implemented yet"))
   }
 
 }
