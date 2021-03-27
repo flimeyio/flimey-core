@@ -59,6 +59,13 @@ class TypeRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCon
     } yield newTypeId).transactionally)
   }
 
+  def addVersion(typeVersion: TypeVersion, newConstraints: Seq[Constraint]): Future[Long] = {
+    db.run((for {
+      typeVersionId <- (typeVersions returning typeVersions.map(_.id)) += typeVersion
+      _ <- constraints ++= newConstraints.map(c => Constraint(0, c.c, c.v1, c.v2, c.byPlugin, typeVersionId))
+    } yield typeVersionId).transactionally)
+  }
+
   /**
    * Update an existing EntityType
    *

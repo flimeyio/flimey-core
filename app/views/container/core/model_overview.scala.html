@@ -21,7 +21,7 @@
 @import views.html.components.core.type_block
 @import modules.core.model.VersionedEntityType
 @import views.html.components.utils.navbar_category
-@(allTypes: Seq[VersionedEntityType],
+@(allTypes: Seq[Seq[VersionedEntityType]],
         msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {

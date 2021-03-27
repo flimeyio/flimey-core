@@ -1,7 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020-2021 Karl Kegel
- * Copyright (C) 2020 Julia Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-html, body {
-    min-height: 100vh;
-    max-height: 100vh;
-    margin: 0;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    scroll-behavior: auto;
-    overflow-y: auto;
-    background-color: var(--color-background);
+function updateTypeTile(typeId){
+    //get meta-type-tile with this typeId
+    let tile = $("#meta-type-tile-"+typeId)
+    let selectedVersion = tile.find(".meta-type-version-select").first().val();
+
+    //get meta-type-version-switch
+    let versionViews = tile.find(".meta-type-version-switch .meta-version-view")
+    for(let i = 0; i < versionViews.length; i++){
+        let versionView = versionViews[i];
+        let id = versionView.id;
+        if(id === selectedVersion){
+            $(versionView).show();
+        }else{
+            $(versionView).hide();
+        }
+    }
 }
-
-html, body, text, a, button {
-    cursor: default !important;
-}
-
-

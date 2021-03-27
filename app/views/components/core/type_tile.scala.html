@@ -17,22 +17,57 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.core.model.VersionedEntityType
-@(versionedEntityType: VersionedEntityType)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.helper.CSRF
+@(versions: Seq[VersionedEntityType])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card relative-container tile">
-    <a href="@routes.ModelController.getTypeEditor(versionedEntityType.entityType.id)">
-        Edit Type
+<div id="@{"meta-type-tile-"+versions.head.entityType.id}" class="card relative-container tile">
+    <div class="flex-container full-width left-align">
+        @if(versions.head.entityType.active){
+            <i class="material-icons">extension</i>
+        }else{
+            <i class="material-icons">extension_off</i>
+        }
+        <b class="margin-10-side">@versions.head.entityType.value</b>
+    </div>
+
+    <div class="flex-container full-width stretched margin-top-15">
+        <select class="col-1 meta-type-version-select" onchange=@{"updateTypeTile("+versions.head.entityType.id+")"}>
+        @for(i <- versions.indices.reverse){
+            <option value="@versions(i).version.version">
+                @versions(i).version.version
+            </option>
+            }
+        </select>
+
+        <div class="meta-type-version-switch">
+             @for(i <- versions.indices){
+                <div style="display: none;" id="@versions(i).version.version" class="flex-container meta-version-view margin-10-side">
+                    <a class="margin-right-10" href="@routes.ModelController.getVersionEditor(versions.head.entityType.id, versions(i).version.id)">
+                        <button class="button-small border-button">edit v. + @versions(i).version.version</button>
+                    </a>
+                    @helper.form(action = routes.ModelController.forkVersion(versions.head.entityType.id, versions(i).version.id)) {
+                        @CSRF.formField
+                        <button class="button-small border-button">fork v. @versions(i).version.version</button>
+                    }
+                </div>
+            }
+        </div>
+
+        <script>updateTypeTile(@versions.head.entityType.id)</script>
+
+        <div class="weight-2"></div>
+         @helper.form(action = routes.ModelController.addVersion(versions.head.entityType.id)) {
+            @CSRF.formField
+            <button class="button-small border-button margin-right-10">New Version</button>
+        }
+    <a href="@routes.ModelController.getTypeEditor(versions.head.entityType.id)">
+        <button class="button-small border-button">Edit Type</button>
     </a>
-    <a href="@routes.ModelController.getVersionEditor(versionedEntityType.entityType.id, versionedEntityType.version.id)">
-        Edit Version
-    </a>
-    <p>name: @versionedEntityType.entityType.value | v.@versionedEntityType.version.version</p>
-    <p>active @versionedEntityType.entityType.active</p>
+    </div>
+
     <div class="tag-box">
         <div class="tag bg-maintain cell-small-1">
-        @versionedEntityType.entityType.typeOf
+        @versions.head.entityType.typeOf
         </div>
     </div>
-    <a href="#">Fork Version</a>
-    <a href="#">New Version</a>
 </div>

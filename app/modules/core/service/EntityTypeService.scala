@@ -21,7 +21,7 @@ package modules.core.service
 import com.google.inject.Inject
 import modules.auth.model.Ticket
 import modules.auth.util.RoleAssertion
-import modules.core.model.{Constraint, EntityType, ExtendedEntityType, VersionedEntityType}
+import modules.core.model._
 import modules.core.repository.{ConstraintRepository, TypeRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,6 +46,54 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
       if (!CoreLogic.isStringIdentifier(name)) throw new Exception("Invalid identifier")
       //FIXME the input data must be validated, especially the typeOf value must match an actual type!
       typeRepository.add(EntityType(0, name, typeOf, active = false))
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * <p>General implementation of [[modules.core.service.ModelEntityService#addVersion]]
+   *
+   * @param typeId of the parent EntityType
+   * @param ticket implicit authentication ticket
+   * @return Future[Long]
+   */
+  def addVersion(typeId: Long)(implicit ticket: Ticket): Future[Long] = {
+    try {
+      RoleAssertion.assertModeler
+      typeRepository.getAllExtendedVersions(typeId) flatMap (allExtendedTypes => {
+        val lastExtendedVersion = allExtendedTypes.maxBy(_.version.version)
+        if (lastExtendedVersion.entityType.active) throw new Exception("While creating a new version, the type must not be active")
+        val newConstraints = Seq()
+        val newVersion = TypeVersion(0, typeId, lastExtendedVersion.version.version + 1)
+        typeRepository.addVersion(newVersion, newConstraints)
+      })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * <p> General implementation of [[modules.core.service.ModelEntityService#forkVersion]]
+   *
+   * @param typeVersionId of the TypeVersion to fork
+   * @param ticket        implicit authentication ticket
+   * @return Future[Unit]
+   */
+  def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Long] = {
+    try {
+      RoleAssertion.assertModeler
+      typeRepository.getExtended(typeVersionId) flatMap (originTypeOption => {
+        if (originTypeOption.isEmpty) throw new Exception("Origin type version can not be found")
+        val originType = originTypeOption.get
+        typeRepository.getAllExtendedVersions(originType.entityType.id) flatMap (allExtendedTypes => {
+          val lastExtendedVersion = allExtendedTypes.maxBy(_.version.version)
+          if (originType.entityType.active) throw new Exception("While creating a fork, the type must not be active")
+          val forkedConstraints = originType.constraints.map(c => Constraint(0, c.c, c.v1, c.v2, c.byPlugin, 0))
+          val forkedVersion = TypeVersion(0, originType.version.typeId, lastExtendedVersion.version.version + 1)
+          typeRepository.addVersion(forkedVersion, forkedConstraints)
+        })
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }

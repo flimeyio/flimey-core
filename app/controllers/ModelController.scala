@@ -83,7 +83,9 @@ class ModelController @Inject()(cc: ControllerComponents,
       withTicket { implicit ticket =>
         entityTypeService.getAllVersions() map (types => {
           val error = request.flash.get("error")
-          Ok(views.html.container.core.model_overview(types, error))
+          val groupedTypes = types.groupBy(_.entityType.id).mapValues(
+            _.sortBy(_.version.version)).values.toSeq.sortBy(_.head.entityType.id)
+          Ok(views.html.container.core.model_overview(groupedTypes, error))
         }) recoverWith {
           case e =>
             logger.error(e.getMessage, e)

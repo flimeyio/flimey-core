@@ -238,7 +238,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     val collectionQuery = collections.filter(_.id in accessQuery)
 
     val propertyQuery = for {
-      c <- collectionQuery join properties on (_.entityId === _.parentId)
+      c <- collectionQuery joinLeft properties on (_.entityId === _.parentId)
     } yield c
 
     val viewerQuery = for {
@@ -258,7 +258,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
         Some(CollectionHeader(
           collectionWithProperties.get._1,
           Seq(), //No Collectibles here - that's the slim part ;)
-          collectionWithProperties.get._2,
+          collectionWithProperties.get._2.filter(_.isDefined).map(_.get),
           ViewerCombinator.fromRelations(collectionWithViewers.get._2),
           None))
       }

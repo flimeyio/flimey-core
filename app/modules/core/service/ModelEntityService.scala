@@ -65,7 +65,7 @@ trait ModelEntityService {
    * @param ticket        implicit authentication ticket
    * @return Future[Unit]
    */
-  def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Unit]
+  def forkVersion(typeVersionId: Long)(implicit ticket: Ticket): Future[Long]
 
   /**
    * Get a [[modules.core.model.VersionedEntityType VersionedEntityType]] of the given id.
