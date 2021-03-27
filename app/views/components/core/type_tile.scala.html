@@ -41,7 +41,7 @@
 
         <div class="meta-type-version-switch">
              @for(i <- versions.indices){
-                <div id="@versions(i).version.version" class="flex-container meta-version-view margin-10-side">
+                <div style="display: none;" id="@versions(i).version.version" class="flex-container meta-version-view margin-10-side">
                     <a class="margin-right-10" href="@routes.ModelController.getVersionEditor(versions.head.entityType.id, versions(i).version.id)">
                         <button class="button-small border-button">edit v. + @versions(i).version.version</button>
                     </a>
