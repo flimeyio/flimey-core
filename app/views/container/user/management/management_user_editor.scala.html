@@ -23,6 +23,7 @@
 @import views.html.components.utils.{management_nav, message_box_error, navbar_category, navbar_category_closeable}
 @import views.html.helper.CSRF
 @import views.html.forms.user.management.edit_user_form
+@import views.html.components.utils.confirm_dialog
 @(user: User, editUserForm: Form[EditUserForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
@@ -49,10 +50,17 @@
                 <div>out</div>
             </button>
         </form>
-        <form class="col-5" role="form" action='@routes.ManagementController.deleteUser(user.id)' method="post">
-            @CSRF.formField
-            <button type="submit" class="button border-button delete-button align-horizontal no-margin"><div>Delete</div><div>&nbspAccount</div></button>
-        </form>
+        <div class="col-5">
+            <button class="btn-showDialog button border-button delete-button align-horizontal no-margin" onclick="showConfirmDelDialog(this)">
+                <div>Delete</div><div>&nbspAccount</div>
+            </button>
+            @confirm_dialog{
+                <form role="form" action='@routes.ManagementController.deleteUser(user.id)' method="post">
+                    @CSRF.formField
+                    <button type="submit" class="delete-button button-small button no-margin">Confirm</button>
+                </form>
+            }
+        </div>
     </div>
     </div>
 }()

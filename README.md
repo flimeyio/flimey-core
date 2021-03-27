@@ -1,7 +1,6 @@
 # flimey core
 
 ![Scala CI](https://github.com/flimeyio/flimey-core/workflows/Scala%20CI/badge.svg)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/79c878997b5a477a87f9e7738cbf63bb)](https://www.codacy.com/gh/flimeyio/flimey-core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=flimeyio/flimey-core&amp;utm_campaign=Badge_Grade)
 
 **A self hosted business and productivity board tool with organization management and runtime enabled structural modeling.**
 
