@@ -177,9 +177,17 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         //Check if the User can edit this Collection
         ViewerAssertion.assertEdit(collectionHeader.viewers)
         val state = CollectionLogic.parseState(newState)
-        //FIXME if state is set to ARCHIVED, the whole collection must be added to the archive
+
         val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
         if (!updateStatus.valid) updateStatus.throwError
+
+        if(state == SubjectState.ARCHIVED){
+          ViewerAssertion.assertMaintain(collectionHeader.viewers)
+          //check if all children are closed with success or failure
+          val readyToArchive = CollectionLogic.isReadyToArchive(collectionHeader)
+          if(!readyToArchive.valid) readyToArchive.throwError
+        }
+
         for {
           res <- collectionRepository.updateState(collectionId, state)
           _ <- newsService.addCollectionEvent(collectionId, NewsType.STATE_CHANGE,

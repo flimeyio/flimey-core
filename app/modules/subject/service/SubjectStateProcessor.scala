@@ -18,25 +18,34 @@
 
 package modules.subject.service
 
-import modules.subject.model.SubjectState
+import modules.subject.model.{CollectionHeader, SubjectState}
 import modules.util.messages.{ERR, OK, Status}
 
 /**
  * Trait which provides functionality for parsing and processing the [[modules.subject.model.SubjectState SubjectState]].
  */
 trait SubjectStateProcessor {
-  
+
   def parseState(value: String): SubjectState.State = {
-    try{
+    try {
       SubjectState.withName(value)
-    }catch {
+    } catch {
       case e: Throwable => throw new Exception("Invalid state value")
     }
   }
 
   def isValidStateTransition(oldState: SubjectState.State, newState: SubjectState.State): Status = {
-    if(newState == SubjectState.CREATED) return ERR("This state can not be entered again")
+    if (newState == SubjectState.CREATED) return ERR("This state can not be entered again")
     OK()
   }
 
+  def isReadyToArchive(collectionHeader: CollectionHeader): Status = {
+    val hasOpenChildren = collectionHeader.collectibles.map(_.collectible.state).exists(
+      state => state != SubjectState.CLOSED_SUCCESS && state != SubjectState.CLOSED_FAILURE)
+    if (hasOpenChildren) {
+      ERR("All sub elements must be closed before the parent element can be archived")
+    } else {
+      OK()
+    }
+  }
 }
