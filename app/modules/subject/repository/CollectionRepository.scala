@@ -116,17 +116,12 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
       (c, s) <- collections join viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
-    val accessableCollections = collections.filter(_.id in subQuery).sortBy(_.id.asc)
+    val accessableCollections = collections.filter(_.id in subQuery).filter(_.status =!= SubjectState.ARCHIVED.toString).sortBy(_.id.asc)
+    //FIXME execute accessableCollections first and THEN fetch all the parts
 
-    //fetch all properties
     val propertyQuery = accessableCollections joinLeft properties on (_.entityId === _.parentId)
-
-    //fetch all viewers
     val viewerQuery = accessableCollections join viewers on (_.entityId === _.targetId) join groups on (_._2.viewerId === _.id)
-
     val typeQuery = accessableCollections join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
-
-    //fetch all collectibles with properties
     val collectibleQuery = accessableCollections join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
 
     for {
@@ -179,6 +174,8 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
     val collectionQuery = collections.filter(_.id in accessQuery)
+    //FIXME execute collectionQuery first and THEN fetch all the parts
+
     val propertyQuery = collectionQuery joinLeft properties on (_.entityId === _.parentId)
     val viewerQuery = collectionQuery join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
     val typeQuery = collectionQuery join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
