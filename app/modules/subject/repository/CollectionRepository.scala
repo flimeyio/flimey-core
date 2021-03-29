@@ -151,11 +151,41 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     }
   }
 
+  /**
+   * TODO add doc
+   * @param collectiblesData
+   * @return
+   */
   private def parseCollectibles(collectiblesData: Map[Collectible, Seq[Property]]): Seq[CollectibleHeader] = {
     collectiblesData.keys.map(collectible => {
       val properties = collectiblesData(collectible).sortBy(_.id)
       CollectibleHeader(collectible, properties, None)
     }).toSeq.sortBy(_.collectible.id)
+  }
+
+  /**
+   * TODO add doc
+   * @param nameQuery
+   * @param groupIds
+   * @return
+   */
+  def findArchivedCollections(nameQuery: String, groupIds: Set[Long]): Future[Seq[ArchivedCollection]] = {
+    val accessQuery = (for {
+      (c, s) <- collections join viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
+    } yield (c, s)).groupBy(_._1.id).map(_._1)
+
+    val resultIDQuery = (collections.filter(_.id in accessQuery).filter(_.status === SubjectState.ARCHIVED.toString) join
+      properties.filter(_.key === "Name").filter(_.value like s"%$nameQuery%") on (_.entityId === _.parentId)).map(_._1.id)
+
+    val resultQuery = collections.filter(_.id in resultIDQuery) join properties on(_.entityId === _.parentId)
+
+    db.run(resultQuery.result).map(res => {
+      val collectionsWithProperties = res.groupBy(_._1).mapValues(values => values.map(_._2))
+      collectionsWithProperties.keys.toSeq.sortBy(_.id).map(collection => {
+        val properties = collectionsWithProperties(collection)
+        ArchivedCollection(collection, properties.sortBy(_.id))
+      })
+    })
   }
 
   /**

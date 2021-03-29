@@ -252,6 +252,22 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
   }
 
   /**
+   * TODO add doc
+   * @param nameQuery
+   * @param ticket
+   * @return
+   */
+  def findArchivedCollection(nameQuery: String)(implicit ticket: Ticket): Future[Seq[ArchivedCollection]] = {
+    try {
+      RoleAssertion.assertWorker
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
+      collectionRepository.findArchivedCollections(nameQuery, accessedGroupIds)
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
    * Get all [[modules.subject.model.CollectionHeader CollectionHeaders]]
    * <p> Only Collection data the given User (by ticket) can access is returned.
    * <p> Fails without WORKER rights
