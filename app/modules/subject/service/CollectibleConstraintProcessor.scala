@@ -62,6 +62,7 @@ trait CollectibleConstraintProcessor extends ConstraintProcessor {
 
     if (!checkBaseModelStatus.valid) return checkBaseModelStatus
     if (!hasCompletePlugins(constraints)) return ERR("Model requires properties to serve its plugins")
+    if (!hasNamePlugin(constraints)) return ERR("WithName plugin is required")
     OK()
   }
 
