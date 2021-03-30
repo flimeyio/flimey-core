@@ -1,0 +1,27 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import views.html.helper.CSRF
+@(preset: String, label: String, action: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@helper.form(action = action) {
+    <div class="input-group no-margin">
+        @CSRF.formField
+        <input class="" type="text" name="query" value="@preset" placeholder="@label">
+        <button class="border-button button-small no-margin no-padding">@label</button>
+    </div>
+}
