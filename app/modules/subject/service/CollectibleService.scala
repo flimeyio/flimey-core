@@ -118,6 +118,8 @@ class CollectibleService @Inject()(collectibleRepository: CollectibleRepository,
         //Check if the User can edit this Collectible
         ViewerAssertion.assertEdit(extendedCollectible.viewers)
 
+        if(extendedCollectible.collectible.state == SubjectState.ARCHIVED) throw new Exception("This element is already archived")
+
         //Parse updated properties and verify the configuration
         val properties = extendedCollectible.properties
         val oldConfig = properties

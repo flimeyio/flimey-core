@@ -126,6 +126,8 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         //Check if the User can edit this Collection
         ViewerAssertion.assertEdit(collectionHeader.viewers)
 
+        if(collectionHeader.collection.status == SubjectState.ARCHIVED) throw new Exception("This element is already archived")
+
         //Parse updated properties and verify the configuration
         val properties = collectionHeader.properties
         val oldConfig = properties
