@@ -126,6 +126,8 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         //Check if the User can edit this Collection
         ViewerAssertion.assertEdit(collectionHeader.viewers)
 
+        if(collectionHeader.collection.status == SubjectState.ARCHIVED) throw new Exception("This element is already archived")
+
         //Parse updated properties and verify the configuration
         val properties = collectionHeader.properties
         val oldConfig = properties
@@ -177,9 +179,17 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         //Check if the User can edit this Collection
         ViewerAssertion.assertEdit(collectionHeader.viewers)
         val state = CollectionLogic.parseState(newState)
-        //FIXME if state is set to ARCHIVED, the whole collection must be added to the archive
+
         val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
         if (!updateStatus.valid) updateStatus.throwError
+
+        if(state == SubjectState.ARCHIVED){
+          ViewerAssertion.assertMaintain(collectionHeader.viewers)
+          //check if all children are closed with success or failure
+          val readyToArchive = CollectionLogic.isReadyToArchive(collectionHeader)
+          if(!readyToArchive.valid) readyToArchive.throwError
+        }
+
         for {
           res <- collectionRepository.updateState(collectionId, state)
           _ <- newsService.addCollectionEvent(collectionId, NewsType.STATE_CHANGE,
@@ -238,6 +248,22 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
         if (collectionOption.isEmpty) throw new Exception("Collection does not exist or missing rights")
         collectionOption.get
       })
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
+  /**
+   * TODO add doc
+   * @param nameQuery
+   * @param ticket
+   * @return
+   */
+  def findArchivedCollection(nameQuery: String)(implicit ticket: Ticket): Future[Seq[ArchivedCollection]] = {
+    try {
+      RoleAssertion.assertWorker
+      val accessedGroupIds = ticket.accessRights.getAllViewingGroupIds
+      collectionRepository.findArchivedCollections(nameQuery, accessedGroupIds)
     } catch {
       case e: Throwable => Future.failed(e)
     }

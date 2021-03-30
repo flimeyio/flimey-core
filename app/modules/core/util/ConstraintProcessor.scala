@@ -226,4 +226,13 @@ trait ConstraintProcessor {
     }
   }
 
+  /**
+   * TODO add doc
+   * @param constraints
+   * @return
+   */
+  def hasNamePlugin(constraints: Seq[Constraint]): Boolean = {
+    constraints.exists(c => c.c == ConstraintType.UsesPlugin && c.v1 == PluginType.WithName.toString)
+  }
+
 }

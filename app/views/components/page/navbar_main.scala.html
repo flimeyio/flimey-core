@@ -26,6 +26,7 @@
     <a href="@routes.NewsController.index()" class="material-icons navbar-icon margin-top-15">circle_notifications</a>
     <a href="@routes.CollectionController.index()" class="material-icons navbar-icon margin-top-15">space_dashboard</a>
     <a href="@routes.AssetController.index()" class="material-icons navbar-icon margin-top-15">topic</a>
+    <a href='@routes.ArchiveController.index("")' class="material-icons navbar-icon margin-top-15">save</a>
 
     @if(Role.isAtLeastModeler(ticket.authSession.role)) {
         <a href="@routes.ModelController.index()" class="material-icons navbar-icon margin-top-30"><div class="">extension</div></a>
