@@ -175,7 +175,7 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
     val resultIDQuery = (collections.filter(_.id in accessQuery).filter(_.status === SubjectState.ARCHIVED.toString) join
-      properties.filter(_.key === "Name").filter(_.value like s"%$nameQuery%") on (_.entityId === _.parentId)).map(_._1.id)
+      properties.filter(_.key === "Name").filter(_.value like s"%$nameQuery%") on (_.entityId === _.parentId)).map(_._1.id).take(256)
 
     val resultQuery = collections.filter(_.id in resultIDQuery) join properties on(_.entityId === _.parentId)
 
