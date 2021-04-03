@@ -36,8 +36,15 @@
 }
 
 .button-mini{
+    width: fit-content;
+    min-width: 4em;
+    padding: 3px;
+    font-size: 10pt;
+}
+
+.button-icon{
      width: fit-content;
-     min-width: 20px;
+     min-width: 2em;
      padding: 3px;
      font-size: 10pt;
  }
@@ -49,14 +56,27 @@
     border-width: 1px;
     color: var(--color-prim-dark);
     position: relative;
-    font-size: 10pt;
     height: 2.8em;
-    width: min-content;
+    box-shadow: 0 0px 1px 0 var(--color-prim-dark);
+}
+
+.solid-button{
+    background-color: var(--color-prim-dark);
+    border-color: var(--color-prim-dark);
+    border-style: solid;
+    border-width: 1px;
+    color: white;
+    position: relative;
+    height: 2.8em;
     box-shadow: 0 0px 1px 0 var(--color-prim-dark);
 }
 
 .border-button:hover {
     color: var(--color-prim-dark);
+    box-shadow: 0 0 3px 0 var(--color-prim-dark);
+}
+
+.solid-button:hover {
     box-shadow: 0 0 3px 0 var(--color-prim-dark);
 }
 
