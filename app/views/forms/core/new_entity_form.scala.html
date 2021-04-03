@@ -56,13 +56,22 @@
         @CSRF.formField
         @if(propertyKeys.nonEmpty) {
             @for(i <- propertyKeys.indices) {
-                <div class="">@key(i)</div>
-                <div class="">@datatype(i)</div>
-                <input type="text" name="@{
-                    "values[" + i + "]"
-                }" class="" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                <div class="flex-container horizontal">
+                    <div class="col-2">@key(i)</div>
+                    <div class="col-1"><div class=" tag bg-sec">@datatype(i)</div></div>
+                    <input type="text" name="@{
+                        "values[" + i + "]"
+                    }" class="col-7" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                </div>
             }
-            <span>Maintainers (Groups which can edit, view, delete and change groups of this asset)</span>
+
+            <div class="flex-container horizontal left-align">
+                <div class="tag bg-maintain">Maintainers</div>
+                <div class="popup">
+                    <div class="popup-text popup-right">Groups which can edit, view, delete and change groups of this asset</div>
+                    <i class="material-icons fc-sec-dark">info</i>
+                </div>
+            </div>
             <div id="new-entity-maintainers">
             @for(i <- 0 to sizeOfFormSeq("maintainer")-1) {
                 <select name="@{"maintainers[" + i + "]"}">
@@ -76,7 +85,13 @@
                 </select>
             }
             </div>
-            <span>Editors (Groups which can edit and view this asset)</span>
+            <div class="flex-container horizontal left-align">
+                <div class="tag bg-edit">Editors</div>
+                <div class="popup">
+                    <div class="popup-text popup-right">Groups which can edit and view this asset</div>
+                    <i class="material-icons fc-sec-dark">info</i>
+                </div>
+            </div>
             <div id="new-entity-editors">
             @for(i <- 0 to sizeOfFormSeq("editors")-1) {
                 <select name="@{"editors[" + i + "]"}">
@@ -90,7 +105,13 @@
                 </select>
             }
             </div>
-            <span>Viewers (Groups which can only view this asset)</span>
+            <div class="flex-container horizontal left-align">
+                <div class="tag bg-view">Viewers</div>
+                <div class="popup">
+                    <div class="popup-text popup-right">Groups which can only view this asset</div>
+                    <i class="material-icons fc-sec-dark">info</i>
+                </div>
+            </div>
             <div id="new-entity-viewers">
             @for(i <- 0 to sizeOfFormSeq("viewer")-1) {
                 <select name="@{"viewers[" + i + "]"}">
@@ -104,16 +125,17 @@
                 </select>
             }
             </div>
-            <div class="">
-                <button class="">Save</button>
+            <div class="padding-top-10 padding-bottom-10">
+                <button class="solid-button button-mini">Save</button>
             </div>
         }
     </div>
 }
-<button id="new-entity-maintainers-add">+Maintainer</button>
-<button id="new-entity-editors-add">+Editor</button>
-<button id="new-entity-viewers-add">+Viewer</button>
-
+<div class="flex-container horizontal right-align">
+    <button class="border-button button-small" id="new-entity-maintainers-add">+Maintainer</button>
+    <button class="border-button button-small" id="new-entity-editors-add">+Editor</button>
+    <button class="border-button button-small" id="new-entity-viewers-add">+Viewer</button>
+</div>
 <ol hidden id="new-entity-group-options">
     <li>none</li>
     @for(group <- groups){

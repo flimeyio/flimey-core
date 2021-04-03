@@ -197,3 +197,46 @@ input{
 .prim-dark-hover:hover{
     color: var(--color-prim-dark);
 }
+
+
+
+.popup {
+    position: relative;
+}
+
+.popup .popup-text {
+    visibility: hidden;
+    position: absolute;
+    min-width: 200px;
+    width:max-content;
+    background-color: var(--color-sec-dark);
+    color: white;
+    text-align: center;
+    font-size: 10pt;
+    padding: 5px 5px 5px 5px;
+    border-radius: 6px;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.popup:hover .popup-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.popup-right {
+    top: -5px;
+    left: 125%;
+}
+
+.popup-right::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent var(--color-sec-dark) transparent transparent;
+}
