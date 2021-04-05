@@ -18,6 +18,9 @@
 
 package modules.util.data
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 /**
  * Trait which provides some unspecific string processing functionality
  */
@@ -43,12 +46,27 @@ trait StringProcessor {
    */
   def isNumericString(value: String): Boolean = {
     value.isBlank ||
-    value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
+      value.matches("^(([0-9]+(\\.|\\,)?)+)$".r.regex)
   }
 
   def isDateTimeString(value: String): Boolean = {
-    value.isBlank ||
-    value.matches("^(\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2})$".r.regex)
+    val hasFormat = value.isBlank || value.matches("^(\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2})$".r.regex)
+    if (!hasFormat) {
+      false
+    } else {
+      try{
+        toDate(value)
+        true
+      }catch {
+        case e: Throwable => return false
+      }
+    }
+  }
+
+  def toDate(value: String): LocalDateTime = {
+    val dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyy HH:mm")
+    dateFormat.parse(value)
+    LocalDateTime.parse(value, dateFormat)
   }
 
   /**

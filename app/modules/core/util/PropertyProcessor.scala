@@ -18,7 +18,7 @@
 
 package modules.core.util
 
-import modules.core.model.{Constraint, ConstraintType, Property, PropertyType}
+import modules.core.model._
 import modules.util.data.StringProcessor
 import modules.util.messages.{ERR, OK, Status}
 
@@ -58,14 +58,14 @@ trait PropertyProcessor extends StringProcessor {
    * Asset is successfully inserted to the db.
    *
    * @param constraints model
-   * @param propData raw configuration data
+   * @param propData    raw configuration data
    * @return valid Property configuration
    */
   def derivePropertiesFromRawData(constraints: Seq[Constraint], propData: Seq[String]): Seq[Property] = {
     val propKeys = getPropertyKeys(constraints)
-    if(propKeys.length != propData.length) return Seq()
+    if (propKeys.length != propData.length) return Seq()
     var res = Seq[Property]()
-    for(i <- propKeys.indices){
+    for (i <- propKeys.indices) {
       res = res :+ Property(0, propKeys(i)._1, propData(i), 0)
     }
     res
@@ -75,7 +75,7 @@ trait PropertyProcessor extends StringProcessor {
    * Checks if a Property value is of the given type.<br />
    * Does not check on empty values.
    *
-   * @param value to check
+   * @param value    to check
    * @param typeName to match
    * @return result
    */
@@ -99,7 +99,7 @@ trait PropertyProcessor extends StringProcessor {
    * @return new configuration values mapped to existing properties
    */
   def mapConfigurations(oldConfiguration: Seq[Property], newConfiguration: Seq[String]): Seq[Property] = {
-    if(oldConfiguration.length != newConfiguration.length) return Seq()
+    if (oldConfiguration.length != newConfiguration.length) return Seq()
     oldConfiguration.zip(newConfiguration).map(c => {
       val (property, newValue) = c
       Property(property.id, property.key, newValue, property.parentId)
@@ -111,29 +111,56 @@ trait PropertyProcessor extends StringProcessor {
    * The passed property values must be in the same order as their corresponding keys from getAssetPropertyKeys().
    *
    * @param constraints model of the parent AssetType
-   * @param rawProps raw configuration Properties
+   * @param rawProps    raw configuration Properties
    * @return Status with optional error message
    */
   def isModelConfiguration(constraints: Seq[Constraint], rawProps: Seq[Property]): Status = {
     val propKeys = getPropertyKeys(constraints)
     val obligatoryKeys = getObligatoryPropertyKeys(constraints)
 
-    for(i <- propKeys.indices){
+    for (i <- propKeys.indices) {
 
       val (key, typeName) = propKeys(i)
       val property = rawProps.find(_.key == key)
 
       //check if the key has a property (basically true by architecture) just a defensive check
-      if(property.isEmpty) return ERR("Property "+key+" is missing")
+      if (property.isEmpty) return ERR("Property " + key + " is missing")
 
       //check if the property type is correct
-      if(!isOfType(property.get.value, typeName)) return ERR("Property "+key+" is of a wrong type")
+      if (!isOfType(property.get.value, typeName)) return ERR("Property " + key + " is of a wrong type")
 
       //check if property has a non blank value, if it must be defined
-      if(obligatoryKeys.contains(key) && property.get.value.isBlank) return ERR("Property "+key+" is not defined")
+      if (obligatoryKeys.contains(key) && property.get.value.isBlank) return ERR("Property " + key + " is not defined")
     }
 
+    if (!checkMatchingDateConstraints(constraints, rawProps)) return ERR("Date values must be defined and in a logical order")
+
     OK()
+  }
+
+  /**
+   * TODO add doc
+   *
+   * @param constraints
+   * @param rawProps
+   * @return
+   */
+  def checkMatchingDateConstraints(constraints: Seq[Constraint], rawProps: Seq[Property]): Boolean = {
+    if (constraints.exists(c => c.c == ConstraintType.UsesPlugin && c.v1 == PluginType.TimedInterval.toString)) {
+      val startDateValue = rawProps.find(_.key == "Start Date").get.value
+      val endDateValue = rawProps.find(_.key == "End Date").get.value
+      try {
+        val startDate = toDate(startDateValue)
+        val endDate = toDate(endDateValue)
+        if (startDate.isBefore(endDate)) {
+          return true
+        }
+      } catch {
+        case _: Throwable => return false
+      }
+      return false
+    }
+    true
   }
 
 }
