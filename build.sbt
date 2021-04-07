@@ -1,9 +1,7 @@
 name := """flimey-core"""
 
 organization := "io.flimey"
-version := "0.1"
-
-name in Universal := "flimey_core"
+version := "0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
