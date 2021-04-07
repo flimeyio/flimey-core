@@ -82,3 +82,4 @@ find . -name 'RUNNING_PID' -delete
 echo "starting the server..."
 
 # the docker build script will add the run server line below:
+
