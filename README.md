@@ -12,7 +12,7 @@
 
 ```
 docker volume create flimeydata
-docker run -it --name=flimey --mount source=flimeydata,destination=/var/lib/postgresql -p 9080:9080 -p 9443:9443 flimey-cored
+docker run -it --name=flimey --mount source=flimeydata,destination=/flimeydata -p 9080:9080 -p 9443:9443 flimey-core
 ```
 
 > :zap: The container can be created without mounting a volume. By doing so THE CONTAINER CAN NOT BE UPDATED IN THE FUTURE WITHOUT DATA LOSS!
