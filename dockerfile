@@ -40,7 +40,7 @@ RUN apt-get -y install sudo; adduser root sudo
 COPY --from=0 /flimey/target/universal .
 COPY --from=0 /flimey/run.sh .
 
-RUN FLIMEY_BIN=$(find . -name "flimey-core" -print); chmod 777 "$FLIMEY_BIN"; echo "${FLIMEY_BIN} -Dplay.evolutions.db.flimey_session.autoApply=true -Dplay.evolutions.db.flimey_data.autoApply=true -Dconfig.file=/flimey/runtime.conf">> run.sh
+RUN export FLIMEY_BIN=$(find . -name "flimey-core" -print); chmod 777 "$FLIMEY_BIN"; echo $FLIMEY_BIN "-Dplay.evolutions.db.flimey_session.autoApply=true -Dplay.evolutions.db.flimey_data.autoApply=true -Dconfig.file=/flimey/runtime.conf">> run.sh
 RUN chmod 777 run.sh
 
 CMD ./run.sh
