@@ -35,4 +35,6 @@ object PropertyType extends Enumeration {
   val DateTimeType: Val = Val("datetime")
 
   def getAll: Seq[PropertyType.Value] = Seq(StringType, NumericType, DateTimeType)
+
+  def getName(propertyType: PropertyType.Value): String = propertyType.name
 }

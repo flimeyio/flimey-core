@@ -20,6 +20,7 @@
 @import modules.core.formdata.EntityForm
 @import modules.core.model.EntityType
 @import views.html.forms.core.delete_entity_form
+@import modules.core.model.PropertyType
 @(entityType: EntityType,
         entityId: Long,
         propertyKeys: Seq[(String, String)],
@@ -62,7 +63,15 @@
             <div class="">
                 @datatype(i)
             </div>
-            <input type="text" name="@{"values[" + i + "]"}" placeholder="@placeholder(i)" value="@entityForm.data.get("values["+i+"]")"/>
+            @if(PropertyType.DateTimeType.name == datatype(i)){
+                <input class="datetime-picker" name="@{
+                    "values[" + i + "]"
+                }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
+            }else {
+                <input type="text" name="@{
+                    "values[" + i + "]"
+                }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
+            }
         }
         <div class="">
             <button class="">Save</button>
