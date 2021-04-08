@@ -34,7 +34,11 @@ function getTodayStart() {
 }
 
 
-const render = (project_collection, data, width, viewportid) => {
+const render = (combinedData, width, viewportid) => {
+
+    let data = combinedData.collectibles
+    let collection = combinedData.collection;
+
     const heightColTimeline = 60;
     const barHeight = 8.5;
     const barMargin = 20;
@@ -50,8 +54,8 @@ const render = (project_collection, data, width, viewportid) => {
     let today_end = today_start + TODAY_SPAN;
 
     // Min and Max Value of the X-Axis
-    let min_date = (today_start < project_collection.start) ? today_start : project_collection.start;
-    let max_date = project_collection.end;
+    let min_date = (today_start < collection.start) ? today_start : collection.start;
+    let max_date = collection.end;
 
     // Order of the bars along the Y-Axis
     const yScale = d3.scaleBand()
@@ -121,7 +125,7 @@ const render = (project_collection, data, width, viewportid) => {
     // First entry not shown ??
     const axisTicks = [
         1,
-        {x : project_collection.start, date : ""},
+        {x : collection.start, date : ""},
         {x : (today_mid - (0.5 * axisTickWidth)), date : ""},
         {x : (max_date - 12000000), date : ""}
     ];
@@ -139,9 +143,9 @@ const render = (project_collection, data, width, viewportid) => {
     // Draw the timeline of the collection
     collection_timeline.append('rect')
         .attr('fill', '#00838f')
-        .attr('width', (width * (project_collection.end - project_collection.start) / (max_date - min_date)))
+        .attr('width', (width * (collection.end - collection.start) / (max_date - min_date)))
         .attr('height', barHeight)
-        .attr('x', xScale(project_collection.start))
+        .attr('x', xScale(collection.start))
         .attr('y', heightColTimeline - barHeight)
         .attr('rx', barHeight / 2)
         .attr('ry', barHeight / 2);
@@ -156,5 +160,5 @@ const render = (project_collection, data, width, viewportid) => {
         .attr('y', heightColTimeline - barHeight);
 
     console.log('Skaliertes: ', xScale(getTodayStart()));
-    console.log('Skaliertes: ', xScale(project_collection.start));
+    console.log('Skaliertes: ', xScale(collection.start));
 };

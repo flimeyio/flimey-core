@@ -48,7 +48,7 @@ function timelineRendering() {
             })
         }
 
-        let subEntityContainer = $($(".meta-sub-entities")[0])
+        let subEntityContainer = $(entity.find(".meta-sub-entities")[0])
         let subEntities = subEntityContainer.find(".meta-sub-entity")
 
         for (let subEntityIndex = 0; subEntityIndex < subEntities.length; subEntityIndex++) {
@@ -86,29 +86,11 @@ function addRenderingDiv(metaViewport) {
 }
 
 function showVisualization(data, viewport){
-
-    const mock_data = [
-        {collectible_name: "Sägen", start: 800, end: 2000},
-        {collectible_name: "Malern", start: 900, end: 1700},
-        {collectible_name: "Einkaufen", start: 1000, end: 3000},
-        {collectible_name: "Versenden", start: 1200, end: 1800}
-    ];
-
-    //const project_collection = {collectible_name: "", start: 600, end: 5000};
-
-    data = parseData(data);
-    let collectibles = data.collectibles
-    let project_collection = data.collection;
-
-    console.log("data", viewport.id, data);
-    console.log("viewport", viewport);
-    console.log("collection", project_collection);
-
+    console.log("unparsed data "+viewport.id, JSON.parse(JSON.stringify(data)));
+    const parsedData = parseData(data);
     addRenderingDiv(viewport);
-
     const width = $(viewport.find("#"+viewport.id+'-coll-tile-timeline')[0]).width();
-    render(project_collection, collectibles, width, viewport.id);
-    //TODO
+    render(parsedData, width, viewport.id);
 }
 
 function parseData(data) {
