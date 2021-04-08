@@ -47,7 +47,7 @@
         <div class="weight-2"></div>
         <div class="padding-left-10">created at: @data.collection.created.format("dd.MM.yyyy HH:mm")</div>
     </div>
-    @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeVersionId, c.properties))))
+    @meta_entity(data)
     <div class="meta-viewport full-width"></div>
     @viewer_tag_box(data.viewers)
 </div>

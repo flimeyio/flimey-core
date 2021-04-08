@@ -17,6 +17,7 @@
 * *@
 @import modules.subject.model.ExtendedCollection
 @import views.html.components.core.{meta_entity, viewer_tag_box}
+@import modules.subject.model.CollectionHeader
 @(data: ExtendedCollection, typeValue: String)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="meta-entity-container card relative-container tile">
@@ -54,7 +55,7 @@
         }
     }
     <div class="padding-top-10">
-        @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeVersionId, c.properties))))
+        @meta_entity(CollectionHeader(data.collection, data.collectibles, data.properties, data.viewers, Some(data.entityType)))
         <div class="meta-viewport"></div>
         @viewer_tag_box(data.viewers)
     </div>

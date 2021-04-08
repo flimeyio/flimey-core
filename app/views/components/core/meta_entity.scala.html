@@ -15,12 +15,25 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
+@import modules.subject.model.CollectionHeader
 @import modules.core.model.Property
-@(typeId: Long, properties: Seq[Property], subEntities: Option[Seq[(Long, Seq[Property])]])
+@import modules.core.model
+@(data: CollectionHeader)
+
+@mainProperties = @{
+    data.properties ++ Seq(Property(0, "created", data.collection.created.format("dd.MM.yyyy hh:mm"), 0))
+}
+
+@subEntities = @{
+    Some(data.collectibles.map(
+        c => (c.collectible.typeVersionId,
+                c.properties ++ Seq(Property(0, "created", c.collectible.created.format("dd.MM.yyyy hh:mm"), 0)))))
+}
+
 <div class="meta-entity" hidden>
-    <div class="meta-entity-type-id">@typeId</div>
+    <div class="meta-entity-type-id">@data.collection.typeVersionId</div>
     <list class="meta-entity-properties">
-    @for(property <- properties) {
+    @for(property <- mainProperties) {
         <li class="meta-property">
             <div class="meta-property-key">@property.key</div>
             <div class="meta-property-value">@property.value</div>
