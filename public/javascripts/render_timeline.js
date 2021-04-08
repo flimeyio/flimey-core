@@ -20,7 +20,7 @@
 let margin = { top: 30, right: 0, bottom: 30, left: 0 };
 
 function getTodayDate() {
-    let today_date = new Date(2021, 2, 10);
+    let today_date = new Date(2021, 5, 25);
     let dd = String(today_date.getDate()).padStart(2, '0');
     let mm = String(today_date.getMonth() + 1).padStart(2, '0');
     let yyyy = today_date.getFullYear();
@@ -34,12 +34,13 @@ function getTodayStart() {
 }
 
 
-const render = (project_collection, data, width) => {
+const render = (project_collection, data, width, viewportid) => {
     const heightColTimeline = 60;
-    const barHeight = 20;
-    const barMargin = 5;
+    const barHeight = 8.5;
+    const barMargin = 20;
     const axisTickWidth = 4;
 
+    console.log('data: ', data);
     const svgHeight = (barHeight + barMargin) * data.length;
 
     // current day as a timespan
@@ -48,21 +49,15 @@ const render = (project_collection, data, width) => {
     let today_mid = today_start + (0.5 * TODAY_SPAN);
     let today_end = today_start + TODAY_SPAN;
 
-    console.log('Projekt start: ', project_collection.start);
-    console.log('Projekt end: ', project_collection.end);
-    console.log('Today start: ', getTodayStart());
-
     // Min and Max Value of the X-Axis
     let min_date = (today_start < project_collection.start) ? today_start : project_collection.start;
     let max_date = project_collection.end;
-
-    console.log('Min-Date: ', min_date);
-    console.log('Max-Date: ', max_date);
 
     // Order of the bars along the Y-Axis
     const yScale = d3.scaleBand()
         .domain(data.map(dataPoint => dataPoint.collectible_name))
         .rangeRound([svgHeight, 0]).padding(0);
+
 
     // Scales the timelines (startDate - endDate) to a lower range of values [0, width]
     let xScale = (d3.scaleLinear()
@@ -75,65 +70,51 @@ const render = (project_collection, data, width) => {
         return (xScale(coll.start) > width/2 ? xScale(coll.start) + coll_width : xScale(coll.start) - coll_width > 0);
     }
 
-    function getRect(coll) {
-        const el = d3.select(this);
-        console.log(coll);
-        //const xPos_rect = (width / (max_date - min_date)) * (coll.end - coll.start);
-        //const width_rect = (width * (coll.end - coll.start) / (max_date - min_date));
-        const xPos_rect = xScale(coll.start)
-        const width_rect = xScale(coll.end) - xScale(coll.start)
-        const isLabelRight = (xPos_rect > width/2 ? xPos_rect + width_rect < width : xPos_rect - width > 0);
-
-        el.append("rect")
-            .attr("x", xPos_rect)
-            .attr("width", width_rect)
-            .attr("height", barHeight)
-            .attr("margin", '0.3em 0 0.3em 0')
-            .attr("fill", '#0000ff');
-
-        el.append("text")
-            .text(coll.collectible_name)
-            .attr("x", isLabelRight ? xPos_rect - 5 : xPos_rect + width_rect + 5)
-            .attr("y", 2.5)
-            .attr("fill", "black")
-            .style("text-anchor", isLabelRight ? "end" : "start")
-            .style("dominant-baseline", "hanging");
-    }
-
     // View of the collection and X-Axis
-    const collection_timeline = d3.select('.collection-timeline')
+    const collection_timeline = d3.select("#"+viewportid+'-collection-timeline')
         .append("svg")
         .attr('width', width - margin.left - margin.right)
-        .attr('height', heightColTimeline);
+        .attr('height', heightColTimeline + barHeight);
 
     // View of all collectible items
-    const coll_timeline = d3.select('.coll-tile-timeline')
+    const coll_timeline = d3.select("#"+viewportid+'-coll-tile-timeline')
         .append("svg")
         .attr('width', width - margin.left - margin.right)
         .attr('height', svgHeight);
 
+
+    const bar = coll_timeline.selectAll('rect')
+        .data(data)
+        .enter().append('g')
+        //.attr('class', 'bar');
+
     // Draw the timeline of all collectibles
-    
-    coll_timeline.selectAll('rect').data(data)
-        .enter().append('rect')
-        .classed('bar', true)
-        .attr('fill', '#0000ff')
+    bar.append('rect')
+        //.classed('bar', true)
+        .attr('fill', '#4fb3bf')
         .attr('margin', '0.3em 0 0.3em 0')
         .attr('height', barHeight)
-        .attr('width', data => (width * (data.end - data.start) / (max_date - min_date)))
-        .attr('x', data => xScale(data.start))
-        .attr('y', data => yScale(data.collectible_name))
-        .append('text')
-        .text(data => data.collectible_name)
-        .attr('x', data => (isLabelRight(data) ? xScale(data.start) - 5 : xScale(data.start) + (xScale(data.end) - xScale(data.start)) + 5))
-        .attr('y', 2.5)
-        .attr('fill', 'black');
+        .attr('width', d => (width * (d.end - d.start) / (max_date - min_date)))
+        .attr('x', d => xScale(d.start))
+        .attr('y', d => yScale(d.collectible_name))
+        .attr('rx', barHeight / 2)
+        .attr('ry', barHeight / 2);
+
+    bar.append('text')
+        //.classed('below', true)
+        .attr('x', d => xScale(d.start))
+        .attr('y', d => yScale(d.collectible_name))
+        .attr('dy', barHeight + 10)
+        .attr('font-size', '10pt')
+        .attr('text-anchor', 'left')
+        .text(function(d) {return d.collectible_name})
+        .attr('fill', '#555555');
 
     // Draw X-Axis
     collection_timeline.append('rect')
-        .attr('fill', '#000000')
+        .attr('fill', '#555555')
         .attr('width', (width * (max_date - min_date) / (max_date - min_date)))
-        .attr('height', 2)
+        .attr('height', 1)
         .attr('x', 0)
         .attr('y', 25);
 
@@ -145,25 +126,25 @@ const render = (project_collection, data, width) => {
         {x : (max_date - 12000000), date : ""}
     ];
 
-    console.log (axisTicks)
-
     // Draw Axis Ticks
     collection_timeline.selectAll('rect').data(axisTicks)
         .enter().append('rect')
         .classed('tick', true)
-        .attr('fill', '#000000')
-        .attr('width', 0.2 + 'em')
+        .attr('fill', '#555555')
+        .attr('width', 0.1 + 'em')
         .attr('height', 10)
         .attr('x', axisTicks => xScale(axisTicks.x))
         .attr('y', 15);
 
     // Draw the timeline of the collection
     collection_timeline.append('rect')
-        .attr('fill', '#0000ff')
+        .attr('fill', '#00838f')
         .attr('width', (width * (project_collection.end - project_collection.start) / (max_date - min_date)))
         .attr('height', barHeight)
         .attr('x', xScale(project_collection.start))
-        .attr('y', heightColTimeline - barHeight);
+        .attr('y', heightColTimeline - barHeight)
+        .attr('rx', barHeight / 2)
+        .attr('ry', barHeight / 2);
 
     // Draw the timeline of the actual date
     collection_timeline.append('rect')
@@ -176,43 +157,4 @@ const render = (project_collection, data, width) => {
 
     console.log('Skaliertes: ', xScale(getTodayStart()));
     console.log('Skaliertes: ', xScale(project_collection.start));
-
-    d3.select('.coll-tile-timeline')
-        .selectAll('p')
-        .data(data)
-        .enter()
-        .append('p')
-        .text(d => d.collectible_name);
 };
-
-//const xAxis = d3.axisTop(xScale);
-
-console.log(d3.select('.coll-tile-timeline'));
-
-
-
-
-
-
-getRect2 = function(d) {
-    const el = d3.select(this);
-    const sx = x(d.start);
-    const w = x(d.end) - x(d.start);
-    const isLabelRight = (sx > width/2 ? sx+w < width : sx - w > 0);
-
-    el.style("cursor", "pointer");
-
-    el.append("rect")
-        .attr("x", sx)
-        .attr("height", y.bandwidth())
-        .attr("width", w)
-        .attr("fill", d.color);
-
-    el.append("text")
-        .text(d.collectible_name)
-        .attr("x", isLabelRight ? sx - 5 : sx + w + 5)
-        .attr("y", 2.5)
-        .attr("fill", "black")
-        .style("text-anchor", isLabelRight ? "end" : "start")
-        .style("dominant-baseline", "hanging");
-}

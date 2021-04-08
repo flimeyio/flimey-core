@@ -28,6 +28,7 @@ function timelineRendering() {
         let container = $(containers[containerIndex]);
         let entity = $(container.find(".meta-entity")[0]);
         let viewport = $(container.find(".meta-viewport")[0]);
+        viewport.id = "viewport-"+containerIndex;
 
         let entityData = {
             properties: [],
@@ -77,8 +78,8 @@ function addRenderingDiv(metaViewport) {
     const divCollTimeline = document.createElement('div');
     const divCollectionsTimeline = document.createElement('div');
 
-    divCollTimeline.className = 'collection-timeline';
-    divCollectionsTimeline.className = 'coll-tile-timeline';
+    divCollTimeline.id = metaViewport.id+'-collection-timeline';
+    divCollectionsTimeline.id = metaViewport.id+'-coll-tile-timeline';
 
     metaViewport.append(divCollTimeline);
     metaViewport.append(divCollectionsTimeline);
@@ -99,14 +100,14 @@ function showVisualization(data, viewport){
     let collectibles = data.collectibles
     let project_collection = data.collection;
 
-    console.log("data", data);
+    console.log("data", viewport.id, data);
     console.log("viewport", viewport);
     console.log("collection", project_collection);
 
     addRenderingDiv(viewport);
 
-    const width = $(viewport.find('.coll-tile-timeline')[0]).width();
-    render(project_collection, collectibles, width);
+    const width = $(viewport.find("#"+viewport.id+'-coll-tile-timeline')[0]).width();
+    render(project_collection, collectibles, width, viewport.id);
     //TODO
 }
 
