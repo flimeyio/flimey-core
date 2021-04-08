@@ -39,9 +39,12 @@
     </head>
     <body>
         @content
-        <script src="https://d3js.org/d3.v6.js"></script>
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script src="https://d3js.org/d3-scale.v3.min.js"></script>
         <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
+        <script src="@routes.Assets.versioned("javascripts/parse_date.js")"></script>
         <script src="@routes.Assets.versioned("javascripts/delete_dialog.js")"></script>
+        <script src="@routes.Assets.versioned("javascripts/render_timeline.js")"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("javascripts/lib/foundation.min.js")"></script>
     </body>
 

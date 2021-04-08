@@ -20,7 +20,7 @@
 @import modules.subject.model.CollectibleHeader
 @(data: CollectibleHeader)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="meta-entity-container card relative-container tile">
+<div class="card relative-container tile">
     <div class="float-top-right">
         <a href="@routes.CollectibleController.getCollectibleEditor(data.collectible.collectionId, data.collectible.id)">
             <i class="material-icons fc-prim">create</i>
@@ -59,6 +59,4 @@
         }
     }
     </div>
-    @meta_entity(data.collectible.id, data.properties, None)
-    <div class="meta-viewport"></div>
 </div>
