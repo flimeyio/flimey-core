@@ -4,6 +4,37 @@
 
 **A self hosted business and productivity board tool with organization management and runtime enabled structural modeling.**
 
+## Release Notes
+
+*This project is work in progress. We still need some time to implement major features bevore going in a production release cycle. As of now, the latest somewhat stable beta versions are puplished occasionally via the ``release/latest`` branch. This will always create a new ``latest`` release in our dockerhub repository [flimeylab](https://hub.docker.com/repository/docker/flimeylab/flimey-core). DO ABSOLUTELY NOT USE THOSE BUILDS IN PRODUCTION, THEY ARE JUST MEANT FOR TESTING.*
+
+**To install the container the first time, execute the following two lines. The http site will be available at port 9080. See our wiki (link below) for first usage instructions.**
+
+```
+docker volume create flimeydata
+docker run -it --name=flimey --mount source=flimeydata,destination=/flimeydata -p 9080:9080 -p 9443:9443 flimey-core
+```
+
+> :zap: The container can be created without mounting a volume. By doing so THE CONTAINER CAN NOT BE UPDATED IN THE FUTURE WITHOUT DATA LOSS!
+
+> ⚡ A once created flimeydata volume can be mounted to newer container versions (after an update).
+However, do not mount the same volume to two running containers at once! Right now, we do not guarantee data compatability with newer versions.
+
+> 🚑 Right now, the flimey docker image works only as long as postgresql v12 is the newest major version. This needs to be fixed in the
+run.sh file.
+
+**To stop the running container, execute**
+(To avoid the possibility of incomplete workflows, it is recommended to cut the network connection
+some seconds before, if multiple users are active during the shutdown. However, the db will always stay valid)
+
+``docker stop flimey``
+
+
+**To start the container which was already installed, execute**
+
+``docker start flimey``
+
+
 ## About
 
 **This project is work in progress. Do not use in production!**
