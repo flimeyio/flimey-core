@@ -96,10 +96,10 @@ class AssetController @Inject()(cc: ControllerComponents, withAuthentication: Au
           },
           data => {
             val assetTypeValue = data.value
-            modelAssetService.getTypeByValue(assetTypeValue) flatMap (assetType => {
+            modelAssetService.getVersionedTypeByValue(assetTypeValue) flatMap (assetType => {
               if (assetType.isEmpty) Future.failed(new Exception("No such AssetType found"))
               if (assetType.isDefined) {
-                Future.successful(Redirect(routes.AssetController.getAssets(assetType.get.id, 0)))
+                Future.successful(Redirect(routes.AssetController.getAssets(assetType.get.version.id, 0)))
               } else {
                 Future.failed(new Exception("No Asset Type selected"))
               }

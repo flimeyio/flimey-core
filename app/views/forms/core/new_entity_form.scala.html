@@ -20,6 +20,7 @@
 @import modules.core.formdata.EntityForm
 @import modules.user.model.Group
 @import modules.core.model.EntityType
+@import modules.core.model.PropertyType
 @(selectedType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
@@ -58,9 +59,15 @@
             @for(i <- propertyKeys.indices) {
                 <div class="">@key(i)</div>
                 <div class="">@datatype(i)</div>
-                <input type="text" name="@{
-                    "values[" + i + "]"
-                }" class="" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                @if(PropertyType.DateTimeType.name == datatype(i)){
+                    <input class="datetime-picker" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                }else {
+                    <input type="text" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                }
             }
             <span>Maintainers (Groups which can edit, view, delete and change groups of this asset)</span>
             <div id="new-entity-maintainers">

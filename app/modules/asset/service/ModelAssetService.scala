@@ -137,6 +137,10 @@ class ModelAssetService @Inject()(typeRepository: TypeRepository,
     entityTypeService.getEntityTypeByValue(value, Option(AssetConstraintSpec.ASSET))
   }
 
+  def getVersionedTypeByValue(value: String)(implicit ticket: Ticket): Future[Option[VersionedEntityType]] = {
+    entityTypeService.getVersionedEntityTypeByValue(value, Option(AssetConstraintSpec.ASSET))
+  }
+
   /**
    * <p> <strong>Specific implementation of to work only with [[modules.core.model.EntityType EntityTypes]] which specify
    * [[modules.asset.model.Asset Assets]].</strong><br />
