@@ -1,0 +1,35 @@
+@*
+* This file is part of the flimey-core software.
+* Copyright (C) 2021 Karl Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* *@
+@import modules.auth.model.Ticket
+@import views.html.components.utils.message_box_error
+@import views.html.components.utils.navbar_category
+@import modules.subject.model.ArchivedCollection
+@import views.html.forms.core.string_query_form
+@import views.html.components.subject.collection_archive_block
+@(collections: Seq[ArchivedCollection], query: String, msg: Option[String] = None)(
+        implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
+
+@app {
+    @navbar_category(Seq("Archive"))
+}{
+    @message_box_error(msg)
+    @string_query_form(query, "search archive", routes.ArchiveController.query())
+    <div class="margin-top-15">
+        @collection_archive_block(collections)
+    </div>
+}()()()

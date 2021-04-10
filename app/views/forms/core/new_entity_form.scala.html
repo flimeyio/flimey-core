@@ -20,6 +20,7 @@
 @import modules.core.formdata.EntityForm
 @import modules.user.model.Group
 @import modules.core.model.EntityType
+@import modules.core.model.PropertyType
 @(selectedType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
@@ -56,13 +57,17 @@
         @CSRF.formField
         @if(propertyKeys.nonEmpty) {
             @for(i <- propertyKeys.indices) {
-                <div class="flex-container horizontal">
-                    <div class="col-2">@key(i)</div>
-                    <div class="col-1"><div class=" tag bg-sec">@datatype(i)</div></div>
+                <div class="">@key(i)</div>
+                <div class="">@datatype(i)</div>
+                @if(PropertyType.DateTimeType.name == datatype(i)){
+                    <input class="datetime-picker" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                }else {
                     <input type="text" name="@{
                         "values[" + i + "]"
-                    }" class="col-7" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
-                </div>
+                    }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                }
             }
 
             <div class="flex-container horizontal left-align">

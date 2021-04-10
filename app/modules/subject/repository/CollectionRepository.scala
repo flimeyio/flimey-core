@@ -116,17 +116,12 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
       (c, s) <- collections join viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
-    val accessableCollections = collections.filter(_.id in subQuery).sortBy(_.id.asc)
+    val accessableCollections = collections.filter(_.id in subQuery).filter(_.status =!= SubjectState.ARCHIVED.toString).sortBy(_.id.asc)
+    //FIXME execute accessableCollections first and THEN fetch all the parts
 
-    //fetch all properties
     val propertyQuery = accessableCollections joinLeft properties on (_.entityId === _.parentId)
-
-    //fetch all viewers
     val viewerQuery = accessableCollections join viewers on (_.entityId === _.targetId) join groups on (_._2.viewerId === _.id)
-
     val typeQuery = accessableCollections join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)
-
-    //fetch all collectibles with properties
     val collectibleQuery = accessableCollections join (collectibles join properties on (_.entityId === _.parentId)) on (_.id === _._1.collectionId)
 
     for {
@@ -156,11 +151,41 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     }
   }
 
+  /**
+   * TODO add doc
+   * @param collectiblesData
+   * @return
+   */
   private def parseCollectibles(collectiblesData: Map[Collectible, Seq[Property]]): Seq[CollectibleHeader] = {
     collectiblesData.keys.map(collectible => {
       val properties = collectiblesData(collectible).sortBy(_.id)
       CollectibleHeader(collectible, properties, None)
     }).toSeq.sortBy(_.collectible.id)
+  }
+
+  /**
+   * TODO add doc
+   * @param nameQuery
+   * @param groupIds
+   * @return
+   */
+  def findArchivedCollections(nameQuery: String, groupIds: Set[Long]): Future[Seq[ArchivedCollection]] = {
+    val accessQuery = (for {
+      (c, s) <- collections join viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
+    } yield (c, s)).groupBy(_._1.id).map(_._1)
+
+    val resultIDQuery = (collections.filter(_.id in accessQuery).filter(_.status === SubjectState.ARCHIVED.toString) join
+      properties.filter(_.key === "Name").filter(_.value like s"%$nameQuery%") on (_.entityId === _.parentId)).map(_._1.id).take(256)
+
+    val resultQuery = collections.filter(_.id in resultIDQuery) join properties on(_.entityId === _.parentId)
+
+    db.run(resultQuery.result).map(res => {
+      val collectionsWithProperties = res.groupBy(_._1).mapValues(values => values.map(_._2))
+      collectionsWithProperties.keys.toSeq.sortBy(_.id).map(collection => {
+        val properties = collectionsWithProperties(collection)
+        ArchivedCollection(collection, properties.sortBy(_.id))
+      })
+    })
   }
 
   /**
@@ -179,6 +204,8 @@ class CollectionRepository @Inject()(@NamedDatabase("flimey_data") protected val
     } yield (c, s)).groupBy(_._1.id).map(_._1)
 
     val collectionQuery = collections.filter(_.id in accessQuery)
+    //FIXME execute collectionQuery first and THEN fetch all the parts
+
     val propertyQuery = collectionQuery joinLeft properties on (_.entityId === _.parentId)
     val viewerQuery = collectionQuery join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
     val typeQuery = collectionQuery join typeVersions on (_.typeVersionId === _.id) join entityTypes on (_._2.typeId === _.id)

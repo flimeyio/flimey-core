@@ -16,25 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.model
+package modules.subject.model
+
+import modules.core.model.Property
 
 /**
- * Enum of available Property data types.
- * <p> Every subclass of a [[FlimeyEntity]] can specify its own subset of these values.
+ * TODO add doc
+ * @param collection
+ * @param properties
  */
-object PropertyType extends Enumeration {
-
-  import scala.language.implicitConversions
-
-  protected case class Val(name: String) extends super.Val
-
-  implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
-
-  val StringType: Val = Val("string")
-  val NumericType: Val = Val("number")
-  val DateTimeType: Val = Val("datetime")
-
-  def getAll: Seq[PropertyType.Value] = Seq(StringType, NumericType, DateTimeType)
-
-  def getName(propertyType: PropertyType.Value): String = propertyType.name
-}
+case class ArchivedCollection(collection: Collection, properties: Seq[Property])

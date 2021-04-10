@@ -253,6 +253,16 @@ class EntityTypeService @Inject()(typeRepository: TypeRepository, constraintRepo
     }
   }
 
+  def getVersionedEntityTypeByValue(value: String, derivesFrom: Option[String] = None)(implicit ticket: Ticket): Future[Option[VersionedEntityType]] = {
+    try {
+      RoleAssertion.assertWorker
+      //FIXME this is not critical because there won't be many AssetTypes but filtering should be done in the repository.
+      getAllVersions(derivesFrom) flatMap (types => Future.successful(types.find(_.entityType.value == value)))
+    } catch {
+      case e: Throwable => Future.failed(e)
+    }
+  }
+
   /**
    * Get all Constraints associated to a TypeVersion.
    * <p> Fails without WORKER rights.

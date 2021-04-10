@@ -16,25 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-package modules.core.model
+package modules.core.formdata
 
-/**
- * Enum of available Property data types.
- * <p> Every subclass of a [[FlimeyEntity]] can specify its own subset of these values.
- */
-object PropertyType extends Enumeration {
+import play.api.data.Form
+import play.api.data.Forms._
 
-  import scala.language.implicitConversions
+object StringQueryForm {
 
-  protected case class Val(name: String) extends super.Val
+  case class Data(query: String)
 
-  implicit def valueToType(x: Value): Val = x.asInstanceOf[Val]
+  val form = Form(
+    mapping(
+      "query" -> text
+    )(Data.apply)(Data.unapply)
+  )
 
-  val StringType: Val = Val("string")
-  val NumericType: Val = Val("number")
-  val DateTimeType: Val = Val("datetime")
-
-  def getAll: Seq[PropertyType.Value] = Seq(StringType, NumericType, DateTimeType)
-
-  def getName(propertyType: PropertyType.Value): String = propertyType.name
 }

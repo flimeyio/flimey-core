@@ -234,7 +234,13 @@ class ModelCollectibleService @Inject()(typeRepository: TypeRepository,
     try {
       RoleAssertion.assertModeler
       if (!CollectibleLogic.isStringIdentifier(value)) throw new Exception("Invalid identifier")
-      typeRepository.update(EntityType(id, value, "", active))
+
+      getLatestExtendedType(id) flatMap (latestExtendedType => {
+        val modelStatus = CollectibleLogic.isConstraintModel(latestExtendedType.constraints)
+        if (!modelStatus.valid) modelStatus.throwError
+
+        typeRepository.update(EntityType(id, value, CollectibleConstraintSpec.COLLECTIBLE, active))
+      })
     } catch {
       case e: Throwable => Future.failed(e)
     }

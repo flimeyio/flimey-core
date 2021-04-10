@@ -62,9 +62,15 @@ trait CollectionConstraintProcessor extends ConstraintProcessor {
 
     if (!checkBaseModelStatus.valid) return checkBaseModelStatus
     if (!hasCompletePlugins(constraints)) return ERR("Model requires properties to serve its plugins")
+    if (!hasNamePlugin(constraints)) return ERR("WithName plugin is required")
     OK()
   }
 
+  /**
+   * TODO add doc
+   * @param constraints
+   * @return
+   */
   def findChildren(constraints : Seq[Constraint]): Seq[String] = {
     constraints.filter(_.c == ConstraintType.CanContain).map(_.v1)
   }

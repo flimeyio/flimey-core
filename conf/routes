@@ -65,6 +65,10 @@ POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetCon
 POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
 
 
+GET     /archive                                            controllers.ArchiveController.index(query: String)
+POST    /archive/query                                      controllers.ArchiveController.query()
+
+
 GET     /collection                                         controllers.CollectionController.index()
 POST    /collection/query                                   controllers.CollectionController.findByQuery()
 
