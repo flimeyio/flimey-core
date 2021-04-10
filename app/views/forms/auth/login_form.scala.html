@@ -1,7 +1,7 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
-* Copyright (C) 2020  Julia Kegel
+* Copyright (C) 2020-2021 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,17 +23,15 @@
 
 @helper.form(action = routes.AuthController.login()) {
     @CSRF.formField
-
+    <div class="flex-container full-width vertical m-t-small">
+    <input type="text" name="email" class="" placeholder="email" value="@loginForm.data("email")"/>
+    <input class="m-t-mini" type="text" name="password" placeholder="password" value="@loginForm.data("password")"/>
     <div>
     @if(loginForm.error("email").isDefined){
         <div>@message_box_error(Option("Invalid email"))</div>
     }
     </div>
-
-    <!--Errors that are thrown by the server logic-->
     <div>@message_box_error(msg)</div>
-
-    <input type="text" name="email" class="" placeholder="email" value="@loginForm.data("email")"/>
-    <input type="text" name="password" class="" placeholder="password" value="@loginForm.data("password")"/>
-    <button class="border-button button-small">Go</button>
+    <button class="btn btn-small btn-solid-prim btn-shadowed m-t-mini">Go</button>
+    </div>
 }

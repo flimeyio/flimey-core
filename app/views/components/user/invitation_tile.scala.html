@@ -19,26 +19,24 @@
 * *@
 @import modules.user.model.User
 @import views.html.helper.CSRF
-@import views.html.components.utils.confirm_dialog
+@import views.html.components.utils.simple_confirm
 @(invitedUser: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card tile flex-container vertical">
+<div class="card shadowed flex-container vertical p-ltrb-mini m-t-small">
     <div class="flex-container horizontal full-width">
         <div class="col-3">Username</div>
         <div class="col-7"> @invitedUser.username</div>
     </div>
-        <!-- FIXME: the value of the key must somehow be hidden by default (like a password) and...
-             FIXME: ...only be shown, if the user clicks some "show" button or eye-icon -->
     <div class="flex-container horizontal full-width">
         <div class="col-3">Key</div>
         <div class="col-7" >@invitedUser.key.get</div>
     </div>
-    <div>
-        <button class="btn-showDialog button-small no-margin delete-button border-button" onclick="showConfirmDelDialog(this)">Delete</button>
-        @confirm_dialog{
+    <div class="m-t-mini">
+        <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
+        @simple_confirm{
             <form role="form" action='@routes.ManagementController.deleteInvitation(invitedUser.id)' method="post">
                 @CSRF.formField
-                <button type="submit" class="delete-button button-small button no-margin">Confirm</button>
+                <button type="submit" class="btn btn btn-small btn-solid-prim btn-shadowed delete-button">Confirm</button>
             </form>
         }
     </div>

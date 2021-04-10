@@ -24,7 +24,9 @@
 @helper.form(action = routes.ManagementController.postNewGroupRelation(groupId)) {
     @CSRF.formField
     @message_box_error(msg)
-    <input type="text" name="viewerName" placeholder="Viewing Group" value="@newGroupViewerForm.data("viewerName")"/>
+    <div class="flex-container horizontal full-width stretched">
+        <div class="col-3">New Relation</div>
+    <input class="weight-2" type="text" name="viewerName" placeholder="Viewing Group" value="@newGroupViewerForm.data("viewerName")"/>
     <select class="input-group-field no-margin" name="viewerRole">
         <option>Choose a Role</option>
         @for(role <- ViewerRole.getAll) {
@@ -33,5 +35,6 @@
             </option>
         }
     </select>
-    <button class="button button-small">Create Relation</button>
+    <button class="btn btn-solid-prim btn-small">Create</button>
+    </div>
 }

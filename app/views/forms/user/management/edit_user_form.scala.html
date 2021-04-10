@@ -22,20 +22,17 @@
 
 @helper.form(action = routes.ManagementController.postUser(userId)) {
     @CSRF.formField
-    <div class="flex-container horizontal">
-        <div class="col-7">
-            <select class="input-group-field no-margin" name="role">
-                <option>Choose a Role</option>
-                @for(role <- Role.getAll) {
-                    <option @if(role.toString == editUserForm.data("role")) {selected="selected"}>
-                    @role.toString
-                    </option>
-                }
-            </select>
-        </div>
-        <div class="col-3">
-            <button class="border-button button-small no-margin">Update</button>
-        </div>
+    <div class="flex-container horizontal stretched full-width">
+        <div class="col-3">Change Role</div>
+        <select class="weight-2" name="role">
+            <option>Choose a Role</option>
+            @for(role <- Role.getAll) {
+                <option @if(role.toString == editUserForm.data("role")) {selected="selected"}>
+                @role.toString
+                </option>
+            }
+        </select>
+        <button class="btn btn-solid-prim btn-medium">Update</button>
     </div>
 
 }

@@ -18,24 +18,27 @@
 * *@
 @import modules.user.model.User
 @import views.html.helper.CSRF
+@import views.html.components.utils.simple_confirm
 @(member: User, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card tile">
+<div class="card shadowed p-ltrb-mini m-t-small">
     <div class="flex-container vertical full-width">
         <div class="flex-container horizontal full-width">
             <div class="col-3">Username</div>
             <div class="col-7">@member.username</div>
         </div>
-        <div class="flex-container horizontal full-width">
-            <div class="col-3">EMail</div>
+        <div class="flex-container horizontal full-width m-t-mini m-b-mini">
+            <div class="col-3">E-Mail</div>
             <div class="col-7">@member.email</div>
         </div>
-        <div class="flex-container horizontal full-width">
-            <div class="col-8"></div>
-            <form class="col-2" role="form" action='@routes.ManagementController.deleteUserFromGroup(groupId, member.id)' method="post">
+        <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
+        @simple_confirm{
+            <form role="form" action='@routes.ManagementController.deleteUserFromGroup(groupId, member.id)' method="post">
                 @CSRF.formField
-                <button type="submit" class="button-small button border-button delete-button no-margin">Delete</button>
+                <button type="submit" class="btn btn-solid-prim shadowed btn-small">Confirm</button>
             </form>
-        </div>
+        }
+
+
     </div>
 </div>

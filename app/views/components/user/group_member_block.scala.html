@@ -20,7 +20,5 @@
 @(members: Seq[User], groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @for(user <- members){
-    <div>
-        @member_tile(user, groupId)
-    </div>
+    @member_tile(user, groupId)
 }

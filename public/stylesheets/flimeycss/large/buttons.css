@@ -16,64 +16,87 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-.solid-button{
+.btn {
+    border: none;
+}
+
+.btn-shadowed {
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-solid-prim{
     color: #ffffff;
     background-color: var(--color-prim);
-    height: 35px;
-    width: min-content;
+    height: var(--input-height);
     font-size: 10pt;
 }
 
-.button:hover{
-    background-color: var(--color-prim-dark);
+.btn-solid-prim:hover{
+    background-color: var(--color-prim-light);
 }
 
-.button-small{
+.btn-solid-sec{
+    color: #ffffff;
+    background-color: var(--color-sec);
+    height: var(--input-height);
+    font-size: 10pt;
+}
+
+.btn-solid-sec:hover{
+    background-color: var(--color-sec-dark);
+}
+
+.btn-medium {
     width: fit-content;
-    min-width: 7em;
+    min-width: var(--widget-medium);
     padding: 3px;
     font-size: 10pt;
 }
 
-.button-mini{
+.btn-small{
     width: fit-content;
-    min-width: 4em;
+    min-width: var(--widget-small);
     padding: 3px;
     font-size: 10pt;
 }
 
-.button-icon{
+.btn-mini{
      width: fit-content;
-     min-width: 2em;
+     min-width: var(--widget-mini);
      padding: 3px;
      font-size: 10pt;
  }
 
-.border-button{
+.btn-bordered-prim{
     background-color: transparent;
-    border-color: var(--color-prim-dark);
+    border-color: var(--color-prim);
     border-style: solid;
     border-width: 1px;
-    color: var(--color-prim-dark);
-    position: relative;
-    height: 2.8em;
-    box-shadow: 0 0px 1px 0 var(--color-prim-dark);
+    color: var(--color-prim);
+    height: var(--input-height);
+    font-size: 10pt;
 }
 
-.solid-button{
-    background-color: var(--color-prim-dark);
+.btn-bordered-prim:hover {
+    color: var(--color-prim-dark);
     border-color: var(--color-prim-dark);
+}
+
+.btn-bordered-sec{
+    background-color: transparent;
+    border-color: var(--color-sec);
     border-style: solid;
     border-width: 1px;
-    color: white;
-    position: relative;
-    height: 2.8em;
-    box-shadow: 0 0px 1px 0 var(--color-prim-dark);
+    color: var(--color-sec);
+    height: var(--input-height);
+    font-size: 10pt;
 }
 
-.border-button:hover {
-    color: var(--color-prim-dark);
-    box-shadow: 0 0 3px 0 var(--color-prim-dark);
+.btn-bordered-sec:hover {
+    color: var(--color-sec-dark);
+    border-color: var(--color-sec-dark);
 }
 
 .solid-button:hover {
@@ -81,7 +104,7 @@
 }
 
 .delete-button:hover{
-    background-color: var(--color-error);
-    border-color: var(--color-error);
+    background-color: var(--color-prim-dark);
+    border-color: var(--color-prim-dark);
     color: white;
 }

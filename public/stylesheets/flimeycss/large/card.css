@@ -1,7 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020 Karl Kegel
- * Copyright (C) 2020-2021 Julia Kegel
+ * Copyright (C) 2021 Karl Kegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-.navbar-title{
-    font-size: 20pt;
+
+.card{
+    background-color: #ffffff !important;
 }
 
-.headline-text {
-    font-size: 18pt;
-    font-style: normal;
+.shadowed {
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
+

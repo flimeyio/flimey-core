@@ -1,7 +1,7 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
-* Copyright (C) 2020  Julia Kegel
+* Copyright (C) 2020-2021 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,21 +23,20 @@
 
 @helper.form(action = routes.AuthController.authenticate) {
     @CSRF.formField
+    <div class="flex-container full-width vertical m-t-small">
+    <input type="text" name="email" id="input-nasf" placeholder="email" value="@authForm.data("email")"/>
+    <input class="m-t-mini" type="text" name="key" id="input-nasf" placeholder="key" value="@authForm.data("key")"/>
+    <input class="m-t-mini" type="text" name="password" id="input-nasf" placeholder="password" value="@authForm.data("password")"/>
+    <div class="m-t-mini">
+        <input id="cb-agree" class="checkbox" type="checkbox" name="agree" @if(authForm.data.contains("agree") && authForm.data("agree").toBoolean){checked="true"} value="true"/>
+        <label for="cb-agree"> I agree to the Terms and Conditions </label>
+    </div>
     <div>
     @if(authForm.error("email").isDefined){
         <div>@message_box_error(Option("Invalid email"))</div>
     }
     </div>
     <div>@message_box_error(msg)</div>
-
-    <input type="text" name="email" id="input-nasf" class="form-input" placeholder="email" value="@authForm.data("email")"/>
-    <input type="text" name="key" id="input-nasf" class="form-input spaced-top-10" placeholder="key" value="@authForm.data("key")"/>
-    <input type="text" name="password" id="input-nasf" class="form-input spaced-top-10" placeholder="password" value="@authForm.data("password")"/>
-    <div class="">
-        <fieldset class="large-7 cell">
-            <input type="checkbox" name="agree" @if(authForm.data.contains("agree") && authForm.data("agree").toBoolean){checked="true"} value="true"/>
-            <label for="checkbox"> I agree to the Terms and Conditions </label>
-        </fieldset>
+    <button class="btn btn-small btn-solid-prim btn-shadowed m-t-mini">Go</button>
     </div>
-    <button class="border-button button-small">Go</button>
 }

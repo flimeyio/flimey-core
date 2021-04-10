@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -18,12 +18,23 @@
 * *@
 @import views.html.helper.CSRF
 @import modules.user.model.Group
-@(relatedGroup: Group, targetGroupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.utils.simple_confirm
+@(relatedGroup: Group, targetGroupId: Long, relationType: String)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="tile">
-    <p>@relatedGroup.name</p>
-    <form role="form" action='@routes.ManagementController.deleteGroupRelation(targetGroupId, relatedGroup.id)' method="post">
-        @CSRF.formField
-        <button type="submit" class="button button-small border-button delete-button">Delete</button>
-    </form>
+<div class="card shadowed p-ltrb-mini m-t-small flex-container horizontal">
+    <div>
+    <div class="tag bg-sec fc-white">
+        @relationType
+    </div>
+    </div>
+    <div class="weight-2 m-l-small">
+        @relatedGroup.name
+    </div>
+    <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
+    @simple_confirm{
+        <form role="form" action='@routes.ManagementController.deleteGroupRelation(targetGroupId, relatedGroup.id)' method="post">
+            @CSRF.formField
+            <button type="submit" class="btn btn btn-small btn-solid-prim btn-shadowed delete-button">Confirm</button>
+        </form>
+    }
 </div>
