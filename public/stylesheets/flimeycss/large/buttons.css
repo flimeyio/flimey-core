@@ -99,6 +99,10 @@
     border-color: var(--color-sec-dark);
 }
 
+.solid-button:hover {
+    box-shadow: 0 0 3px 0 var(--color-prim-dark);
+}
+
 .delete-button:hover{
     background-color: var(--color-prim-dark);
     border-color: var(--color-prim-dark);
