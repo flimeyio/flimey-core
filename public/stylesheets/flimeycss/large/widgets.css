@@ -197,3 +197,10 @@ input{
 .prim-dark-hover:hover{
     color: var(--color-prim-dark);
 }
+
+
+
+.popup {
+    position: relative;
+}
+
