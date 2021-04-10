@@ -17,11 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-.navbar-title{
-    font-size: 20pt;
+a {
+    text-decoration: none;
+    text-underline: none;
 }
 
-.headline-text {
-    font-size: 18pt;
-    font-style: normal;
+a:visited {
+    text-decoration: none;
+    text-underline: none;
+}
+
+a:hover {
+    text-decoration: none;
+    text-underline: none;
+    color: var(--color-prim-light);
+}
+
+a:active {
+    text-decoration: none;
+    text-underline: none;
 }
