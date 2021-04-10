@@ -31,14 +31,14 @@
             <div class="col-3">E-Mail</div>
             <div class="col-7">@member.email</div>
         </div>
-        <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
-        @simple_confirm{
-            <form role="form" action='@routes.ManagementController.deleteUserFromGroup(groupId, member.id)' method="post">
-                @CSRF.formField
-                <button type="submit" class="btn btn-solid-prim shadowed btn-small">Confirm</button>
-            </form>
-        }
-
-
+        <div>
+            <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
+            @simple_confirm{
+                <form role="form" action='@routes.ManagementController.deleteUserFromGroup(groupId, member.id)' method="post">
+                    @CSRF.formField
+                    <button type="submit" class="btn btn-solid-prim shadowed btn-small">Confirm</button>
+                </form>
+            }
+        </div>
     </div>
 </div>
