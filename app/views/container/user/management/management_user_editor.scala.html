@@ -23,7 +23,7 @@
 @import views.html.components.utils.{management_nav, message_box_error, navbar_category, navbar_category_closeable}
 @import views.html.helper.CSRF
 @import views.html.forms.user.management.edit_user_form
-@import views.html.components.utils.confirm_dialog
+@import views.html.components.utils.simple_confirm
 @(user: User, editUserForm: Form[EditUserForm.Data], msg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
@@ -34,33 +34,27 @@
     @navbar_category_closeable(Seq("User Editor"), routes.ManagementController.getGroups())
 }{
     @message_box_error(msg)
-    @user_detail_view(user)
-    <div class="padding-10">
-    <div>Edit</div>
-    <div class="margin-bottom-10">
-        @edit_user_form(user.id, editUserForm)
-    </div>
-    <div class="margin-bottom-10">Actions</div>
-    <div class="flex-container horizontal">
-        <form class="col-5" role="form" action='@routes.ManagementController.logUserOut(user.id)' method="post">
-            @CSRF.formField
-            <button type="submit" class="button no-margin align-horizontal">
-                <div>Force&nbsp</div>
-                <div>Log&nbsp</div>
-                <div>out</div>
-            </button>
-        </form>
-        <div class="col-5">
-            <button class="btn-showDialog button border-button delete-button align-horizontal no-margin" onclick="showConfirmDelDialog(this)">
-                <div>Delete</div><div>&nbspAccount</div>
-            </button>
-            @confirm_dialog{
+    <div class="card shadowed p-ltrb-mini">
+        @user_detail_view(user)
+
+        <div class="m-t-small m-b-small">
+            @edit_user_form(user.id, editUserForm)
+        </div>
+
+        <div class="flex-container horizontal">
+            <form role="form" action='@routes.ManagementController.logUserOut(user.id)' method="post">
+                @CSRF.formField
+                <button type="submit" class="btn btn-medium btn-solid-prim btn-shadowed m-r-small">Force Logout</button>
+            </form>
+            <div>
+            <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete Account</button>
+            @simple_confirm{
                 <form role="form" action='@routes.ManagementController.deleteUser(user.id)' method="post">
                     @CSRF.formField
-                    <button type="submit" class="delete-button button-small button no-margin">Confirm</button>
+                    <button type="submit" class="btn btn btn-small btn-solid-prim btn-shadowed">Confirm</button>
                 </form>
             }
+            </div>
         </div>
-    </div>
     </div>
 }()

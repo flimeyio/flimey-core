@@ -24,31 +24,3 @@
     border-width: 1px;
     text-align: center;
 }
-
-.navbar-local {
-    width: 100%;
-    background-color: white;
-    -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
-    -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
-    box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
-    height: 40px;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-.sticky-footer{
-    position: fixed;
-    bottom: 0px;
-    right: 0px;
-    padding-right: 30px;
-    padding-bottom: 20px;
-}
-
-.sticky-leftbar{
-    position: fixed;
-    left: 0px;
-    height: 100vh;
-    background-color: var(--color-prim);
-    width: 50px;
-    z-index: 1000;
-}

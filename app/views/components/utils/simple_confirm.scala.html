@@ -15,13 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@(deleteForm:Html ,message:Option[String] = None)
-<div class="del-confirm-dialog" hidden>
-    @if(message.isEmpty) {
-        Do you want confirm your decision?
-    }else {
-        @message.get
-    }
+@(deleteForm:Html)
+<div class="del-confirm-dialog flex-container horizontal" hidden>
     @deleteForm
-    <button onclick="cancelDelete(this)">Cancel</button>
+    <button class="btn btn-medium btn-shadowed btn-solid-sec m-l-mini" onclick="cancelDelete(this)">Cancel</button>
 </div>

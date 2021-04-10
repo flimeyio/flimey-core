@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,6 @@
 * *@
 @import modules.user.model.User
 @(user: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="padding-10">
 <div class="flex-container vertical full-width">
     <div class="flex-container horizontal full-width">
         <div class="col-3">Username</div>
@@ -32,5 +31,4 @@
         <div class="col-3">Role</div>
         <div class="col-7">@user.role.toString</div>
     </div>
-</div>
 </div>

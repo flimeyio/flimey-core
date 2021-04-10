@@ -21,6 +21,10 @@ input:not(.checkbox){
     font-size: 10pt;
 }
 
+select {
+    height: var(--input-height);
+}
+
 .input-large {
     width: var(--widget-large);
 }

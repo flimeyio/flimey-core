@@ -19,10 +19,10 @@
 
 @()(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="admin_nav">
-    <a  class="fc-prim-dark border-button full-width small-margin-top" href="@routes.ManagementController.getInvitedUsers()">Invited Users</a>
-    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getInvitationForm()">New Invitation</a></button>
-    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getGroups()">Group Management</a></button>
-    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getNewGroupForm()">New Group</a></button>
-    <button class="border-button small-margin-top" ><a class="fc-prim-dark" href="@routes.ManagementController.getUsers()">User Management</a></button>
+<div class="flex-container vertical left-align">
+    <a class="m-t-mini" href="@routes.ManagementController.getInvitedUsers()"><button class="btn btn-solid-sec btn-shadowed">Invited Users</button></a>
+    <a class="m-t-mini" href="@routes.ManagementController.getInvitationForm()"><button class="btn btn-solid-sec btn-shadowed" >New Invitation</button></a>
+    <a class="m-t-mini" href="@routes.ManagementController.getGroups()"><button class="btn btn-solid-sec btn-shadowed" >Group Management</button></a>
+    <a class="m-t-mini" href="@routes.ManagementController.getNewGroupForm()"><button class="btn btn-solid-sec btn-shadowed" >New Group</button></a>
+    <a class="m-t-mini" href="@routes.ManagementController.getUsers()"><button class="btn btn-solid-sec btn-shadowed" >User Management</button></a>
 </div>

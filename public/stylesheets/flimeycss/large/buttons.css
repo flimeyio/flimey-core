@@ -73,10 +73,10 @@
     background-color: transparent;
     border-color: var(--color-prim);
     border-style: solid;
-    border-width: 2px;
+    border-width: 1px;
     color: var(--color-prim);
+    height: var(--input-height);
     font-size: 10pt;
-    font-style: oblique;
 }
 
 .btn-bordered-prim:hover {
@@ -88,10 +88,10 @@
     background-color: transparent;
     border-color: var(--color-sec);
     border-style: solid;
-    border-width: 2px;
+    border-width: 1px;
     color: var(--color-sec);
+    height: var(--input-height);
     font-size: 10pt;
-    font-style: oblique;
 }
 
 .btn-bordered-sec:hover {
@@ -100,7 +100,7 @@
 }
 
 .delete-button:hover{
-    background-color: var(--color-error);
-    border-color: var(--color-error);
+    background-color: var(--color-prim-dark);
+    border-color: var(--color-prim-dark);
     color: white;
 }
