@@ -1,41 +1,48 @@
 @*
- * This file is part of the flimey-core software.
- * Copyright (C) 2020-2021 Karl Kegel
- * Copyright (C) 2020 Julia Kegel
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- * *@
-@import views.html.components.utils.message_box_hint
-@import views.html.helper.CSRF
-@import modules.core.model.EntityType
-@import modules.core.model.Constraint
+* This file is part of the flimey-core software.
+* Copyright (C) 2020-2021 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* *@
 @import modules.core.formdata.EditTypeForm
-@import modules.core.formdata.NewConstraintForm
-@import views.html.forms.core.edit_type_form
-@import views.html.forms.core.new_constraint_form
-@import views.html.forms.core.delete_type_form
+@import modules.core.model.EntityType
+@import views.html.components.utils.message_box_hint
+@import views.html.forms.core.{delete_type_form, edit_type_form}
 @(entityType: EntityType, editTypeForm: Form[EditTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="scroll-container">
-    <div>
-        @if(entityType.active){
-            @message_box_hint(Option("While editing constraints, it is recommended to disable the type."))
+@if(entityType.active) {
+    @message_box_hint(Option("While editing constraints, it is recommended to disable the type."))
+}
+<div class="card shadowed p-ltrb-mini relative-container">
+    <div class="flex-container vertical">
+    <b class="headline-text">@entityType.value</b>
+    <div class="flex-container m-t-mini float-top-right">
+        <div class="tag-box">
+            <div class="tag bg-sec">
+            @entityType.typeOf
+            </div>
+        </div>
+        @if(entityType.active) {
+            <i class="material-icons m-l-mini">extension</i>
+        } else {
+            <i class="material-icons m-l-mini">extension_off</i>
         }
-        <h1>@entityType.value</h1>
+    </div>
         @edit_type_form(entityType, editTypeForm)
     </div>
-    <div>
+    <div class="m-t-large">
         @delete_type_form(entityType.id)
     </div>
 </div>

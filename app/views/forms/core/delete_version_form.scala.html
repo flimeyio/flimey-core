@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,13 @@
 
 @import views.html.helper.CSRF
 
+@import views.html.components.utils.message_confirm
 @(entityTypeId: Long, versionId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<form role="form" action='@routes.ModelController.deleteVersion(entityTypeId, versionId)' method="post">
-    @CSRF.formField
-    <div class="confirm-label-button">
-        <div hidden class="confirm-label">This will delete all objects which are of this type and version!</div>
-        <button type="submit" class="border-button button-small">Delete Version</button>
-    </div>
-</form>
+<button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete Version</button>
+@message_confirm("This action will also delete all existing objects of EXACTLY THIS VERSION. Other versions of the same type are not affected."){
+    <form role="form" action='@routes.ModelController.deleteVersion(entityTypeId, versionId)' method="post">
+        @CSRF.formField
+        <button type="submit" class="btn btn-solid-prim shadowed btn-medium">Confirm Deletion</button>
+    </form>
+}

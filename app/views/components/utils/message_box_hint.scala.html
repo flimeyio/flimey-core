@@ -20,7 +20,7 @@
 @(msg: Option[String] = None)
 
 @if(msg.nonEmpty) {
-    <div class="callout warning no-margin">
-        @msg.get
+    <div class="callout callout-hint shadowed m-b-mini" >
+        <div class="p-ltrb-small">@msg.get</div>
     </div>
 }

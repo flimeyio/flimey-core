@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,15 @@
 @(assetType: EntityType, editAssetTypeForm: Form[EditTypeForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = routes.ModelController.postEntityType(assetType.id)) {
-    <div class="">
+    <div class="flex-container full-width stretched m-t-small">
         @CSRF.formField
-        <input type="text" name="value" class="" placeholder="unique name" value="@editAssetTypeForm.data.get("value")"/>
-        <div class="">
-            <label class="">
-                <input type="checkbox" class="" name="active" @if(editAssetTypeForm("active").value.contains("true")){checked="true"}  value="true"/>
-                <span class=""></span>
-            </label>
-            <div class="">
-                active
+        <input class="weight-2" type="text" name="value" class="" placeholder="unique name" value="@editAssetTypeForm.data.get("value")"/>
+        <div class="relative-container m-l-medium m-r-medium centered center-align">
+            <div>
+            <input id="cb-agree" type="checkbox" class="checkbox" name="active" @if(editAssetTypeForm("active").value.contains("true")){checked="true"}  value="true"/>
+            <label for="cb-agree">Active</label>
             </div>
         </div>
-        <button class="border-button button-small">Update</button>
+        <button class="btn btn-solid-prim btn-medium btn-shadowed">Update</button>
     </div>
 }
