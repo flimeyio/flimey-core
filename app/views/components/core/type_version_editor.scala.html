@@ -21,40 +21,36 @@
 @import views.html.components.utils.message_box_hint
 @import views.html.forms.core.{delete_version_form, new_constraint_form}
 @import views.html.helper.CSRF
+@import views.html.components.utils.message_confirm
 @(extendedEntityType: ExtendedEntityType, newConstraintForm: Form[NewConstraintForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="scroll-container">
+<div class="card shadowed p-ltrb-mini">
     @if(extendedEntityType.entityType.active) {
         @message_box_hint(Option("While editing constraints, it is recommended to disable the type."))
     }
-<h1>@extendedEntityType.entityType.value v.@extendedEntityType.version.version</h1>
-<div>
-    <div class="">
-    @new_constraint_form(extendedEntityType.entityType.id, extendedEntityType.version.id, newConstraintForm)
+    <h1>@extendedEntityType.entityType.value v.@extendedEntityType.version.version</h1>
+    <div class="m-t-small m-b-medium">
+        @new_constraint_form(extendedEntityType.entityType.id, extendedEntityType.version.id, newConstraintForm)
     </div>
-    <table class="">
-        <tr>
-            <th>constraint</th>
-            <th>value 1</th>
-            <th>value 2</th>
-            <th></th>
-        </tr>
-        @for(constraint <- extendedEntityType.constraints) {
-            <tr>
-                <td><div>@constraint.c</div></td>
-                <td><div>@constraint.v1</div></td>
-                <td><div>@constraint.v2</div></td>
-                <td>
-                    <form role="form" action='@routes.ModelController.deleteConstraint(extendedEntityType.entityType.id, extendedEntityType.version.id, constraint.id)' method="post">
-                        @CSRF.formField
-                    <button type="submit" class="">X</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </table>
+    @delete_version_form(extendedEntityType.entityType.id, extendedEntityType.version.id)
 </div>
-<div>
-@delete_version_form(extendedEntityType.entityType.id, extendedEntityType.version.id)
-</div>
-</div>
+
+@for(constraint <- extendedEntityType.constraints) {
+    <div class="card shadowed m-t-small p-ltrb-mini">
+        <div class="flex-container full-width horizontal stretched">
+            <div class="col-3">@constraint.c</div>
+            <div class="weight-2">@constraint.v1</div>
+            <div class="weight-2">@constraint.v2</div>
+        </div>
+        <div class="m-t-small">
+
+            <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete Constraint</button>
+            @message_confirm("This action will update all existing objects of EXACTLY THIS VERSION. If you delete a Property or Plugin, all corresponding objects will loose this data. Other versions of the same type are not affected."){
+                <form role="form" action='@routes.ModelController.deleteConstraint(extendedEntityType.entityType.id, extendedEntityType.version.id, constraint.id)' method="post">
+                    @CSRF.formField
+                    <button type="submit" class="btn btn-solid-prim shadowed btn-medium">Confirm Deletion</button>
+                </form>
+            }
+        </div>
+    </div>
+}

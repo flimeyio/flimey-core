@@ -28,6 +28,8 @@
     @navbar_category(Seq("Model Types"))
 }{
     @message_box_error(msg)
-    @new_type_form()
+    <div class="card shadowed p-ltrb-mini">
+        @new_type_form()
+    </div>
     @type_block(allTypes)
 }()()()
