@@ -20,7 +20,7 @@
 @(viewers: ViewerCombinator)
 
 <div class="tag-box">
-    <div class="grid-x">
+    <div class="flex-container horizontal left-align wrapping">
         @for(group <- viewers.maintainers){
             <div class="tag bg-maintain cell-small-1">
             @group.name

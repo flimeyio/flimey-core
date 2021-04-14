@@ -19,7 +19,7 @@
 @import modules.subject.model.ArchivedCollection
 @import views.html.components.subject.collection_archive_tile
 @(collections: Seq[ArchivedCollection])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="meta-entity-root scroll-container">
+<div class="meta-entity-root">
     @for(collection <- collections){
         @collection_archive_tile(collection)
     }

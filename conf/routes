@@ -56,13 +56,13 @@ POST    /asset/type                                         controllers.AssetCon
 
 POST    /asset/search                                       controllers.AssetController.searchAssets
 
-GET     /asset/:assetTypeId                                 controllers.AssetController.getAssets(assetTypeId: Long, pageNumber: Int, groupSelector: Option[String] = None)
-GET     /asset/:assetTypeId/new                             controllers.AssetController.getNewAssetEditor(assetTypeId: Long)
-POST    /asset/:assetTypeId/new                             controllers.AssetController.addNewAsset(assetTypeId: Long)
+GET     /asset/:typeId                                      controllers.AssetController.getAssets(typeId: Long, pageNumber: Int, groupSelector: Option[String] = None)
+GET     /asset/:typeId/new                                  controllers.AssetController.getNewAssetEditor(typeId: Long)
+POST    /asset/:typeId/new                                  controllers.AssetController.addNewAsset(typeId: Long)
 
-GET     /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.getAssetEditor(assetTypeId: Long, assetId: Long)
-POST    /asset/:assetTypeId/editor/:assetId                 controllers.AssetController.postAsset(assetTypeId: Long, assetId: Long)
-POST    /asset/:assetTypeId/editor/:assetId/delete          controllers.AssetController.deleteAsset(assetTypeId: Long, assetId: Long)
+GET     /asset/:typeId/editor/:assetId                      controllers.AssetController.getAssetEditor(typeId: Long, assetId: Long)
+POST    /asset/:typeId/editor/:assetId                      controllers.AssetController.postAsset(typeId: Long, assetId: Long)
+POST    /asset/:typeId/editor/:assetId/delete               controllers.AssetController.deleteAsset(typeId: Long, assetId: Long)
 
 
 GET     /archive                                            controllers.ArchiveController.index(query: String)
