@@ -18,7 +18,7 @@
 
 package modules.subject.service
 
-import modules.subject.model.{CollectionHeader, SubjectState}
+import modules.subject.model.{CollectibleHeader, SubjectState}
 import modules.util.messages.{ERR, OK, Status}
 
 /**
@@ -39,9 +39,9 @@ trait SubjectStateProcessor {
     OK()
   }
 
-  def isReadyToArchive(collectionHeader: CollectionHeader): Status = {
-    val hasOpenChildren = collectionHeader.collectibles.map(_.collectible.state).exists(
-      state => state != SubjectState.CLOSED_SUCCESS && state != SubjectState.CLOSED_FAILURE)
+  def isReadyToArchive(collectibles: Seq[CollectibleHeader]): Status = {
+    val hasOpenChildren = collectibles.map(_.collectible.state).exists(
+      state => !(state == SubjectState.CLOSED_SUCCESS || state == SubjectState.CLOSED_FAILURE))
     if (hasOpenChildren) {
       ERR("All sub elements must be closed before the parent element can be archived")
     } else {
