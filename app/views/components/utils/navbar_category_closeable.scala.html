@@ -1,7 +1,7 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020 Karl Kegel
-* Copyright (C) 2020  Julia Kegel
+* Copyright (C) 2020-2021 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 @(titles: Seq[String], closeAction: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <div class="navbar-local flex-container horizontal stretched center-align centered p-t-mini p-b-mini">
-    <section class="m-l-mini">
+    <section class="m-l-mini flex-container left-align">
         @for(title <- titles) {
-            <div class="navbar-title">@title</div>
+            <div class="navbar-title m-r-mini">@title</div>
         }
     </section>
     <div class="weight-2"></div>

@@ -37,7 +37,7 @@
 }{
     @message_box_error(msg)
     @message_box_success(successMsg)
-    <div class="scroll-container">
+    <div class="card shadowed p-ltrb-mini">
         @edit_viewable_entity_form(selectedType, collectionData.collection.id, propertyKeys, obligatoryKeys, groups,
             collectionData.viewers, entityForm, routes.CollectionController.postCollection(collectionData.collection.id),
             routes.CollectionController.deleteCollection(collectionData.collection.id))

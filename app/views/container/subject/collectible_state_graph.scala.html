@@ -34,5 +34,7 @@
 }{
     @message_box_error(msg)
     @message_box_success(successMsg)
-    @change_status_form(collectible.state, routes.CollectibleController.postState(collectible.collectionId, collectible.id))
+    <div class="card shadowed p-l-mini p-r-mini p-t-small p-b-small">
+        @change_status_form(collectible.state, routes.CollectibleController.postState(collectible.collectionId, collectible.id))
+    </div>
 }()()()

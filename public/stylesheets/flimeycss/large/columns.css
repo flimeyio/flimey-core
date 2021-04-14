@@ -23,6 +23,10 @@
     display: flex;
 }
 
+.wrapping {
+    flex-wrap: wrap;
+}
+
 /**
  * Display container elements side by side (default).
  */
@@ -64,6 +68,14 @@
 
 .stretched {
     justify-content: stretch;
+}
+
+.alternating:nth-child(1) {
+    background-color: wheat;
+}
+
+.alternating:nth-child(2) {
+    background-color: antiquewhite;
 }
 
 .weight-1 {
