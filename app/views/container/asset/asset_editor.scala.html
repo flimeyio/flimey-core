@@ -24,6 +24,7 @@
 @import modules.user.model.Group
 @import modules.core.model.EntityType
 @import views.html.forms.core.edit_viewable_entity_form
+@import modules.core.model.VersionedEntityType
 @(selectedType: EntityType,
         selectedAsset: ExtendedAsset,
         propertyKeys: Seq[(String, String)],
@@ -38,7 +39,7 @@
 }{
     @message_box_error(msg)
     @message_box_success(successMsg)
-    <div class="scroll-container">
+    <div class="card shadowed p-ltrb-mini">
         @edit_viewable_entity_form(selectedType, selectedAsset.asset.id, propertyKeys, obligatoryKeys, groups,
             selectedAsset.viewers, newAssetForm, routes.AssetController.postAsset(selectedType.id, selectedAsset.asset.id),
             routes.AssetController.deleteAsset(selectedType.id, selectedAsset.asset.id))

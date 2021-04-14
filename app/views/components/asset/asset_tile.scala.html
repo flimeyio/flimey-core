@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -22,31 +22,31 @@
 @import views.html.components.core.viewer_tag_box
 @(asset: ExtendedAsset)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
-<div class="">
-    <div class="card relative-container tile">
-        @if(ViewerAssertion.canEdit(asset.viewers, ticket.accessRights)) {
-            <div class="float-top-right">
-                <a href="@routes.AssetController.getAssetEditor(asset.asset.typeVersionId, asset.asset.id)">
-                    <i class="material-icons fc-prim">create</i>
-                </a>
+<div class="card shadowed p-ltrb-mini relative-container m-t-small">
+    @if(ViewerAssertion.canEdit(asset.viewers, ticket.accessRights)) {
+        <div class="float-top-right m-r-mini m-t-mini">
+            <a href="@routes.AssetController.getAssetEditor(asset.asset.typeVersionId, asset.asset.id)">
+                <i class="material-icons fc-prim">create</i>
+            </a>
+        </div>
+    }
+    <div class="col-9">
+    @if(asset.properties.nonEmpty) {
+        @for(i <- asset.properties.indices) {
+            <div class="flex-container horizontal full-width alternating">
+            <div class="col-3">
+                @asset.properties(i).key
+            </div>
+                @if(asset.properties(i).value.isBlank){
+                    <i>Undefined</i>
+                }else{
+                    @asset.properties(i).value
+                }
             </div>
         }
-        @if(asset.properties.nonEmpty) {
-            @for(i <- asset.properties.indices) {
-                <div class="flex-container horizontal full-width">
-                <div class="col-3">
-                    @asset.properties(i).key
-                </div>
-                    @if(asset.properties(i).value == ""){
-                        ---
-                    }else{
-                        @asset.properties(i).value
-                    }
-                </div>
-            }
-        }
-        <div class="full-width margin-top-5">
+    }
+    </div>
+    <div class="full-width m-t-small">
         @viewer_tag_box(asset.viewers)
-        </div>
     </div>
 </div>
