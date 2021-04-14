@@ -180,14 +180,14 @@ class AssetService @Inject()(typeRepository: TypeRepository,
    * <p> Fails without WORKER rights
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeVersionId id of the [[modules.core.model.TypeVersion TypeVersion]] every Asset must have
+   * @param typeId id of the [[modules.core.model.EntityType EntityType]] every Asset must have
    * @param pageNumber    number of the Asset page (starting with 0)
    * @param pageSize      maximum size of a page (max result size)
    * @param groupSelector groups which must contain the returned Assets (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future Seq[ExtendedAsset]
    */
-  def getAssets(typeVersionId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
+  def getAssets(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                (implicit ticket: Ticket): Future[Seq[ExtendedAsset]] = {
     try {
       RoleAssertion.assertWorker
@@ -199,7 +199,7 @@ class AssetService @Inject()(typeRepository: TypeRepository,
       if (pageNumber < 0) throw new Exception("Page number must be positive")
       val offset = pageNumber * pageSize
       val limit = pageSize
-      assetRepository.getAssetSubset(accessedGroupIds.toSet, typeVersionId, limit, offset)
+      assetRepository.getAssetSubset(accessedGroupIds, typeId, limit, offset)
     } catch {
       case e: Throwable => Future.failed(e)
     }
@@ -207,28 +207,27 @@ class AssetService @Inject()(typeRepository: TypeRepository,
 
   /**
    * Get a number of [[modules.asset.model.Asset Assets]] defined by multiple query parameters and information on all
-   * [[modules.core.model.TypeVersion TypeVersions]].
-   * as [[modules.asset.model.AssetTypeCombination AssetTypeCombinations]]
+   * [[modules.core.model.EntityType EntityTypes]] as [[modules.asset.model.AssetTypeCombination AssetTypeCombinations]]
    * <p> This method calls [[modules.asset.service.ModelAssetService#getAllTypes]] (see there for more information)
    * <p> This method calls [[modules.asset.service.AssetService#getAssets]] (see there for more information)
    * <p> Fails without WORKER rights.
    * <p> This is a safe implementation and can be used by controller classes.
    *
-   * @param typeVersionId id of the TypeVersion every Asset must have
+   * @param typeId        id of the EntityType every Asset must have
    * @param pageNumber    number of the Asset page (starting with 0)
    * @param pageSize      maximum size of a page (max result size)
    * @param groupSelector [[modules.user.model.Group Groups]] which must contain the returned Assets (must be partition of ticket Groups)
    * @param ticket        implicit authentication ticket
    * @return Future[AssetTypeCombination]
    */
-  def getAssetComplex(typeVersionId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
+  def getAssetComplex(typeId: Long, pageNumber: Int, pageSize: Int, groupSelector: Option[String] = None)
                      (implicit ticket: Ticket): Future[AssetTypeCombination] = {
     try {
       RoleAssertion.assertWorker
-      modelAssetService.getAllVersions() flatMap (types => {
-        val selectedAssetType = types.find(_.version.id == typeVersionId)
+      modelAssetService.getAllTypes() flatMap (types => {
+        val selectedAssetType = types.find(_.id == typeId)
         if (selectedAssetType.isDefined) {
-          getAssets(typeVersionId, pageNumber, pageSize, groupSelector) map (assetData => {
+          getAssets(typeId, pageNumber, pageSize, groupSelector) map (assetData => {
             AssetTypeCombination(selectedAssetType, types, assetData)
           })
         } else {

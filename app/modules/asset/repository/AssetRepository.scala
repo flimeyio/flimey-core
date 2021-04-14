@@ -162,20 +162,20 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
    * <p> Only Assets which are part of the specified [[modules.user.model.Group Groups]] can be fetched.
    *
    * @param groupIds      ids of the Groups, of which at least one must have access to the Asset
-   * @param typeVersionId id of the [[modules.core.model.TypeVersion TypeVersion]] the Asset must have
+   * @param typeId        id of the [[modules.core.model.EntityType EnitityType]] the Asset must have
    * @param limit         maximum number of retrieved Assets - recommended to keep as small as possible
    * @param offset        number of Assets to skip
    * @return Future Seq[ExtendedAsset]
    */
-  def getAssetSubset(groupIds: Set[Long], typeVersionId: Long, limit: Int, offset: Int): Future[Seq[ExtendedAsset]] = {
+  def getAssetSubset(groupIds: Set[Long], typeId: Long, limit: Int, offset: Int): Future[Seq[ExtendedAsset]] = {
     //build sub-query to get all asset ids of assets of the given type which can be accessed by the given groups
     //the returned keys are limited to provide the defined number of results for the second query
     val subQuery = (for {
-      (c, s) <- assets.filter(_.typeVersionId === typeVersionId) join
-        viewers.filter(_.viewerId.inSet(groupIds)) on (_.entityId === _.targetId)
-    } yield (c, s)).groupBy(_._1.id).map(_._1)
+      (c, s) <- assets join typeVersions on (_.typeVersionId === _.id) filter(_._2.typeId === typeId) join
+        viewers.filter(_.viewerId.inSet(groupIds)) on (_._1.entityId === _.targetId)
+    } yield (c, s)).groupBy(_._1._1.id).map(_._1).sortBy(_.desc).drop(offset).take(limit)
 
-    val accessableAssets = assets.filter(_.id in subQuery).sortBy(_.id.desc).drop(offset).take(limit)
+    val accessableAssets = assets.filter(_.id in subQuery)
     //main query to fetch all data from the by the sub-query specified assets
     val propertyQuery = accessableAssets join properties on (_.entityId === _.parentId)
     val viewerQuery = accessableAssets join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
@@ -191,7 +191,7 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
         val properties = assetsWithProperties(asset)
         val viewerRelations = assetsWithViewers(asset)
         ExtendedAsset(asset, properties, ViewerCombinator.fromRelations(viewerRelations))
-      }) toSeq
+      }).toSeq.sortBy(-_.asset.id)
     }
   }
 
