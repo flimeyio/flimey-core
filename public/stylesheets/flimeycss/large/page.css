@@ -32,4 +32,10 @@ html, body, text, a, button {
     cursor: default !important;
 }
 
+[hidden]{
+    display:none;
+}
 
+form {
+    margin-block-end: 0 !important;
+}

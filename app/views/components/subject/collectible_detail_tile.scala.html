@@ -20,45 +20,44 @@
 @import modules.subject.model.CollectibleHeader
 @(data: CollectibleHeader)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="meta-entity-container card relative-container tile">
+<div class="meta-entity-container card shadowed relative-container p-ltrb-mini m-t-small">
     <div class="float-top-right">
         <a href="@routes.CollectibleController.getCollectibleEditor(data.collectible.collectionId, data.collectible.id)">
             <i class="material-icons fc-prim">create</i>
         </a>
     </div>
     <div class="flex-container horizontal left-align">
-        <div>
-        @if(data.entityType.isDefined) {
-            <div class="tag bg-sec-dark">
-            @data.entityType.get.value.toLowerCase
-            </div>
-        }
-        </div>
-        <div class="padding-left-10 padding-right-20">
-        @if(data.properties.exists(_.key == "Name")){
+
+        @if(!data.properties.find(_.key == "Name").get.value.isBlank) {
             <b>@data.properties.find(_.key == "Name").get.value</b>
+        }else{
+            <i>Undefined Name</i>
         }
-        </div>
     </div>
-    <div class="flex-container horizontal stretched">
+    <div class="flex-container horizontal left-align m-t-small">
         <div>status: @data.collectible.state </div>
-        <div class="padding-left-10">
-            <a href="@routes.CollectibleController.getStateEditor(data.collectible.collectionId, data.collectible.id)">
-                <i class="material-icons fc-prim">swap_horiz</i>
-            </a>
-        </div>
-        <div class="weight-2"></div>
-    <div> created at: @data.collectible.created.format("dd.MM.yyyy HH:mm")</div>
+        <a href="@routes.CollectibleController.getStateEditor(data.collectible.collectionId, data.collectible.id)">
+            <i class="material-icons fc-prim">swap_horiz</i>
+        </a>
     </div>
-    <div class="margin-top-5">
+    <div> created at: @data.collectible.created.format("dd.MM.yyyy HH:mm")</div>
+    <div class="m-t-small">
     @for(property <- data.properties) {
         @if(property.key != "Name") {
-            <div>@{
-                property.key + ": " + property.value
-            }</div>
+            <div class="flex-container full-width alternating ">
+                <div class="col-3">@property.key</div>
+                <div><b>@property.value</b></div>
+            </div>
         }
     }
     </div>
     @meta_entity(data.collectible.id, data.properties, None)
     <div class="meta-viewport"></div>
+    <div class="flex-container full-width horizontal left-align m-t-small">
+    @if(data.entityType.isDefined) {
+        <div class="tag bg-sec-dark">
+        @data.entityType.get.value.toLowerCase
+        </div>
+    }
+    </div>
 </div>

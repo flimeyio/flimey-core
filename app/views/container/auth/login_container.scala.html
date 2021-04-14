@@ -16,29 +16,28 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-
 @import modules.auth.formdata.LoginForm
-@import views.html.forms.auth.login_form
-@import views.html.components.utils.message_box_error
 @import views.html.components.page.footer
+@import views.html.forms.auth.login_form
 @(loginForm: Form[LoginForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-
+<style>
+        .login-card {
+            width: 30%;
+            min-width: 300px;
+        }
+</style>
 @main {
-    <div class="card card-login">
-        <div class="card-divider">
-            <div class="card-header-left">Log In</div>
-            <div class="card-header-right"> &nbsp;or&nbsp;
-                <a class="prim-dark-hover fc-prim" href="@routes.AuthController.getAuthenticatePage()">Authenticate&nbsp;&nbsp;</a>
+    <div class="login-card card float-center shadowed p-ltrb-small flex-container vertical">
+        <div class="flex-container left-align horizontal stretched full-width">
+            <div class="headline-text">Log In</div>
+            <div class="weight-2"></div>
+            <div class="headline-text"> &nbsp;or&nbsp;
+                <a href="@routes.AuthController.getAuthenticatePage()">Authenticate&nbsp;&nbsp;</a>
             </div>
         </div>
-        <div class="card-section">
         @login_form(loginForm, msg)
-        </div>
-    </div>
-    <div class="background-image">
-        <img src="@routes.Assets.versioned("images/flimey_core_blurr20_1024.png")"/>
     </div>
     <div>
-    @footer()
+        @footer()
     </div>
 }

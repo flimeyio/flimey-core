@@ -16,15 +16,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.core.model.EntityType
 @import views.html.components.core.type_tile
 @import modules.core.model.VersionedEntityType
 @(entityTypes: Seq[Seq[VersionedEntityType]])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="scroll-container">
-    @for(entityType <- entityTypes){
-        @type_tile(entityType)
-    }
-</div>
+
+@for(entityType <- entityTypes){
+    @type_tile(entityType)
+}
 
 
 

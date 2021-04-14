@@ -15,16 +15,15 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import modules.core.model.EntityType
 @import views.html.helper.CSRF
 @import modules.core.model.VersionedEntityType
 @(selectedType: Option[VersionedEntityType], entityTypes: Seq[VersionedEntityType], action: Call, label: String)(
         implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
     @helper.form(action = action) {
-            <div class="input-group no-margin">
+            <div class="flex-container full-width stretched horizontal">
                 @CSRF.formField
-                <select class="input-group-field no-margin" name="value">
+                <select class="weight-2" name="value">
                     <option>Choose an option</option>
                     @for(versionedEntityType <- entityTypes) {
                         <option @if(selectedType.isDefined && selectedType.get.entityType.id == versionedEntityType.entityType.id) {
@@ -33,7 +32,7 @@
                         </option>
                     }
                 </select>
-                <button class="border-button button-small no-margin no-padding">@label</button>
+                <button class="btn btn-solid-prim btn-small">@label</button>
             </div>
 
     }

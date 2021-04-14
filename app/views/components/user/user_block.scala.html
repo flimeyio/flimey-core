@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 @import views.html.components.user.user_tile
 @(users: Seq[User])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="scroll-container">
 @for(user <- users){
-        @user_tile(user)
+     @user_tile(user)
 }
-</div>

@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020 Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 @import views.html.components.user.user_detail_view
 @(user: User)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card tile">
+<div class="card shadowed p-ltrb-mini m-b-small flex-container vertical">
     @user_detail_view(user)
-    <div class="button border-button no-margin align-horizontal">
-        <a class="no-hover" href="@routes.ManagementController.getUserEditor(user.id)">Edit</a>
-    </div>
+    <a class="m-t-small" href="@routes.ManagementController.getUserEditor(user.id)">
+        <button class="btn btn-solid-prim btn-shadowed btn-medium">Edit</button>
+    </a>
 </div>

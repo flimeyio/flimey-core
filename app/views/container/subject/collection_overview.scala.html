@@ -31,9 +31,9 @@
     @navbar_category(Seq("Collections"))
 }{
     @message_box_error(msg)
-    @select_type_form(None, collectionTypes, routes.CollectionController.requestNewCollectionEditor(), "New")
-    <!--@collection_query_form()-->
-    <div class="margin-top-15">
-    @collection_block(collectionData)
+    <div class="card shadowed p-ltrb-mini">
+        @select_type_form(None, collectionTypes, routes.CollectionController.requestNewCollectionEditor(), "New")
     </div>
+    <!--@collection_query_form()-->
+    @collection_block(collectionData)
 }()()()

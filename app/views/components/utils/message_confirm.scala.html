@@ -1,7 +1,8 @@
 @*
 * This file is part of the flimey-core software.
 * Copyright (C) 2021 Tom-Maurice Schreiber
-*
+* Copyright (C) 2021 Karl Kegel
+
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
@@ -15,13 +16,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@(deleteForm:Html ,message:Option[String] = None)
-<div class="del-confirm-dialog" hidden>
-    @if(message.isEmpty) {
-        Do you want confirm your decision?
-    }else {
-        @message.get
-    }
-    @deleteForm
-    <button onclick="cancelDelete(this)">Cancel</button>
+@import views.html.components.utils.message_box_hint
+@(message: String)(deleteForm: Html)
+
+<div class="del-confirm-dialog flex-container full-width vertical" hidden>
+    @message_box_hint(Some(message))
+    <div class="flex-container horizontal">
+        @deleteForm
+        <button class="btn btn-medium btn-shadowed btn-solid-sec m-l-mini" onclick="cancelDelete(this.parentNode)">Cancel</button>
+    </div>
 </div>

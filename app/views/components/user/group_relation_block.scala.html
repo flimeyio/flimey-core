@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -20,23 +20,14 @@
 @import views.html.components.user.group_relation_tile
 @(groupViewerCombinator: ViewerCombinator, groupId: Long)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="tag bg-maintain">Maintainers</div>
 @for(maintainer <- groupViewerCombinator.maintainers){
-    <div>
-        @group_relation_tile(maintainer, groupId)
-    </div>
+    @group_relation_tile(maintainer, groupId, "maintainer")
 }
 
-<div class="tag bg-edit">Editors</div>
 @for(editor <- groupViewerCombinator.editors){
-    <div>
-        @group_relation_tile(editor, groupId)
-    </div>
+    @group_relation_tile(editor, groupId, "editor")
 }
 
-<div class="tag bg-view">Viewers</div>
 @for(viewer <- groupViewerCombinator.viewers){
-    <div>
-        @group_relation_tile(viewer, groupId)
-    </div>
+    @group_relation_tile(viewer, groupId, "viewer")
 }

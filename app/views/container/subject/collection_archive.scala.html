@@ -28,8 +28,8 @@
     @navbar_category(Seq("Archive"))
 }{
     @message_box_error(msg)
-    @string_query_form(query, "search archive", routes.ArchiveController.query())
-    <div class="margin-top-15">
-        @collection_archive_block(collections)
+    <div class="card shadowed p-ltrb-mini">
+        @string_query_form(query, "search archive", routes.ArchiveController.query())
     </div>
+    @collection_archive_block(collections)
 }()()()

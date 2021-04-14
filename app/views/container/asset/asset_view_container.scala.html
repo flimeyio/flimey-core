@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,14 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.auth.model.Ticket
-@import views.html.components.utils.{message_box_error}
+@import views.html.components.utils.message_box_error
 @import modules.asset.model.ExtendedAsset
 @import views.html.components.asset.asset_block
-@import modules.core.model.VersionedEntityType
-@import views.html.forms.core.select_versioned_type_form
-@(selectedType: Option[VersionedEntityType],
-        assetTypes: Seq[VersionedEntityType],
+@import modules.core.model.EntityType
+@import views.html.forms.core.select_type_form
+
+@(selectedType: Option[EntityType],
+        assetTypes: Seq[EntityType],
         assetData: Seq[ExtendedAsset],
         pageNumber: Int,
         selectedAsset: Option[Long],
@@ -34,23 +35,26 @@
 }
 
 @message_box_error(msg)
-    <div class="flex-container horizontal full-width stretched">
-@select_versioned_type_form(selectedType, assetTypes, routes.AssetController.changeAssetType(), "Show")
-@if(selectedType.isDefined) {
-    <a class="border-button button-mini margin-10-side" href="@routes.AssetController.getNewAssetEditor(selectedType.get.entityType.id)">
-        <i class="material-icons fc-prim">add</i>
-    </a>
-    <div class="weight-2"></div>
-        @if(pageNumber > 0){
-            <a class="no-padding" href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber-1)">
-                <i class="material-icons big-icon fc-prim">navigate_before</i>
-            </a>
-        }
-        <a class="padding-left-10" href="@routes.AssetController.getAssets(selectedType.get.entityType.id, pageNumber+1)">
-            <i class="material-icons big-icon fc-prim">navigate_next</i>
+<div class="card shadowed p-ltrb-mini">
+    <div class="flex-container horizontal full-width stretched ">
+    <div class="">
+        @select_type_form(selectedType, assetTypes, routes.AssetController.changeAssetType(), "Show")
+    </div>
+    @if(selectedType.isDefined) {
+        <a href="@routes.AssetController.getNewAssetEditor(selectedType.get.id)">
+            <button class="btn btn-bordered-sec btn-small">Add</button>
         </a>
-}
+        <div class="weight-2"></div>
+            @if(pageNumber > 0){
+                <a href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber-1)">
+                    <i class="material-icons big-icon fc-prim">navigate_before</i>
+                </a>
+            }
+            <a href="@routes.AssetController.getAssets(selectedType.get.id, pageNumber+1)">
+                <i class="material-icons big-icon fc-prim">navigate_next</i>
+            </a>
+    }
     </div>
-    <div class="margin-top-15">
-    @asset_block(assetData)
-    </div>
+</div>
+
+@asset_block(assetData)

@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020 Karl Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -9,31 +9,25 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.user.formdata.NewGroupMemberForm
-@import views.html.helper.CSRF
 @import views.html.components.utils.message_box_error
+@import views.html.helper.CSRF
 @(groupId: Long, newGroupMemberForm: Form[NewGroupMemberForm.Data])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-@helper.form(action = routes.ManagementController.addUserToGroup(groupId)) {
-    @CSRF.formField
-
-    @if(newGroupMemberForm.error("userMail").isDefined){
-        <div>@message_box_error(Option("Invalid email"))</div>
-    }
-    <input type="text" name="userMail" placeholder="User E-Mail" value="@newGroupMemberForm.data("userMail")"/>
-    <div class="margin-bottom-10 flex-container horizontal">
-        <div class="col-7"></div>
-        <div class="col-3 ">
-            <button class="button no-margin align-horizontal">
-                <div>add&nbsp</div>
-                <div>Member</div>
-            </button>
+    @helper.form(action = routes.ManagementController.addUserToGroup(groupId)) {
+        @CSRF.formField
+        @if(newGroupMemberForm.error("userMail").isDefined) {
+            <div>@message_box_error(Option("Invalid email"))</div>
+        }
+        <div class="flex-container full-width horizontal stretched">
+            <div class="col-3">New Member</div>
+            <input class="weight-2" type="text" name="userMail" placeholder="User E-Mail" value="@newGroupMemberForm.data("userMail")"/>
+            <button class="btn btn-solid-prim btn-small">Add</button>
         </div>
-    </div>
-}
+    }

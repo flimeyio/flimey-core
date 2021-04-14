@@ -18,11 +18,14 @@
 
 @import views.html.helper.CSRF
 
+@import views.html.components.utils.message_confirm
 @(typeId: Long, assetId: Long, action: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="">
-<form role="form" action='@action' method="post">
-    @CSRF.formField
-    <button type="submit" class="border-button button-small">Delete</button>
-</form>
-</div>
+
+<button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
+@message_confirm("This action will delete the selected object. Maybe you want to move it to the ARCHIVE instead?"){
+    <form role="form" action='@action' method="post">
+        @CSRF.formField
+        <button type="submit" class="btn btn-solid-prim shadowed btn-medium">Confirm Deletion</button>
+    </form>
+}

@@ -23,19 +23,19 @@
 
 <div class="flex-container vertical centered full-high">
 
-    <a href="@routes.NewsController.index()" class="material-icons navbar-icon margin-top-15">circle_notifications</a>
-    <a href="@routes.CollectionController.index()" class="material-icons navbar-icon margin-top-15">space_dashboard</a>
-    <a href="@routes.AssetController.index()" class="material-icons navbar-icon margin-top-15">topic</a>
-    <a href='@routes.ArchiveController.index("")' class="material-icons navbar-icon margin-top-15">save</a>
+    <a href="@routes.NewsController.index()" class="material-icons navbar-icon m-t-small">circle_notifications</a>
+    <a href="@routes.CollectionController.index()" class="material-icons navbar-icon m-t-mini">space_dashboard</a>
+    <a href="@routes.AssetController.index()" class="material-icons navbar-icon m-t-mini">topic</a>
+    <a href='@routes.ArchiveController.index("")' class="material-icons navbar-icon m-t-mini">save</a>
 
     @if(Role.isAtLeastModeler(ticket.authSession.role)) {
-        <a href="@routes.ModelController.index()" class="material-icons navbar-icon margin-top-30"><div class="">extension</div></a>
+        <a href="@routes.ModelController.index()" class="material-icons navbar-icon m-t-medium"><div class="">extension</div></a>
     }
     @if(Role.isAtLeastAdmin(ticket.authSession.role)) {
-        <a href="@routes.ManagementController.index()" class="material-icons navbar-icon margin-top-15"><div class="">
+        <a href="@routes.ManagementController.index()" class="material-icons navbar-icon m-t-mini"><div class="">
             miscellaneous_services</div></a>
     }
-    <a href="@routes.AccountController.getAccountOverview()" class="material-icons navbar-icon margin-top-15 margin-bottom-30">account_circle</a>
+    <a href="@routes.AccountController.getAccountOverview()" class="material-icons navbar-icon m-t-mini">account_circle</a>
 
 </div>
 

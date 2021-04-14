@@ -19,6 +19,7 @@
 @import modules.auth.model.Ticket
 @import modules.core.formdata.EntityForm
 @import modules.core.model.EntityType
+@import modules.core.model.PropertyType
 @(selectedType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
@@ -50,16 +51,24 @@
         @CSRF.formField
         @if(propertyKeys.nonEmpty) {
             @for(i <- propertyKeys.indices) {
-                <div class="">@key(i)</div>
-                <div class="">@datatype(i)</div>
-                <input type="text" name="@{
-                    "values[" + i + "]"
-                }" class="" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                <div class="flex-container full-width horizontal stretched m-b-mini">
+                    <div class="col-3"><b>@key(i)</b></div>
+                    <div class="col-2">@datatype(i)</div>
+                    @if(PropertyType.DateTimeType.name == datatype(i)) {
+                        <input class="datetime-picker weight-2" name="@{
+                            "values[" + i + "]"
+                        }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                    } else {
+                        <input type="text" class="weight-2" name="@{
+                            "values[" + i + "]"
+                        }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                    }
+                </div>
             }
-            <div class="">
-                <button class="">Save</button>
-            </div>
         }
+        <div class="m-t-small">
+            <button class="btn btn-solid-prim btn-medium shadowed">Save</button>
+        </div>
     </div>
 }
 

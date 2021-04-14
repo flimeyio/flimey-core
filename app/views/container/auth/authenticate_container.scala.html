@@ -17,26 +17,27 @@
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
 @import modules.auth.formdata.AuthenticateForm
-@import views.html.forms.auth.authenticate_form
 @import views.html.components.page.footer
+@import views.html.forms.auth.authenticate_form
 @(authForm: Form[AuthenticateForm.Data], msg: Option[String])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-
+<style>
+        .auth-card {
+            width: 30%;
+            min-width: 300px;
+        }
+</style>
 @main {
-    <div class="card card-login">
-        <div class="card-divider">
-            <div class="card-header-left">Authenticate</div>
-            <div class="card-header-right"> &nbsp;or&nbsp;
-                <a class="prim-dark-hover" href="@routes.AuthController.getLoginPage()">Log In&nbsp;&nbsp;</a>
+    <div class="auth-card card float-center shadowed p-ltrb-small flex-container vertical">
+        <div class="flex-container left-align horizontal stretched full-width">
+            <div class="headline-text">Authenticate</div>
+            <div class="weight-2"></div>
+            <div class="headline-text"> &nbsp;or&nbsp;
+                <a href="@routes.AuthController.getLoginPage()">Log In&nbsp;&nbsp;</a>
             </div>
         </div>
-        <div class="card-section">
         @authenticate_form(authForm, msg)
-        </div>
     </div>
-    <div class="background-image">
-        <img src="@routes.Assets.versioned("images/flimey_core_blurr20_1024.png")"/>
-    </div>
-    </div>
+    <div>
     @footer()
     </div>
 }

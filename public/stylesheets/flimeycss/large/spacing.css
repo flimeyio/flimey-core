@@ -16,71 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-.height-50 {
-    min-height: 50px;
-    max-height: 50px;
-}
-
-.height-25 {
-    min-height: 25px;
-    max-height: 25px;
-}
-
-.full-high {
-    height: 100%;
-}
-
-.padding-top-50 {
-    padding-top: 50px;
-}
-
-.padding-left-10 {
-    padding-left: 10px;
-}
-
-.margin-right-10 {
-    margin-right: 10px;
-}
-
-.margin-10-side{
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-.margin-5vw-side{
-    margin-left: 5vw;
-    margin-right: 5vw;
-}
-
-.width-90vw {
-    min-width: 90vw;
-    max-width: 90vw;
-}
-
-.no-margin{
-    margin: 0 !important;
-}
-
-.margin-top-15{
-    margin-top: 15px;
-}
-
-.margin-top-30{
-    margin-top: 30px;
-}
-
-.right{
-    position: absolute;
-    right: 20px;
-    top:10px;
-}
-
-.bit-right{
-    position: absolute;
-    right: 80px;
-    top:10px;
-}
-
 .float-top-right {
     position: absolute;
     top: 5px;
@@ -94,23 +29,6 @@
     margin: 0 auto;
 }
 
-.small-margin-top{
-    margin-top: 5px;
-    margin-bottom: 0;
-}
-
-.bottom-right{
-    float: right;
-}
-
-.margin-bottom-10{
-    margin-bottom: 10px;
-}
-
-.margin-bottom-30{
-    margin-bottom: 30px;
-}
-
 .full-width {
     width: 100%;
 }
@@ -119,33 +37,170 @@
     padding: 0 !important;
 }
 
-.margin-top-5{
-    margin-top: 5px;
+.float-center{
+    position: absolute;
+    top: 45%;
+    left: 48%;
+    transform: translate3d(-50%,-50%, 0);
+    z-index: 2;
 }
 
-.padding-10{
-    padding: 10px 10px 10px 10px;
+.m-ltrb-mini {
+    margin: var(--distance-mini);
 }
 
-.padding-left-right{
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 5px;
-    padding-right:5px;
+.m-ltrb-small {
+    margin: var(--distance-small);
 }
 
-.padding-bottom-10{
-    padding-bottom: 10px;
+.m-ltrb-medium {
+    margin: var(--distance-medium);
 }
 
-.padding-top-10{
-    padding-top: 10px;
+.m-ltrb-large {
+    margin: var(--distance-large);
 }
 
-.padding-right-10{
-    padding-right: 10px;
+.m-l-mini {
+    margin-left: var(--distance-mini);
 }
 
-.padding-right-20{
-    padding-right: 20px;
+.m-l-small {
+    margin-left: var(--distance-small);
+}
+
+.m-l-medium {
+    margin-left: var(--distance-medium);
+}
+
+.m-l-large {
+    margin-left: var(--distance-large);
+}
+
+.m-r-mini {
+    margin-right: var(--distance-mini);
+}
+
+.m-r-small {
+    margin-right: var(--distance-small);
+}
+
+.m-r-medium {
+    margin-right: var(--distance-medium);
+}
+
+.m-r-large {
+    margin-right: var(--distance-large);
+}
+
+.m-t-mini {
+    margin-top: var(--distance-mini);
+}
+
+.m-t-small {
+    margin-top: var(--distance-small);
+}
+
+.m-t-medium {
+    margin-top: var(--distance-medium);
+}
+
+.m-t-large {
+    margin-top: var(--distance-large);
+}
+
+.m-b-mini {
+    margin-bottom: var(--distance-mini);
+}
+
+.m-b-small {
+    margin-bottom: var(--distance-small);
+}
+
+.m-b-medium {
+    margin-bottom: var(--distance-medium);
+}
+
+.m-b-large {
+    margin-bottom: var(--distance-large);
+}
+
+.p-ltrb-mini {
+    padding: var(--distance-mini);
+}
+
+.p-ltrb-small {
+    padding: var(--distance-small);
+}
+
+.p-ltrb-medium {
+    padding: var(--distance-medium);
+}
+
+.p-ltrb-large {
+    padding: var(--distance-large);
+}
+
+.p-l-mini {
+    padding-left: var(--distance-mini);
+}
+
+.p-l-small {
+    padding-left: var(--distance-small);
+}
+
+.p-l-medium {
+    padding-left: var(--distance-medium);
+}
+
+.p-l-large {
+    padding-left: var(--distance-large);
+}
+
+.p-r-mini {
+    padding-right: var(--distance-mini);
+}
+
+.p-r-small {
+    padding-right: var(--distance-small);
+}
+
+.p-r-medium {
+    padding-right: var(--distance-medium);
+}
+
+.p-r-large {
+    padding-right: var(--distance-large);
+}
+
+.p-t-mini {
+    padding-top: var(--distance-mini);
+}
+
+.p-t-small {
+    padding-top: var(--distance-small);
+}
+
+.p-t-medium {
+    padding-top: var(--distance-medium);
+}
+
+.p-t-large {
+    padding-top: var(--distance-large);
+}
+
+.p-b-mini {
+    padding-bottom: var(--distance-mini);
+}
+
+.p-b-small {
+    padding-bottom: var(--distance-small);
+}
+
+.p-b-medium {
+    padding-bottom: var(--distance-medium);
+}
+
+.p-b-large {
+    padding-bottom: var(--distance-large);
 }

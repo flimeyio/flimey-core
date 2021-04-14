@@ -175,25 +175,26 @@ class CollectionService @Inject()(typeRepository: TypeRepository,
   def updateState(collectionId: Long, newState: String)(implicit ticket: Ticket): Future[Int] = {
     try {
       RoleAssertion.assertWorker
-      getSlimCollection(collectionId) flatMap (collectionHeader => {
+      getCollection(collectionId) flatMap (collectionData => {
+        val (collection, _) = collectionData
         //Check if the User can edit this Collection
-        ViewerAssertion.assertEdit(collectionHeader.viewers)
+        ViewerAssertion.assertEdit(collection.viewers)
         val state = CollectionLogic.parseState(newState)
 
-        val updateStatus = CollectionLogic.isValidStateTransition(collectionHeader.collection.status, state)
+        val updateStatus = CollectionLogic.isValidStateTransition(collection.collection.status, state)
         if (!updateStatus.valid) updateStatus.throwError
 
         if(state == SubjectState.ARCHIVED){
-          ViewerAssertion.assertMaintain(collectionHeader.viewers)
+          ViewerAssertion.assertMaintain(collection.viewers)
           //check if all children are closed with success or failure
-          val readyToArchive = CollectionLogic.isReadyToArchive(collectionHeader)
+          val readyToArchive = CollectionLogic.isReadyToArchive(collection.collectibles)
           if(!readyToArchive.valid) readyToArchive.throwError
         }
 
         for {
           res <- collectionRepository.updateState(collectionId, state)
           _ <- newsService.addCollectionEvent(collectionId, NewsType.STATE_CHANGE,
-            collectionHeader.viewers.getAllViewingGroups.map(_.id))
+            collection.viewers.getAllViewingGroups.map(_.id))
         } yield res
       })
     } catch {

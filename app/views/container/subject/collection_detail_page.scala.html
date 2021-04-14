@@ -35,15 +35,17 @@
     @navbar_category_closeable(Seq("Collection Details"), routes.CollectionController.index())
 }{
     @message_box_error(msg)
-    <div class="meta-entity-root scroll-container">
+    <div class="meta-entity-root">
         @meta_typedef(Seq(collectionType))
         @collection_detail_tile(collectionData, collectionType.entityType.value)
     </div>
 }{
     @navbar_category(Seq("Collectibles"))
 }{
-    @select_type_form(None, collectibleTypes, routes.CollectibleController.requestNewCollectibleEditor(collectionData.collection.id), "New")
-    <div class="meta-entity-root scroll-container margin-top-15">
+    <div class="card shadowed p-ltrb-mini">
+        @select_type_form(None, collectibleTypes, routes.CollectibleController.requestNewCollectibleEditor(collectionData.collection.id), "New")
+    </div>
+    <div class="meta-entity-root">
         @collectible_block(collectionData.collectibles)
     </div>
 }()

@@ -19,13 +19,6 @@
 @import modules.user.model.User
 @import views.html.components.user.invitation_tile
 @(invitedUsers: Seq[User])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="scroll-container">
-    @if(invitedUsers.isEmpty){
-        No pending Invitations!
-    }else{
-        <!-- TODO: maybe some fancy javascript to filter the shown tiles? -->
-        @for(invitedUser <- invitedUsers) {
-            @invitation_tile(invitedUser)
-        }
+    @for(invitedUser <- invitedUsers) {
+        @invitation_tile(invitedUser)
     }
-</div>

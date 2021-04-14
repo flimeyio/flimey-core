@@ -17,10 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-@import "page.css";
-@import "columns.css";
-@import "text.css";
-@import "widgets.css";
-@import "spacing.css";
-@import "container.css";
 @import "buttons.css";
+@import "callout.css";
+@import "columns.css";
+@import "container.css";
+@import "icons.css";
+@import "image.css";
+@import "input.css";
+@import "links.css";
+@import "navigation.css";
+@import "page.css";
+@import "spacing.css";
+@import "tag.css";
+@import "text.css";
+@import "card.css";
+@import "tooltip.css";

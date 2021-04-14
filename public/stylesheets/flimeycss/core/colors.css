@@ -1,6 +1,6 @@
 /*
  * This file is part of the flimey-core software.
- * Copyright (C) 2020  Karl Kegel
+ * Copyright (C) 2020-2021 Karl Kegel
  * Copyright (C) 2020 Julia Kegel
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,16 +18,16 @@
  * */
 
 :root {
-    --color-prim: #00838f;
-    --color-prim-light: #4fb3bf;
-    --color-prim-dark: #005662;
+    --color-prim: #d81b60;
+    --color-prim-light: #ff5c8d;
+    --color-prim-dark: #a00037;
 
-    --color-sec: #b0bec5;
-    --color-sec-light: #e1e9ed;
-    --color-sec-dark: #808e95;
+    --color-sec: #311b92;
+    --color-sec-light: #6746c3;
+    --color-sec-dark: #000063;
 
     --color-positive: #66bb6a;
-    --color-warn: #fbc02d;
+    --color-warn: #dba02a;
     --color-error: #b71c1c;
 
     --color-maintain: #d66947;

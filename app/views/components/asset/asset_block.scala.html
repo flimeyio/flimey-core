@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -21,8 +21,6 @@
 @import modules.auth.model.Ticket
 @(assets: Seq[ExtendedAsset])(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
-<div class="scroll-container">
 @for(asset <- assets){
         @asset_tile(asset)
 }
-</div>

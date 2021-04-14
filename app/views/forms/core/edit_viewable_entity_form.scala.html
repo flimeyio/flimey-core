@@ -23,6 +23,7 @@
 @import modules.core.model.EntityType
 @import modules.user.model.ViewerCombinator
 @import views.html.forms.core.delete_entity_form
+@import modules.core.model.PropertyType
 @(entityType: EntityType,
         entityId: Long,
         propertyKeys: Seq[(String, String)],
@@ -61,16 +62,23 @@
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
-            <div class="">
-                @key(i)
+            <div class="flex-container full-width horizontal stretched m-b-mini">
+                <div class="col-3"><b>@key(i)</b></div>
+                <div class="col-2">@datatype(i)</div>
+                @if(PropertyType.DateTimeType.name == datatype(i)){
+                    <input class="datetime-picker weight-2" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
+                }else {
+                    <input type="text" class="weight-2" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
+                }
             </div>
-            <div class="">
-                @datatype(i)
-            </div>
-            <input type="text" name="@{"values[" + i + "]"}" placeholder="@placeholder(i)" value="@entityForm.data.get("values["+i+"]")"/>
         }
-        <span>Maintainers:</span>
-        <div id="edit-asset-maintainers">
+        <div class="m-t-small"></div>
+        <div class="tag bg-maintain">Maintainers</div>
+        <div id="edit-asset-maintainers" class="flex-container left-align wrapping m-t-mini m-b-small">
         @for(i <- 0 to sizeOfFormSeq("maintainer")-1) {
             <select name="@{"maintainers[" + i + "]"}">
                 <option>none</option>
@@ -83,8 +91,8 @@
             </select>
         }
         </div>
-        <span>Editors:</span>
-        <div id="edit-asset-editors">
+        <div class="tag bg-edit">Editors</div>
+        <div id="edit-asset-editors" class="flex-container left-align wrapping m-t-mini m-b-small">
         @for(i <- 0 to sizeOfFormSeq("editors")-1) {
             <select name="@{"editors[" + i + "]"}">
                 <option>none</option>
@@ -97,8 +105,8 @@
             </select>
         }
         </div>
-        <span>Viewers:</span>
-        <div id="edit-asset-viewers">
+        <div class="tag bg-view">Viewers</div>
+        <div id="edit-asset-viewers" class="flex-container left-align wrapping m-t-mini m-b-small">
         @for(i <- 0 to sizeOfFormSeq("viewer")-1) {
             <select name="@{"viewers[" + i + "]"}">
                 <option>none</option>
@@ -111,17 +119,20 @@
             </select>
         }
         </div>
-        <div class="">
-            <button class="">Save</button>
+        @if(ViewerAssertion.canMaintain(viewers, ticket.accessRights)) {
+            <div class="flex-container horizontal right-align">
+                <button type="button" class="btn btn-bordered-sec btn-medium" id="edit-asset-maintainers-add">+Maintainer</button>
+                <button type="button" class="btn btn-bordered-sec btn-medium m-l-mini" id="edit-asset-editors-add">+Editor</button>
+                <button type="button" class="btn btn-bordered-sec btn-medium m-l-mini" id="edit-asset-viewers-add">+Viewer</button>
+            </div>
+        }
+        <div class="m-t-small">
+            <button class="btn btn-solid-prim btn-medium shadowed">Save</button>
         </div>
     }
 }
 
 @if(ViewerAssertion.canMaintain(viewers, ticket.accessRights)) {
-
-    <button id="edit-asset-maintainers-add">+Maintainer</button>
-    <button id="edit-asset-editors-add">+Editor</button>
-    <button id="edit-asset-viewers-add">+Viewer</button>
 
     <ol hidden id="new-asset-group-options">
         <li>none</li>
@@ -175,5 +186,7 @@
 }
 
 @if(ViewerAssertion.canMaintain(viewers, ticket.accessRights)){
-    @delete_entity_form(entityType.id, entityId, deleteAction)
+    <div class="m-t-medium">
+        @delete_entity_form(entityType.id, entityId, deleteAction)
+    </div>
 }

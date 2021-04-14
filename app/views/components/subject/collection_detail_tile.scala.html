@@ -19,43 +19,40 @@
 @import views.html.components.core.{meta_entity, viewer_tag_box}
 @(data: ExtendedCollection, typeValue: String)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="meta-entity-container card relative-container tile">
+<div class="meta-entity-container card shadowed relative-container p-ltrb-mini">
     <div class="float-top-right">
         <a href="@routes.CollectionController.getCollectionEditor(data.collection.id)">
             <i class="material-icons fc-prim">create</i>
         </a>
     </div>
     <div class="flex-container horizontal left-align">
-        <div class="">
-            <div class="tag bg-sec-dark cell-small-1">
-                @typeValue.toLowerCase
-            </div>
-        </div>
-        <div class="padding-left-10 padding-right-20">
-            @if(data.properties.exists(_.key == "Name")) {
-                <p><b>@data.properties.find(_.key == "Name").get.value</b></p>
-            }
-            </div>
+        @if(!data.properties.find(_.key == "Name").get.value.isBlank) {
+            <b>@data.properties.find(_.key == "Name").get.value</b>
+        }else{
+            <i>Undefined Name</i>
+        }
     </div>
-    <div class="flex-container horizontal left-align">
+    <div class="flex-container horizontal left-align m-t-small">
         <div>status: @data.collection.status </div>
-        <div class="padding-left-10">
         <a href="@routes.CollectionController.getStateEditor(data.collection.id)">
             <i class="material-icons fc-prim">swap_horiz</i>
         </a>
-        </div>
     </div>
     <div> created at: @data.collection.created.format("dd.MM.yyyy HH:mm")</div>
-    @for(property <- data.properties) {
-        @if(property.key != "Name") {
-            <div>@{
-                property.key + ": " + property.value
-            }</div>
+    <div class="m-t-small">
+        @for(property <- data.properties) {
+            @if(property.key != "Name") {
+                <div class="flex-container full-width alternating ">
+                    <div class="col-3">@property.key</div>
+                    <div><b>@property.value</b></div>
+                </div>
+            }
         }
-    }
-    <div class="padding-top-10">
-        @meta_entity(data.collection.id, data.properties, Some(data.collectibles.map(c => (c.collectible.typeVersionId, c.properties))))
-        <div class="meta-viewport"></div>
+    </div>
+    <div class="flex-container full-width horizontal left-align m-t-small">
+        <div class="tag bg-sec-dark">
+            @data.entityType.value.toLowerCase
+        </div>
         @viewer_tag_box(data.viewers)
     </div>
 </div>

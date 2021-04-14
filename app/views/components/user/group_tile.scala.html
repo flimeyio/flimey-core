@@ -19,25 +19,27 @@
 * *@
 @import views.html.helper.CSRF
 @import modules.user.model.Group
-@import views.html.components.utils.confirm_dialog
+@import views.html.components.utils.simple_confirm
 @(group: Group)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-<div class="card tile flex-container vertical padding-bottom">
-    <div class="subtitle-bar full-width h6">@group.name</div>
-    <div class="flex-container horizontal full-width stretched">
-        <button class="border-button border-small">
-            <a class="fc-prim prim-dark-hover" href="@routes.ManagementController.getGroupEditor(group.id)">Members</a>
-        </button>
-        <button class="border-button button-small margin-10-side">
-            <a class="fc-prim prim-dark-hover" href="@routes.ManagementController.getGroupRelationEditor(group.id)">Relations</a>
-        </button>
+<div class="card shadowed flex-container vertical p-ltrb-mini m-b-small">
+    <div class="headline-text">@group.name</div>
+    <div class="flex-container horizontal full-width m-t-mini">
+        <a href="@routes.ManagementController.getGroupEditor(group.id)">
+            <button class="btn btn-solid-prim btn-medium btn-shadowed">Members</button>
+        </a>
+        <a href="@routes.ManagementController.getGroupRelationEditor(group.id)">
+            <button class="btn btn-solid-prim btn-medium btn-shadowed m-l-small"> Relations</button>
+        </a>
+
         <div class="weight-2"></div>
-            <button class="btn-showDialog button-small no-margin delete-button border-button" onclick="showConfirmDelDialog(this)">Delete</button>
-            @confirm_dialog{
+
+        <button class="btn-showDialog btn btn-medium btn-bordered-prim delete-button" onclick="showConfirmDelDialog(this)">Delete</button>
+        @simple_confirm{
                 <form role="form" action='@routes.ManagementController.deleteGroup(group.id)' method="post">
                     @CSRF.formField
-                    <button type="submit" class="delete-button button-small button no-margin">Confirm</button>
+                    <button type="submit" class="btn btn btn-small btn-solid-prim btn-shadowed delete-button">Confirm</button>
                 </form>
-            }
+        }
     </div>
 </div>

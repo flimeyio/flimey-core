@@ -1,6 +1,6 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
+* Copyright (C) 2020-2021 Karl Kegel
 * Copyright (C) 2020-2021 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 @import modules.user.model.Group
 @import modules.core.model.EntityType
 @import views.html.forms.core.new_entity_form
+@import modules.core.model.VersionedEntityType
 @(selectedType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
@@ -36,7 +37,7 @@
 }{
     @message_box_error(errmsg)
     @message_box_success(succmsg)
-    <div class="scroll-container">
+    <div class="card shadowed p-ltrb-mini">
         @new_entity_form(selectedType, propertyKeys, obligatoryKeys, groups, newAssetForm, routes.AssetController.addNewAsset(selectedType.id))
     </div>
 }()()()

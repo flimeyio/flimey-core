@@ -20,6 +20,7 @@
 @import modules.core.formdata.EntityForm
 @import modules.user.model.Group
 @import modules.core.model.EntityType
+@import modules.core.model.PropertyType
 @(selectedType: EntityType,
         propertyKeys: Seq[(String, String)],
         obligatoryKeys: Map[String, String],
@@ -56,14 +57,23 @@
         @CSRF.formField
         @if(propertyKeys.nonEmpty) {
             @for(i <- propertyKeys.indices) {
-                <div class="">@key(i)</div>
-                <div class="">@datatype(i)</div>
-                <input type="text" name="@{
-                    "values[" + i + "]"
-                }" class="" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                <div class="flex-container full-width horizontal stretched m-b-mini">
+                    <div class="col-3"><b>@key(i)</b></div>
+                    <div class="col-2">@datatype(i)</div>
+                    @if(PropertyType.DateTimeType.name == datatype(i)){
+                        <input class="datetime-picker weight-2" name="@{
+                            "values[" + i + "]"
+                        }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                    }else {
+                        <input type="text" class="weight-2" name="@{
+                            "values[" + i + "]"
+                        }" placeholder="@placeholder(i)" value="@newEntityForm.data.get("values[" + i + "]")"/>
+                    }
+                </div>
             }
-            <span>Maintainers (Groups which can edit, view, delete and change groups of this asset)</span>
-            <div id="new-entity-maintainers">
+            <div class="m-t-small"></div>
+            <div class="tag bg-maintain">Maintainers</div>
+            <div id="new-entity-maintainers" class="flex-container left-align wrapping m-t-mini m-b-small">
             @for(i <- 0 to sizeOfFormSeq("maintainer")-1) {
                 <select name="@{"maintainers[" + i + "]"}">
                     <option>none</option>
@@ -76,8 +86,8 @@
                 </select>
             }
             </div>
-            <span>Editors (Groups which can edit and view this asset)</span>
-            <div id="new-entity-editors">
+            <div class="tag bg-edit">Editors</div>
+            <div id="new-entity-editors" class="flex-container left-align wrapping m-t-mini m-b-small">
             @for(i <- 0 to sizeOfFormSeq("editors")-1) {
                 <select name="@{"editors[" + i + "]"}">
                     <option>none</option>
@@ -90,8 +100,8 @@
                 </select>
             }
             </div>
-            <span>Viewers (Groups which can only view this asset)</span>
-            <div id="new-entity-viewers">
+            <div class="tag bg-view">Viewers</div>
+            <div id="new-entity-viewers" class="flex-container left-align wrapping m-t-mini m-b-small">
             @for(i <- 0 to sizeOfFormSeq("viewer")-1) {
                 <select name="@{"viewers[" + i + "]"}">
                     <option>none</option>
@@ -104,16 +114,17 @@
                 </select>
             }
             </div>
-            <div class="">
-                <button class="">Save</button>
+            <div class="flex-container horizontal right-align">
+                <button type="button" class="btn btn-bordered-sec btn-medium " id="new-entity-maintainers-add">+Maintainer</button>
+                <button type="button" class="btn btn-bordered-sec btn-medium m-l-mini" id="new-entity-editors-add">+Editor</button>
+                <button type="button" class="btn btn-bordered-sec btn-medium m-l-mini" id="new-entity-viewers-add">+Viewer</button>
+            </div>
+            <div class="m-t-small">
+                <button class="btn btn-solid-prim btn-medium shadowed">Save</button>
             </div>
         }
     </div>
 }
-<button id="new-entity-maintainers-add">+Maintainer</button>
-<button id="new-entity-editors-add">+Editor</button>
-<button id="new-entity-viewers-add">+Viewer</button>
-
 <ol hidden id="new-entity-group-options">
     <li>none</li>
     @for(group <- groups){
