@@ -1,7 +1,7 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020  Karl Kegel
-* Copyright (C) 2020  Julia Kegel
+* Copyright (C) 2020-2021 Karl Kegel
+* Copyright (C) 2020 Julia Kegel
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 @(msg: Option[String] = None)
 
 @if(msg.nonEmpty) {
-    <div class="callout alert no-margin" >
-        @msg.get
+    <div class="callout callout-error shadowed m-b-mini" >
+        <div class="p-ltrb-small">@msg.get</div>
     </div>
 }

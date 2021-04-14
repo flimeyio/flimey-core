@@ -32,11 +32,11 @@
         successMsg: Option[String] = None)(implicit request: RequestHeader, messagesProvider: MessagesProvider, ticket: Ticket)
 
 @app {
-    @navbar_category_closeable(Seq("Collection Editor"), routes.CollectionController.getCollection(extendedCollectible.collectible.collectionId))
+    @navbar_category_closeable(Seq("Collectible Editor"), routes.CollectionController.getCollection(extendedCollectible.collectible.collectionId))
 }{
     @message_box_error(msg)
     @message_box_success(successMsg)
-    <div class="scroll-container">
+    <div class="card shadowed p-ltrb-mini">
         @edit_pure_entity_form(selectedType, extendedCollectible.collectible.id, propertyKeys, obligatoryKeys,
             entityForm, routes.CollectibleController.postCollectible(extendedCollectible.collectible.collectionId, extendedCollectible.collectible.id),
             routes.CollectibleController.deleteCollectible(extendedCollectible.collectible.collectionId, extendedCollectible.collectible.id))

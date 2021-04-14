@@ -1,8 +1,8 @@
 @*
 * This file is part of the flimey-core software.
-* Copyright (C) 2020-2021 Karl Kegel
-* Copyright (C) 2020 Julia Kegel
-*
+* Copyright (C) 2021 Tom-Maurice Schreiber
+* Copyright (C) 2021 Karl Kegel
+
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +16,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program. If not, see <https://www.gnu.org/licenses/>.
 * *@
-@import views.html.components.core.type_tile
-@import modules.core.model.VersionedEntityType
-@(entityTypes: Seq[Seq[VersionedEntityType]])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@import views.html.components.utils.message_box_hint
+@(message: String)(deleteForm: Html)
 
-@for(entityType <- entityTypes){
-    @type_tile(entityType)
-}
-
-
-
+<div class="del-confirm-dialog flex-container full-width vertical" hidden>
+    @message_box_hint(Some(message))
+    <div class="flex-container horizontal">
+        @deleteForm
+        <button class="btn btn-medium btn-shadowed btn-solid-sec m-l-mini" onclick="cancelDelete(this.parentNode)">Cancel</button>
+    </div>
+</div>

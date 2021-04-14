@@ -20,9 +20,9 @@
 @(selectedStatus: SubjectState.State, action: Call)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @helper.form(action = action) {
-    <div class="input-group no-margin">
+    <div class="flex-container full-width stretched">
         @CSRF.formField
-        <select class="input-group-field no-margin" name="value">
+        <select class="weight-2" name="value">
             <option>Choose an option</option>
             @for(status <- SubjectState.getAll) {
                 <option @if(status == selectedStatus) {selected="selected"}>
@@ -30,6 +30,6 @@
                 </option>
             }
         </select>
-        <button class="button button-small no-margin">Save</button>
+        <button class="btn btn-solid-prim btn-medium">Save</button>
     </div>
 }

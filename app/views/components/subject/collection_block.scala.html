@@ -19,8 +19,6 @@
 @import modules.subject.model.CollectionHeader
 @import views.html.components.subject.collection_tile
 @(collections: Seq[CollectionHeader])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-<div class="meta-entity-root scroll-container">
-    @for(collection <- collections){
-        @collection_tile(collection)
-    }
-</div>
+@for(collection <- collections){
+    @collection_tile(collection)
+}

@@ -57,26 +57,25 @@
     @CSRF.formField
     @if(propertyKeys.nonEmpty) {
         @for(i <- propertyKeys.indices) {
-            <div class="">
-                @key(i)
+            <div class="flex-container full-width horizontal stretched m-b-mini">
+                <div class="col-3"><b>@key(i)</b></div>
+                <div class="col-2">@datatype(i)</div>
+                @if(PropertyType.DateTimeType.name == datatype(i)){
+                    <input class="datetime-picker weight-2" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
+                }else {
+                    <input type="text" class="weight-2" name="@{
+                        "values[" + i + "]"
+                    }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
+                }
             </div>
-            <div class="">
-                @datatype(i)
-            </div>
-            @if(PropertyType.DateTimeType.name == datatype(i)){
-                <input class="datetime-picker" name="@{
-                    "values[" + i + "]"
-                }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
-            }else {
-                <input type="text" name="@{
-                    "values[" + i + "]"
-                }" placeholder="@placeholder(i)" value="@entityForm.data.get("values[" + i + "]")"/>
-            }
         }
-        <div class="">
-            <button class="">Save</button>
+        <div class="m-t-small">
+            <button class="btn btn-solid-prim btn-medium shadowed">Save</button>
         </div>
     }
 }
-
-@delete_entity_form(entityType.id, entityId, deleteAction)
+<div class="m-t-medium">
+    @delete_entity_form(entityType.id, entityId, deleteAction)
+</div>

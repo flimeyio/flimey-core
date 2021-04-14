@@ -21,18 +21,17 @@
 @(selectedType: Option[EntityType], entityTypes: Seq[EntityType], action: Call, label: String)(
         implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
-    @helper.form(action = action) {
-            <div class="input-group no-margin">
-                @CSRF.formField
-                <select class="input-group-field no-margin" name="value">
-                    <option>Choose an option</option>
-                    @for(entityType <- entityTypes) {
-                        <option @if(selectedType.isDefined && selectedType.get.id == entityType.id) {selected="selected"}>
-                        @entityType.value
-                        </option>
-                    }
-                </select>
-                <button class="border-button button-small no-margin no-padding">@label</button>
-            </div>
-
-    }
+@helper.form(action = action) {
+    <div class="flex-container full-width horizontal stretched">
+        @CSRF.formField
+        <select class="weight-2" name="value">
+            <option>Choose an option</option>
+            @for(entityType <- entityTypes) {
+                <option @if(selectedType.isDefined && selectedType.get.id == entityType.id) {selected="selected"}>
+                @entityType.value
+                </option>
+            }
+        </select>
+        <button class="btn btn-solid-prim btn-medium">@label</button>
+    </div>
+}
