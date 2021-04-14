@@ -145,7 +145,7 @@ class CollectibleController @Inject()(cc: ControllerComponents,
             collectibleService.updateState(collectibleId, data.value) map (_ => {
               Redirect(routes.CollectibleController.getStateEditor(collectionId, collectibleId)).flashing("succ" -> "Changes saved successfully")
             }) recoverWith {
-              case e: Throwable => Future.successful(Redirect(routes.CollectionController.getStateEditor(collectionId)).flashing("error" -> e.getMessage))
+              case e: Throwable => Future.successful(Redirect(routes.CollectibleController.getStateEditor(collectionId, collectibleId)).flashing("error" -> e.getMessage))
             }
           })
       }
