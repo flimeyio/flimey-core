@@ -18,5 +18,12 @@
  * */
 
 @import './colors.css';
+@import "./container.css";
 @import "./font.css";
 @import "./sizes.css";
+@import "./callout.css";
+@import "./card.css";
+@import "./links.css";
+@import "./page.css";
+@import "./tag.css";
+@import "./navigation.css";
