@@ -175,24 +175,29 @@ class AssetRepository @Inject()(@NamedDatabase("flimey_data") protected val dbCo
         viewers.filter(_.viewerId.inSet(groupIds)) on (_._1.entityId === _.targetId)
     } yield (c, s)).groupBy(_._1._1.id).map(_._1).sortBy(_.desc).drop(offset).take(limit)
 
-    val accessableAssets = assets.filter(_.id in subQuery)
+    val accessableAssetsQuery = assets.filter(_.id in subQuery)
     //main query to fetch all data from the by the sub-query specified assets
-    val propertyQuery = accessableAssets join properties on (_.entityId === _.parentId)
-    val viewerQuery = accessableAssets join (groups join viewers on (_.id === _.viewerId)) on (_.entityId === _._2.targetId)
 
-    for {
-      propertyResult <- db.run(propertyQuery.result)
-      viewerResult <- db.run(viewerQuery.result)
-    } yield {
-      val assetsWithProperties = propertyResult.groupBy(_._1).mapValues(values => values.map(_._2))
-      val assetsWithViewers = viewerResult.groupBy(_._1).mapValues(values => values.map(_._2))
+    db.run(accessableAssetsQuery.result) flatMap(accessableAssets => {
 
-      assetsWithProperties.keys.map(asset => {
-        val properties = assetsWithProperties(asset)
-        val viewerRelations = assetsWithViewers(asset)
-        ExtendedAsset(asset, properties, ViewerCombinator.fromRelations(viewerRelations))
-      }).toSeq.sortBy(-_.asset.id)
-    }
+      val accessableAssetEntityIds = accessableAssets.map(_.entityId)
+
+      val propertyQuery = properties.filter(_.parentId inSet accessableAssetEntityIds)
+      val viewerQuery = groups join viewers.filter(_.targetId inSet accessableAssetEntityIds) on (_.id === _.viewerId)
+
+      for {
+        propertyResult <- db.run(propertyQuery.result)
+        viewerResult <- db.run(viewerQuery.result)
+      } yield {
+
+        accessableAssets.map(asset => {
+          val properties = propertyResult.filter(_.parentId == asset.entityId).sortBy(_.id)
+          val viewerRelations = viewerResult.filter(_._2.targetId == asset.entityId)
+          ExtendedAsset(asset, properties, ViewerCombinator.fromRelations(viewerRelations))
+        }).sortBy(-_.asset.id)
+      }
+
+    })
   }
 
   /**
